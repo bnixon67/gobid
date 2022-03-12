@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Hello</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/w3.css">
+</head>
+<body>
+  <div class="w3-container w3-indigo">
+    <h2>Hello</h2>
+  </div>
+  {{ if .User.UserName }}
+  <ul class="w3-ul w3-border">
+    <li><b>User Name:</b> {{ .User.UserName }}</li>
+    <li><b>Full Name:</b> {{ .User.FullName }}</li>
+    <li><b>Email:</b> {{ .User.Email }}</li>
+  </ul>
+  <div class="w3-panel w3-right-align">
+    <a href="/logout">Logout</a>
+  </div>
+  {{ else }}
+  <div class="w3-panel w3-pale-red">
+    You must <a href="/login">Login</a>
+  </div>
+  {{ end }}
+</body>
+</html>

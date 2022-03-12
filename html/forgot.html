@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Forgot User or Password</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/w3.css">
+</head>
+<body>
+  <div class="w3-container w3-indigo">
+    <h2>Forgot User or Password</h2>
+  </div>
+  <div class="w3-container w3-light-grey">
+    <p>Please provide your email to retrieve your User Name and a link to reset your password.</p>
+  </div>
+  <form method="post" class="w3-container">
+    <p>
+      <label for="email"><b>Email (required):</b></label>
+      <input class="w3-input" type="email" placeholder="Enter your Email" id="email" name="email" maxlength="256" required="">
+    </p>
+    <button type="submit" class="w3-button w3-indigo">Forgot</button>
+  </form>
+  <div class="w3-panel w3-pale-red w3-center">
+    {{.}}
+  </div>
+  <div class="w3-panel w3-bar w3-light-grey">
+    <a class="w3-bar-item" href="/login">Login</a>
+    <a class="w3-bar-item" href="/register">Register for an account</a>
+  </div>
+</body>
+</html>
