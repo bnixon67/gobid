@@ -45,7 +45,7 @@
 	     class="w3-image"
 	     style="max-width:640px;max-height:480px">
         {{ if .Description }}
-          <div class="w3-container">
+          <div class="w3-container" style="max-width:640px">
             {{ .Description }}
           </div>
 	{{ end }}
@@ -54,20 +54,20 @@
         {{ else }}
           <table class="w3-table w3-show-inline-block">
             <tr>
-              <th>Opening Bid</th>
-              <td>{{ printf "%10.2f" .OpeningBid }}</td>
+              <th class="w3-padding-small">Opening Bid</th>
+              <td class="w3-padding-small">{{ printf "%10.2f" .OpeningBid }}</td>
             </tr>
             <tr>
-              <th>Current Bid</th>
-              <td>{{ if .CurrentBid }}{{ printf "%10.2f" .CurrentBid }}{{ else }}none{{ end }}</td>
+              <th class="w3-padding-small">Current Bid</th>
+              <td class="w3-padding-small">{{ if .CurrentBid }}{{ printf "%10.2f" .CurrentBid }}{{ else }}none{{ end }}</td>
             </tr>
             <tr>
-              <th>Minimum Increase</th>
-              <td>{{ printf "%10.2f" .MinBidIncr }}</td>
+              <th class="w3-padding-small">Minimum Increase</th>
+              <td class="w3-padding-small">{{ printf "%10.2f" .MinBidIncr }}</td>
             </tr>
             <tr>
-              <th>Last Bid</th>
-              <td>{{ if .CurrentBid }}{{ .Modified.Format "1/02/06 3:04 PM" }} ({{ .ModifiedBy }}){{ else }}none{{ end }}</td>
+              <th class="w3-padding-small">Last Bid</th>
+              <td class="w3-padding-small">{{ if .CurrentBid }}{{ .Modified.Format "1/02/06 3:04 PM" }} ({{ .ModifiedBy }}){{ else }}none{{ end }}</td>
             </tr>
           </table>
   {{ end }}
@@ -75,25 +75,28 @@
 
 {{ if .User.UserName }}
 <div class="w3-container">
-<div class="w3-row-padding">
 <form method="post" class="w3-container w3-show-inline-block">
-	<div class="w3-third">
-<label for="bidAmount"><b>Bid Amount</b></label>
-	</div>
-	<div class="w3-third">
-<input class="w3-input w3-border" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" required value="{{ .Item.MinBid }}">
-	</div>
-	<div class="w3-third">
-<button type="submit" class="w3-button w3-indigo">Place Bid</button>
-	</div>
+  <div class="w3-container w3-cell w3-cell-middle">
+    <label for="bidAmount"><b>Bid Amount</b></label>
+  </div>
+  <div class="w3-container w3-cell">
+    <input class="w3-input" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" required value="{{ .Item.MinBid }}">
+  </div>
+  <div class="w3-container w3-cell">
+    <button type="submit" class="w3-button w3-indigo">Place Bid</button>
+  </div>
 </form>
-	<p>You bid must be at least {{ printf "$%10.2f" .Item.MinBid }}.</p>
 </div>
+<div class="w3-container">
+  {{ if .Message }}
+    {{ .Message }}
+  {{ else }}
+    You bid must be at least {{ printf "$%10.2f" .Item.MinBid }}.
+  {{ end }}
 </div>
 {{ end }}
-
-    </div>
-  </div>
+</div>
+</div>
 
 </body>
 </html>

@@ -80,9 +80,6 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nextID := r.URL.Query()["next"]
-	log.Printf("next %v", nextID)
-
 	switch r.Method {
 	case http.MethodGet:
 		app.getItemHandler(w, r, id, currentUser)
@@ -120,14 +117,13 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	log.Printf("id = %d, bidAmountStr = %s", id, bidAmountStr)
-
 	bidAmount, err := strconv.ParseFloat(bidAmountStr, 64)
 	if err != nil {
+		msg = "Invalid bid amount."
 		log.Printf("unable to convert bidAmount to float64")
 	}
 
-	// submit bid if we have a valid user
+	// submit bid if we have a valid user and bidAmount
 	if user != (weblogin.User{}) && bidAmount > 0 {
 		msg, err = app.BidDB.PlaceBid(id, bidAmount, user)
 	}
