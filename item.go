@@ -80,6 +80,9 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nextID := r.URL.Query()["next"]
+	log.Printf("next %v", nextID)
+
 	switch r.Method {
 	case http.MethodGet:
 		app.getItemHandler(w, r, id, currentUser)
@@ -92,7 +95,9 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 	// get item from database
 	item, err := app.BidDB.GetItem(id)
 	if err != nil {
-		log.Printf("GetItems failed: %v", err)
+		log.Printf("unable to GetItem(%d), %v", id, err)
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	// display page
@@ -105,4 +110,41 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 }
 
 func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id int, user weblogin.User) {
+	var msg string
+	var err error
+
+	// get bidAmount
+	bidAmountStr := r.PostFormValue("bidAmount")
+	if bidAmountStr == "" {
+		log.Print("no bidAmount")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	log.Printf("id = %d, bidAmountStr = %s", id, bidAmountStr)
+
+	bidAmount, err := strconv.ParseFloat(bidAmountStr, 64)
+	if err != nil {
+		log.Printf("unable to convert bidAmount to float64")
+	}
+
+	// submit bid if we have a valid user
+	if user != (weblogin.User{}) && bidAmount > 0 {
+		msg, err = app.BidDB.PlaceBid(id, bidAmount, user)
+	}
+
+	// get item from database
+	item, err := app.BidDB.GetItem(id)
+	if err != nil {
+		log.Printf("unable to GetItem(%d), %v", id, err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// display page
+	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
+		ItemPageData{Message: msg, User: user, Item: item})
+	if err != nil {
+		log.Printf("error executing template: %v", err)
+		return
+	}
 }

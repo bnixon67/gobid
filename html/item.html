@@ -2,28 +2,37 @@
 <html lang="en">
 
 <head>
-  <title>JoCo ArtsKC Gallery</title>
+  <title>JoCo ArtsKC Auction</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/w3.css">
 </head>
 
 <body>
-  <div class="w3-container w3-indigo w3-xlarge"> JoCo ArtsKC Item </div>
+  <div class="w3-container w3-indigo w3-xlarge">JoCo ArtsKC Auction Item</div>
 
-  {{ if .User.UserName }}
   <div class="w3-cell-row">
+    {{ if .User.UserName }}
+      <div class="w3-cell w3-container">
+        Hello {{ .User.FullName }} ({{ .User.UserName }})
+      </div>
+    {{ else }}
+      <div class="w3-cell w3-container">
+        <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+      </div>
+    {{ end }}
     <div class="w3-cell w3-container">
-      Hello {{ .User.FullName }} ({{ .User.UserName }})
+      <a href="/gallery">Return to Gallery</a>
     </div>
-    <div class="w3-cell w3-container w3-right-align">
-      <a href="/logout">Logout</a>
+    <div class="w3-cell w3-container">
+      <a href="/item/{{ .Item.ID }}">Refresh Item</a>
     </div>
+    {{ if .User.UserName }}
+      <div class="w3-cell w3-container w3-right-align">
+        <a href="/logout">Logout</a>
+      </div>
+    {{ end }}
   </div>
-  {{ else }}
-  <div class="w3-container w3-pale-red">
-    You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
-  </div>
-  {{ end }}
+
 
   <div class="w3-container w3-center">
     <div class="w3-container w3-show-inline-block">
@@ -33,7 +42,8 @@
         </div>
         <img src="/images/{{.ImageFileName}}"
 	     alt="{{.Title}}"
-	     class="w3-image" style="max-width:640px;max-height:480px">
+	     class="w3-image"
+	     style="max-width:640px;max-height:480px">
         {{ if .Description }}
           <div class="w3-container">
             {{ .Description }}

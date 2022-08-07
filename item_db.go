@@ -5,6 +5,8 @@ import (
 	"errors"
 	"log"
 	"time"
+
+	weblogin "github.com/bnixon67/go-web-login"
 )
 
 type BidDB struct {
@@ -102,4 +104,31 @@ func (db BidDB) GetItems() ([]Item, error) {
 	}
 
 	return items, err
+}
+
+func (db BidDB) PlaceBid(id int, bidAmount float64, user weblogin.User) (string, error) {
+	var msg string
+
+	result, err := db.sqlDB.Exec(
+		"UPDATE items SET currentBid = ?, modifiedBy = ? WHERE id = ? AND IF(CurrentBid=0,OpeningBid,CurrentBid+MidBidIncr) <= ? AND OpeningBid <> 0",
+		bidAmount, user.UserName, id, bidAmount)
+	if err != nil {
+		msg = "Unable to submit bid. Please try again."
+		log.Printf("Unable to place bid of %v for item %v by %s", bidAmount, id, user.UserName)
+		log.Print(err)
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		msg = "Unable to submit bid. Please try again."
+		log.Printf("Unable to get RowsAffected()")
+		log.Print(err)
+	}
+	if rowsAffected == 1 {
+		msg = "Bid placed"
+		log.Printf("bid placed on %v by %q for %v", id, user.UserName, bidAmount)
+	} else {
+		msg = "Your bid is too low or you were outbid by someone else. Please try again."
+	}
+
+	return msg, err
 }
