@@ -23,6 +23,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type BidApp struct {
+	*weblogin.App
+	*BidDB
+}
+
 func main() {
 	// config file must be passed as argument and not empty
 	if len(os.Args) != 2 || os.Args[1] == "" {
@@ -40,6 +45,9 @@ func main() {
 	}
 	log.Printf("created app using config %q and log %q",
 		configFileName, logFileName)
+
+	bidApp := BidApp{App: app, BidDB: &BidDB{}}
+	bidApp.BidDB.sqlDB = app.DB
 
 	// define HTTP server
 	// TODO: add values to config file
@@ -61,12 +69,13 @@ func main() {
 	http.HandleFunc("/logout", app.LogoutHandler)
 	http.HandleFunc("/forgot", app.ForgotHandler)
 	http.HandleFunc("/reset", app.ResetHandler)
-	http.HandleFunc("/hello", app.HelloHandler)
+	http.HandleFunc("/gallery", bidApp.GalleryHandler)
+	http.HandleFunc("/item/", bidApp.ItemHandler)
 	// TODO: define base html directory in config
 	http.HandleFunc("/w3.css", weblogin.ServeFileHandler("html/w3.css"))
 	http.HandleFunc("/favicon.ico", weblogin.ServeFileHandler("html/favicon.ico"))
-	http.Handle("/",
-		http.RedirectHandler("/hello", http.StatusMovedPermanently))
+	http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
+	http.Handle("/", http.RedirectHandler("/gallery", http.StatusMovedPermanently))
 
 	// run server
 	// TODO: move cert locations to config file

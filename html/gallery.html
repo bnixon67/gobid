@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>JoCo ArtsKC Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/w3.css">
+</head>
+<body>
+  <div class="w3-container w3-indigo">
+	  <h3>JoCo ArtsKC Gallery</h3>
+  </div>
+  {{ if .User.UserName }}
+  <div class="w3-cell-row">
+    <div class="w3-cell w3-container">
+      Hello {{ .User.FullName }} ({{ .User.UserName }}) 
+    </div>
+    <div class="w3-cell w3-container w3-right-align">
+      <a href="/logout">Logout</a>
+    </div>
+  </div>
+  {{ else }}
+  <div class="w3-container w3-pale-red">
+You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+  </div>
+  {{ end }}
+
+<div class="w3-row-padding w3-margin-top w3-center">
+  {{ range .Items }}
+        <a href="/item/{{ .ID }}">
+  <div class="w3-quarter w3-margin-top" style="min-height:300px">
+	  <div class="w3-container">
+		<img class="w3-image" src="images/thumbnails/{{ .ImageFileName }}" alt="{{ .Title }}" style="max-height:200px">
+		</div>
+		<div class="w3-container">
+                {{ .Title }}<br>
+                {{ .Artist }}<br>
+                {{ if eq .OpeningBid 0.0 -}}
+                        Display Only
+                {{- else -}}
+                        {{- if .CurrentBid -}}
+                                {{ printf "$%9.2f" .CurrentBid }}
+                        {{- else -}}
+                                {{ printf "$%9.2f" .OpeningBid }}
+                        {{- end -}}
+                {{ end }}
+		</div>
+  </div>
+        </a>
+{{ end }}
+</div>
+
+</body>
+</html>

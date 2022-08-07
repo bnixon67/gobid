@@ -1,2 +1,5 @@
 config.json
 **/cert/
+**/images/
+*.swp
+gobid

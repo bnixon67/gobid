@@ -3,7 +3,7 @@ module github.com/bnixon67/gobid
 go 1.17
 
 require (
-	github.com/bnixon67/go-web-login v0.0.0-20220312183027-d7794dd0cdb3
+	github.com/bnixon67/go-web-login v0.0.0-20220502004629-eea936c11317
 	github.com/go-sql-driver/mysql v1.6.0
 )
 
