@@ -3,3 +3,7 @@ version = 1
 [[analyzers]]
 name = "go"
 enabled = true
+
+  [analyzers.meta]
+  import_root = "github.com/bnixon67/gobid"
+  dependencies_vendored = false
