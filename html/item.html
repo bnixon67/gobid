@@ -8,9 +8,8 @@
 </head>
 
 <body>
-  <div class="w3-container w3-indigo w3-xlarge">JoCo ArtsKC Auction Item</div>
-
-  <div class="w3-cell-row">
+<div class="w3-container w3-indigo w3-large w3-padding"><b>JoCo ArtsKC Auction Item</b></div>
+  <div class="w3-cell-row w3-light-grey w3-padding">
     {{ if .User.UserName }}
       <div class="w3-cell w3-container">
         Hello {{ .User.FullName }} ({{ .User.UserName }})
@@ -42,47 +41,45 @@
         </div>
         <img src="/images/{{.ImageFileName}}"
 	     alt="{{.Title}}"
-	     class="w3-image"
-	     style="max-width:640px;max-height:480px">
+	     class="w3-image w3-mobile"
+	     style="max-width:480px;max-height:360px">
         {{ if .Description }}
-          <div class="w3-container" style="max-width:640px">
+          <div class="w3-container w3-auto" style="max-width:480px">
             {{ .Description }}
           </div>
 	{{ end }}
+	<br>
 	{{ if eq .OpeningBid 0.0 }}
           <p>This item is display only</p>
         {{ else }}
-          <table class="w3-table w3-show-inline-block">
+	  <table class="w3-table w3-centered w3-container">
             <tr>
               <th class="w3-padding-small">Opening Bid</th>
-              <td class="w3-padding-small">{{ printf "%10.2f" .OpeningBid }}</td>
-            </tr>
-            <tr>
               <th class="w3-padding-small">Current Bid</th>
-              <td class="w3-padding-small">{{ if .CurrentBid }}{{ printf "%10.2f" .CurrentBid }}{{ else }}none{{ end }}</td>
+              <th class="w3-padding-small">Min Increase</th>
             </tr>
             <tr>
-              <th class="w3-padding-small">Minimum Increase</th>
-              <td class="w3-padding-small">{{ printf "%10.2f" .MinBidIncr }}</td>
-            </tr>
-            <tr>
-              <th class="w3-padding-small">Last Bid</th>
-              <td class="w3-padding-small">{{ if .CurrentBid }}{{ .Modified.Format "1/02/06 3:04 PM" }} ({{ .ModifiedBy }}){{ else }}none{{ end }}</td>
+              <td class="w3-padding-small">${{ printf "%10.2f" .OpeningBid }}</td>
+              <td class="w3-padding-small">{{ if .CurrentBid }}${{ printf "%10.2f" .CurrentBid }}{{ else }}none{{ end }}</td>
+              <td class="w3-padding-small">${{ printf "%10.2f" .MinBidIncr }}</td>
             </tr>
           </table>
+	  {{ if .CurrentBid }}
+            Last bid at {{ .Modified.Format "1/02/06 3:04 PM" }} by {{ .ModifiedBy }}<br>
+	  {{ end }}
   {{ end }}
 {{ end }}
 
-{{ if .User.UserName }}
-<div class="w3-container">
+{{ if and (.User.UserName) (ne .Item.OpeningBid 0.0) }}
+<div class="w3-container w3-mobile">
 <form method="post" class="w3-container w3-show-inline-block">
-  <div class="w3-container w3-cell w3-cell-middle">
+  <div class="w3-container w3-cell w3-cell-middle w3-mobile">
     <label for="bidAmount"><b>Bid Amount</b></label>
   </div>
-  <div class="w3-container w3-cell">
+  <div class="w3-container w3-cell w3-mobile">
     <input class="w3-input" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" required value="{{ .Item.MinBid }}">
   </div>
-  <div class="w3-container w3-cell">
+  <div class="w3-container w3-cell w3-mobile">
     <button type="submit" class="w3-button w3-indigo">Place Bid</button>
   </div>
 </form>
@@ -95,6 +92,7 @@
   {{ end }}
 </div>
 {{ end }}
+<br>
 </div>
 </div>
 

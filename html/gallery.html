@@ -6,11 +6,9 @@
   <link rel="stylesheet" href="/w3.css">
 </head>
 <body>
-  <div class="w3-container w3-indigo">
-	  <h3>JoCo ArtsKC Gallery</h3>
-  </div>
+  <div class="w3-container w3-indigo w3-large w3-padding"><b>JoCo ArtsKC Gallery</b></div>
   {{ if .User.UserName }}
-  <div class="w3-cell-row">
+  <div class="w3-cell-row w3-light-grey">
     <div class="w3-cell w3-container">
       Hello {{ .User.FullName }} ({{ .User.UserName }}) 
     </div>
