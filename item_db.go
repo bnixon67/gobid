@@ -17,7 +17,7 @@ type Item struct {
 	ID            int
 	Title         string
 	Created       time.Time
-	Modified      time.Time
+	Modified      *time.Time
 	ModifiedBy    *string
 	Description   *string
 	OpeningBid    float64
@@ -110,7 +110,7 @@ func (db BidDB) PlaceBid(id int, bidAmount float64, user weblogin.User) (string,
 	var msg string
 
 	result, err := db.sqlDB.Exec(
-		"UPDATE items SET currentBid = ?, modifiedBy = ? WHERE id = ? AND IF(CurrentBid=0,OpeningBid,CurrentBid+MidBidIncr) <= ? AND OpeningBid <> 0",
+		"UPDATE items SET currentBid = ?, modified = current_timestamp(), modifiedBy = ? WHERE id = ? AND IF(CurrentBid=0,OpeningBid,CurrentBid+MidBidIncr) <= ? AND OpeningBid <> 0",
 		bidAmount, user.UserName, id, bidAmount)
 	if err != nil {
 		msg = "Unable to submit bid. Please try again."
