@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	weblogin "github.com/bnixon67/go-web-login"
+	weblogin "github.com/bnixon67/go-weblogin"
 )
 
 // ItemPageData contains data passed to the HTML template.

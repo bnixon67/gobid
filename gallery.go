@@ -17,7 +17,7 @@ import (
 	"log"
 	"net/http"
 
-	weblogin "github.com/bnixon67/go-web-login"
+	weblogin "github.com/bnixon67/go-weblogin"
 )
 
 // GalleryPageData contains data passed to the HTML template.

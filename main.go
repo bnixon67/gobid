@@ -19,7 +19,7 @@ import (
 	"os"
 	"time"
 
-	weblogin "github.com/bnixon67/go-web-login"
+	weblogin "github.com/bnixon67/go-weblogin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
