@@ -4,3 +4,5 @@ config.json
 *.swp
 gobid
 nohup.out
+gobid.log
+gobid.service
