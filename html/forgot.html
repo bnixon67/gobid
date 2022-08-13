@@ -1,29 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>Forgot User or Password</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/w3.css">
-</head>
-<body>
-  <div class="w3-container w3-indigo w3-large w3-padding"><b>Forgot User or Password</b></div>
-  <div class="w3-container w3-light-grey w3-padding">
-    Please provide your email to retrieve your User Name and a link to reset your password.
-  </div>
-  <form method="post" class="w3-container">
-    <p>
+  <head>
+    <title>{{ .Title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/w3.css">
+  </head>
+  <body>
+    <div class="w3-container w3-indigo w3-large w3-padding">
+      <b>Forgot User or Password</b>
+    </div>
+    <div class="w3-container w3-light-grey w3-padding">
+      Please provide your email address.
+    </div>
+    <form method="post" class="w3-container">
+      <p>
       <label for="email"><b>Email (required):</b></label>
-      <input class="w3-input" type="email" placeholder="Enter your Email"
-             id="email" name="email" maxlength="256" required="">
-    </p>
-    <button type="submit" class="w3-btn w3-indigo">Forgot</button>
-  </form>
-  <br>
-  <div class="w3-container w3-pale-red w3-padding"> {{.}} </div>
-  <br>
-  <div class="w3-bar w3-light-grey">
-    <a class="w3-bar-item" href="/login">Login</a>
-    <a class="w3-bar-item" href="/register">Register for an account</a>
-  </div>
-</body>
+      <input class="w3-input" type="email" placeholder="Enter your Email" id="email" name="email" maxlength="256" required="" autofocus>
+      </p>
+      <div class="w3-bar">
+	<button type="submit" class="w3-button w3-indigo" name="action" value="user">Forgot User Name</button>
+	<button type="submit" class="w3-button w3-indigo" name="action" value="password">Forgot Password</button>
+      </div>
+    </form>
+    {{ if .Message }}
+    <div class="w3-panel w3-padding w3-pale-red"> {{ .Message }} </div>
+    {{ else }}
+    <div class="w3-panel w3-padding">
+      The email address you provide should receive a message with further information.
+    </div>
+    {{ end }}
+    <div class="w3-panel w3-bar w3-light-grey">
+      <a class="w3-bar-item" href="/login">Login</a>
+      <a class="w3-bar-item" href="/register">Register for an account</a>
+    </div>
+  </body>
 </html>

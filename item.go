@@ -24,6 +24,7 @@ import (
 
 // ItemPageData contains data passed to the HTML template.
 type ItemPageData struct {
+	Title   string
 	Message string
 	User    weblogin.User
 	Item    Item
@@ -99,7 +100,12 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
-		ItemPageData{Message: "", User: user, Item: item})
+		ItemPageData{
+			Title:   app.Config.Title,
+			Message: "",
+			User:    user,
+			Item:    item,
+		})
 	if err != nil {
 		log.Printf("error executing template: %v", err)
 		return
@@ -138,7 +144,12 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
-		ItemPageData{Message: msg, User: user, Item: item})
+		ItemPageData{
+			Title:   app.Config.Title,
+			Message: msg,
+			User:    user,
+			Item:    item,
+		})
 	if err != nil {
 		log.Printf("error executing template: %v", err)
 		return

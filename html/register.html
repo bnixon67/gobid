@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>Register</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/w3.css">
-</head>
-<body>
-  <div class="w3-container w3-indigo w3-large w3-padding"><b>Register</b></div>
-  <div class="w3-container w3-light-grey w3-padding">
-    Please provide the following information to register. If you already have an account, <a href="/login">Login</a>.
-  </div>
-  <form method="post" class="w3-container">
-    <p>
+  <head>
+    <title>{{ .Title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/w3.css">
+  </head>
+  <body>
+    <div class="w3-container w3-indigo w3-large w3-padding"><b>Register</b></div>
+    <div class="w3-container w3-light-grey w3-padding">
+      Please provide the following information to register. If you already have an account, <a href="/login">Login</a>.
+    </div>
+    <form method="post" class="w3-container">
+      <p>
       <label for="userName"><b>User Name (required):</b></label>
-      <input class="w3-input" type="text" placeholder="Enter your desired User Name" id="userName" name="userName" maxlength="30" required="">
-    </p>
-    <p>
+      <input class="w3-input" type="text" placeholder="Enter your desired User Name" id="userName" name="userName" maxlength="30" required="" autofocus>
+      </p>
+      <p>
       <label for="fullName"><b>Full Name (required):</b></label>
       <input class="w3-input" type="text" placeholder="Enter your Full Name" id="fullName" name="fullName" maxlength="50" required="">
-    </p>
-    <p>
+      </p>
+      <p>
       <label for="email"><b>Email Address (required):</b></label>
       <input class="w3-input" type="email" placeholder="Enter your Email Address" id="email" name="email" maxlength="256" required="">
-    </p>
-    <p>
+      </p>
+      <p>
       <label for="password1"><b>Password (required):</b></label>
       <input class="w3-input" type="password" placeholder="Enter your desired password" id="password1" name="password1" required="">
-    </p>
-    <p>
+      </p>
+      <p>
       <label for="password2"><b>Repeat Password</b></label>
       <input class="w3-input" type="password" placeholder="Repeat your desired password" id="password2" name="password2">
-    </p>
-    <button type="submit" class="w3-button w3-indigo">Register</button>
-  </form>
-  <div class="w3-panel w3-pale-red w3-center">
-    {{.}}
-  </div>
-</body>
+      </p>
+      <button type="submit" class="w3-button w3-indigo">Register</button>
+    </form>
+    {{ if .Message }}
+    <div class="w3-panel w3-pale-red w3-center">{{ .Message }}</div>
+    {{ end }}
+  </body>
 </html>

@@ -22,6 +22,7 @@ import (
 
 // GalleryPageData contains data passed to the HTML template.
 type GalleryPageData struct {
+	Title   string
 	Message string
 	User    weblogin.User
 	Items   []Item
@@ -68,7 +69,12 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "gallery.html",
-		GalleryPageData{Message: "", User: currentUser, Items: items})
+		GalleryPageData{
+			Title:   app.Config.Title,
+			Message: "",
+			User:    currentUser,
+			Items:   items,
+		})
 	if err != nil {
 		log.Printf("error executing template: %v", err)
 		return
