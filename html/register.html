@@ -8,7 +8,7 @@
   <body>
     <div class="w3-container w3-indigo w3-large w3-padding"><b>Register</b></div>
     <div class="w3-container w3-light-grey w3-padding">
-      Please provide the following information to register. If you already have an account, <a href="/login">Login</a>.
+      Please provide the following or <a href="/login">Login</a>.
     </div>
     <form method="post" class="w3-container">
       <p>
@@ -34,7 +34,7 @@
       <button type="submit" class="w3-button w3-indigo">Register</button>
     </form>
     {{ if .Message }}
-    <div class="w3-panel w3-pale-red w3-center">{{ .Message }}</div>
+    <div class="w3-panel w3-pale-red">{{ .Message }}</div>
     {{ end }}
   </body>
 </html>

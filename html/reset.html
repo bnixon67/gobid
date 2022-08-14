@@ -10,26 +10,27 @@
       <b>Reset Password</b>
     </div>
     <div class="w3-container w3-light-grey w3-padding">
-      Please provide the reset token and a new password below.
+      Please provide the following.
     </div>
     <form method="post" class="w3-container">
       <p>
-      <label for="rtoken"><b>Reset Token (required):</b></label>
+      <label for="rtoken"><b>Reset Token from Email (required):</b></label>
       <input class="w3-input" type="text" placeholder="Enter your Reset Token" id="rtoken" name="rtoken" maxlength="44" required="" value="{{.ResetToken}}">
       </p>
       <p>
-      <label for="password1"><b>Password (required):</b></label> <input class="w3-input" type="password" placeholder="Enter your desired password" id="password1" name="password1" required="" autofocus>
+      <label for="password1"><b>New Password (required):</b></label> <input class="w3-input" type="password" placeholder="Enter your desired password" id="password1" name="password1" required="" autofocus>
       </p>
       <p>
-      <label for="password2"><b>Repeat Password (required):</b></label>
+      <label for="password2"><b>Repeat New Password (required):</b></label>
       <input class="w3-input" type="password" placeholder="Repeat your desired password" id="password2" name="password2" required="">
       </p>
       <button type="submit" class="w3-button w3-indigo">Reset Password</button>
     </form>
     {{ if .Message }}
-    <div class="w3-panel w3-pale-red w3-center">{{ .Message }}</div>
+    <div class="w3-panel w3-pale-red">{{ .Message }}</div>
     {{ end }}
-    <div class="w3-panel w3-bar w3-light-grey">
+    <br>
+    <div class="w3-bar w3-light-grey">
       <a class="w3-bar-item" href="/login">Login</a>
       <a class="w3-bar-item" href="/register">Register for an account</a>
     </div>

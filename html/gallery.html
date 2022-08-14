@@ -10,17 +10,19 @@
       <b>{{ .Title }} Gallery</b>
     </div>
     {{ if .User.UserName }}
-    <div class="w3-cell-row w3-light-grey w3-padding">
-      <div class="w3-cell w3-container">
+    <div class="w3-bar w3-light-grey">
+      <div class="w3-bar-item">
 	Hello {{ .User.FullName }} ({{ .User.UserName }}) 
       </div>
-      <div class="w3-cell w3-container w3-right-align">
+      <div class="w3-bar-item w3-right">
 	<a href="/logout">Logout</a>
       </div>
     </div>
     {{ else }}
-    <div class="w3-container w3-pale-red w3-padding">
-      You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+    <div class="w3-bar w3-pale-red">
+      <div class="w3-bar-item">
+        You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+      </div>
     </div>
     {{ end }}
 

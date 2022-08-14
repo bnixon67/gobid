@@ -10,19 +10,19 @@
       <b>{{ .Title }} Item</b>
     </div>
 
-    <div class="w3-row w3-light-grey w3-padding w3-mobile">
-      <div class="w3-third w3-container w3-mobile">
+    <div class="w3-bar w3-light-grey w3-mobile">
+      <div class="w3-bar-item w3-mobile">
 	<a href="/gallery">Return to Gallery</a>
       </div>
-      <div class="w3-third w3-container w3-center w3-mobile">
+      <div class="w3-bar-item w3-mobile">
 	<a href="/item/{{ .Item.ID }}">Refresh Item</a>
       </div>
       {{ if .User.UserName }}
-      <div class="w3-third w3-container w3-right-align w3-mobile">
+      <div class="w3-bar-item w3-right w3-mobile">
 	<a href="/logout">Logout {{ .User.UserName }}</a>
       </div>
       {{ else }}
-      <div class="w3-third w3-container w3-right-align w3-mobile">
+      <div class="w3-bar-item w3-container w3-right w3-mobile">
 	<a href="/login">Login</a> or <a href="/register">Register</a> to bid.
       </div>
       {{ end }}
@@ -37,7 +37,7 @@
 	<img src="/images/{{.ImageFileName}}"
 	     alt="{{.Title}}"
 	     class="w3-image w3-mobile"
-	     style="max-width:480px;max-height:360px">
+	     style="width=100%;height=auto;">
 	{{ if .Description }}
 	<div class="w3-container w3-auto" style="max-width:480px">
 	  {{ .Description }}
@@ -83,7 +83,7 @@
 	  {{ if .Message }}
 	  {{ .Message }}
 	  {{ else }}
-	  You bid must be at least {{ printf "$%10.2f" .Item.MinBid }}.
+	  Your bid must be at least {{ printf "$%10.2f" .Item.MinBid }}.
 	  {{ end }}
 	</div>
 	{{ end }}

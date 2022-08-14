@@ -8,7 +8,7 @@
   <body>
     <div class="w3-container w3-indigo w3-large w3-padding"><b>Login</b></div>
     <div class="w3-container w3-light-grey w3-padding">
-      Please provide the following information to login.
+      Please provide the following to login.
     </div>
     <form method="post" class="w3-container">
       <p>
@@ -24,9 +24,10 @@
     {{ if .Message }}
     <div class="w3-panel w3-pale-red">{{ .Message }}</div>
     {{ end }}
-    <div class="w3-panel w3-bar w3-light-grey">
+    <br>
+    <div class="w3-bar w3-light-grey">
       <a class="w3-bar-item" href="/forgot">Forgot User Name or Password</a>
-      <a class="w3-bar-item" href="/register">Register for an account</a>
+      <a class="w3-bar-item" href="/register">Register</a>
     </div>
   </body>
 </html>
