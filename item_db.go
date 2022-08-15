@@ -106,6 +106,42 @@ func (db BidDB) GetItems() ([]Item, error) {
 	return items, err
 }
 
+func (db BidDB) GetWinners() ([]Winner, error) {
+	var winners []Winner
+	var err error
+
+	if db.sqlDB == nil {
+		log.Print("db is nil")
+		return winners, errors.New("invalid db")
+	}
+
+	qry := "SELECT id, title, artist, currentBid, fullName, email, modified FROM items LEFT JOIN users ON items.modifiedBy = users.userName WHERE currentBid <> 0 ORDER BY modified"
+
+	rows, err := db.sqlDB.Query(qry)
+	if err != nil {
+		log.Printf("query for winners failed, %v", err)
+		return winners, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var winner Winner
+
+		err = rows.Scan(&winner.ID, &winner.Title, &winner.Artist, &winner.CurrentBid, &winner.FullName, &winner.Email, &winner.Modified)
+		if err != nil {
+			log.Printf("row.Scan failed, %v", err)
+		}
+
+		winners = append(winners, winner)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Printf("rows.Err failed, %v", err)
+	}
+
+	return winners, err
+}
+
 func (db BidDB) PlaceBid(id int, bidAmount float64, user weblogin.User) (string, error) {
 	var msg string
 
