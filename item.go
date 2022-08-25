@@ -14,6 +14,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -130,8 +131,42 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	}
 
 	// submit bid if we have a valid user and bidAmount
-	if user != (weblogin.User{}) && bidAmount > 0 {
-		msg, err = app.BidDB.PlaceBid(id, bidAmount, user)
+	if user != (weblogin.User{}) && bidAmount >= 0 {
+		var bidPlaced bool
+		var priorBidder string
+		var err error
+
+		bidPlaced, msg, priorBidder, err = app.BidDB.PlaceBid(id, bidAmount, user)
+		if err != nil {
+			log.Printf("unable to PlaceBid: %v", err)
+		}
+
+		log.Printf("PlaceBid(%d, %v, %q) = %v, %q, %q, %v",
+			id, bidAmount, user, bidPlaced, msg, priorBidder, err)
+		if bidPlaced && priorBidder != "" && priorBidder != user.UserName {
+			user, err := weblogin.GetUserForName(app.DB, priorBidder)
+			if err != nil {
+				log.Printf("unable to GetUserForName(%q): %v",
+					priorBidder, err)
+			}
+
+			// get item from database
+			item, err := app.BidDB.GetItem(id)
+			if err != nil {
+				log.Printf("unable to GetItem(%d), %v", id, err)
+			}
+
+			emailText := fmt.Sprintf(
+				"You have been outbid on %q. Visit %s/item/%d to rebid.",
+				item.Title, app.Config.BaseURL, id)
+
+			err = weblogin.SendEmail(app.Config.SMTPUser, app.Config.SMTPPassword,
+				app.Config.SMTPHost, app.Config.SMTPPort, user.Email,
+				app.Config.Title, emailText)
+			if err != nil {
+				log.Printf("unable to SendEmail: %v", err)
+			}
+		}
 	}
 
 	// get item from database

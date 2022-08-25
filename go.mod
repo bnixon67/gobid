@@ -3,7 +3,7 @@ module github.com/bnixon67/gobid
 go 1.19
 
 require (
-	github.com/bnixon67/go-weblogin v0.0.0-20220813200329-5606858cec15
+	github.com/bnixon67/go-weblogin v0.0.0-20220825021336-9c96bb109662
 	github.com/go-sql-driver/mysql v1.6.0
 )
 

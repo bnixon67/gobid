@@ -13,6 +13,16 @@ type BidDB struct {
 	sqlDB *sql.DB
 }
 
+type BidResult struct {
+	BidPlaced   bool
+	ID          int
+	Message     string
+	PriorBidder string
+	MinAmount   float64
+	NewBidder   string
+	NewAmount   float64
+}
+
 type Item struct {
 	ID            int
 	Title         string
@@ -38,7 +48,7 @@ func (db BidDB) GetItem(id int) (Item, error) {
 		return Item{}, errors.New("invalid db")
 	}
 
-	qry := "SELECT id, title, created, modified, modifiedBy, description, openingBid, midBidIncr, currentBid, artist, imageFileName FROM items WHERE id = ?"
+	qry := "SELECT items.id, items.title, items.created, bids.created, bids.bidder, items.description, items.openingBid, items.minBidIncr, IFNULL(bids.amount,0), items.artist, items.imageFileName FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id WHERE items.id = ?"
 
 	row := db.sqlDB.QueryRow(qry, id)
 	err = row.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.ModifiedBy, &item.Description,
@@ -71,7 +81,7 @@ func (db BidDB) GetItems() ([]Item, error) {
 		return items, errors.New("invalid db")
 	}
 
-	qry := "SELECT id, title, created, modified, modifiedBy, description, openingBid, midBidIncr, currentBid, artist, imageFileName FROM items ORDER BY title"
+	qry := "SELECT items.id, items.title, items.created, bids.created, bids.bidder, items.description, items.openingBid, items.minBidIncr, IFNULL(bids.amount,0), items.artist, items.imageFileName FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id"
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
@@ -115,7 +125,7 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 		return winners, errors.New("invalid db")
 	}
 
-	qry := "SELECT id, title, artist, currentBid, fullName, email, modified FROM items LEFT JOIN users ON items.modifiedBy = users.userName WHERE currentBid <> 0 ORDER BY modified"
+	qry := "SELECT items.id, title, artist, amount, fullName, email, bids.created FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id LEFT JOIN users ON bids.bidder = users.userName WHERE bids.Amount <> 0 ORDER BY items.id"
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
@@ -142,29 +152,24 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 	return winners, err
 }
 
-func (db BidDB) PlaceBid(id int, bidAmount float64, user weblogin.User) (string, error) {
+func (db BidDB) PlaceBid(id int, bidAmount float64, user weblogin.User) (bool, string, string, error) {
 	var msg string
+	var br BidResult
 
-	result, err := db.sqlDB.Exec(
-		"UPDATE items SET currentBid = ?, modified = current_timestamp(), modifiedBy = ? WHERE id = ? AND IF(CurrentBid=0,OpeningBid,CurrentBid+MidBidIncr) <= ? AND OpeningBid <> 0",
-		bidAmount, user.UserName, id, bidAmount)
+	row := db.sqlDB.QueryRow("CALL placeBid(?, ?, ?)", id, bidAmount, user.UserName)
+	err := row.Scan(&br.BidPlaced, &br.ID, &br.Message, &br.PriorBidder, &br.MinAmount,
+		&br.NewBidder, &br.NewAmount)
 	if err != nil {
 		msg = "Unable to submit bid. Please try again."
-		log.Printf("Unable to place bid of %v for item %v by %s", bidAmount, id, user.UserName)
+		log.Printf("Unable to place bid of %v for item %v by %s",
+			bidAmount, id, user.UserName)
 		log.Print(err)
-	}
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		msg = "Unable to submit bid. Please try again."
-		log.Printf("Unable to get RowsAffected()")
-		log.Print(err)
-	}
-	if rowsAffected == 1 {
-		msg = "Bid placed"
-		log.Printf("bid placed on %v by %q for %v", id, user.UserName, bidAmount)
 	} else {
-		msg = "Your bid is too low or you were outbid by someone else. Please try again."
+		msg = br.Message
+		log.Printf("%s for item %v for amount %v by %s",
+			msg, id, bidAmount, user.UserName)
+		log.Printf("%s was outbid", br.PriorBidder)
 	}
 
-	return msg, err
+	return br.BidPlaced, msg, br.PriorBidder, err
 }
