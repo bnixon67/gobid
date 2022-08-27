@@ -5,8 +5,6 @@ import (
 	"errors"
 	"log"
 	"time"
-
-	weblogin "github.com/bnixon67/go-weblogin"
 )
 
 type BidDB struct {
@@ -44,7 +42,6 @@ func (db BidDB) GetItem(id int) (Item, error) {
 	var err error
 
 	if db.sqlDB == nil {
-		log.Print("db is nil")
 		return Item{}, errors.New("invalid db")
 	}
 
@@ -55,10 +52,8 @@ func (db BidDB) GetItem(id int) (Item, error) {
 		&item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Artist, &item.ImageFileName)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("item %d does not exist", id)
 			return Item{}, errors.New("no such item")
 		}
-		log.Print("query failed", err)
 		return Item{}, errors.New("query failed")
 	}
 
@@ -77,7 +72,6 @@ func (db BidDB) GetItems() ([]Item, error) {
 	var err error
 
 	if db.sqlDB == nil {
-		log.Print("db is nil")
 		return items, errors.New("invalid db")
 	}
 
@@ -85,7 +79,6 @@ func (db BidDB) GetItems() ([]Item, error) {
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
-		log.Printf("query for items failed, %v", err)
 		return items, err
 	}
 	defer rows.Close()
@@ -96,7 +89,6 @@ func (db BidDB) GetItems() ([]Item, error) {
 		err = rows.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.ModifiedBy, &item.Description,
 			&item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Artist, &item.ImageFileName)
 		if err != nil {
-			log.Printf("row.Scan failed, %v", err)
 		} else {
 			// TODO: make this a database field
 			if item.CurrentBid == 0 {
@@ -110,7 +102,6 @@ func (db BidDB) GetItems() ([]Item, error) {
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Printf("rows.Err failed, %v", err)
 	}
 
 	return items, err
@@ -152,22 +143,22 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 	return winners, err
 }
 
-func (db BidDB) PlaceBid(id int, bidAmount float64, user weblogin.User) (bool, string, string, error) {
+func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (bool, string, string, error) {
 	var msg string
 	var br BidResult
 
-	row := db.sqlDB.QueryRow("CALL placeBid(?, ?, ?)", id, bidAmount, user.UserName)
+	row := db.sqlDB.QueryRow("CALL placeBid(?, ?, ?)", id, bidAmount, userName)
 	err := row.Scan(&br.BidPlaced, &br.ID, &br.Message, &br.PriorBidder, &br.MinAmount,
 		&br.NewBidder, &br.NewAmount)
 	if err != nil {
 		msg = "Unable to submit bid. Please try again."
 		log.Printf("Unable to place bid of %v for item %v by %s",
-			bidAmount, id, user.UserName)
+			bidAmount, id, userName)
 		log.Print(err)
 	} else {
 		msg = br.Message
 		log.Printf("%s for item %v for amount %v by %s",
-			msg, id, bidAmount, user.UserName)
+			msg, id, bidAmount, userName)
 		log.Printf("%s was outbid", br.PriorBidder)
 	}
 

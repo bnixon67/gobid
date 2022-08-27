@@ -136,35 +136,38 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 		var priorBidder string
 		var err error
 
-		bidPlaced, msg, priorBidder, err = app.BidDB.PlaceBid(id, bidAmount, user)
+		bidPlaced, msg, priorBidder, err = app.BidDB.PlaceBid(id, bidAmount, user.UserName)
 		if err != nil {
+			msg = "Unable to place bid"
 			log.Printf("unable to PlaceBid: %v", err)
-		}
+		} else {
 
-		log.Printf("PlaceBid(%d, %v, %q) = %v, %q, %q, %v",
-			id, bidAmount, user, bidPlaced, msg, priorBidder, err)
-		if bidPlaced && priorBidder != "" && priorBidder != user.UserName {
-			user, err := weblogin.GetUserForName(app.DB, priorBidder)
-			if err != nil {
-				log.Printf("unable to GetUserForName(%q): %v",
-					priorBidder, err)
-			}
+			log.Printf("%v for item %v by %v for $%v",
+				msg, id, user.UserName, bidAmount)
+			if bidPlaced && priorBidder != "" && priorBidder != user.UserName {
+				user, err := weblogin.GetUserForName(app.DB, priorBidder)
+				if err != nil {
+					log.Printf("unable to GetUserForName(%q): %v",
+						priorBidder, err)
+				}
 
-			// get item from database
-			item, err := app.BidDB.GetItem(id)
-			if err != nil {
-				log.Printf("unable to GetItem(%d), %v", id, err)
-			}
+				// get item from database
+				// TODO: eliminate extra GetItem call
+				item, err := app.BidDB.GetItem(id)
+				if err != nil {
+					log.Printf("unable to GetItem(%d), %v", id, err)
+				}
 
-			emailText := fmt.Sprintf(
-				"You have been outbid on %q. Visit %s/item/%d to rebid.",
-				item.Title, app.Config.BaseURL, id)
+				emailText := fmt.Sprintf(
+					"You have been outbid on %q. Visit %s/item/%d to rebid.",
+					item.Title, app.Config.BaseURL, id)
 
-			err = weblogin.SendEmail(app.Config.SMTPUser, app.Config.SMTPPassword,
-				app.Config.SMTPHost, app.Config.SMTPPort, user.Email,
-				app.Config.Title, emailText)
-			if err != nil {
-				log.Printf("unable to SendEmail: %v", err)
+				err = weblogin.SendEmail(app.Config.SMTPUser, app.Config.SMTPPassword,
+					app.Config.SMTPHost, app.Config.SMTPPort, user.Email,
+					app.Config.Title, emailText)
+				if err != nil {
+					log.Printf("unable to SendEmail: %v", err)
+				}
 			}
 		}
 	}

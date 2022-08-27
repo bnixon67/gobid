@@ -6,3 +6,5 @@ gobid
 nohup.out
 gobid.log
 gobid.service
+*.dump
+test_config.json
