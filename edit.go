@@ -16,6 +16,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -63,6 +64,13 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			log.Println("UserName =", currentUser.UserName)
 		}
+	}
+
+	// only allowed by admin users
+	if !currentUser.Admin {
+		log.Printf("non-admin user: %+v", currentUser)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
 	// get idString from URL path
@@ -141,8 +149,9 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	}
 	openingBid, err := strconv.ParseFloat(openingBidStr, 64)
 	if err != nil {
-		msg = "Invalid openingBid amount."
-		log.Printf("unable to convert openingBid to float64")
+		log.Print("unable to convert openingBid to float64:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	// get minBidIncr
@@ -154,8 +163,9 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	}
 	minBidIncr, err := strconv.ParseFloat(minBidIncrStr, 64)
 	if err != nil {
-		msg = "Invalid minBidIncr amount."
-		log.Printf("unable to convert minBidIncr to float64")
+		log.Print("unable to convert minBidIncr to float64:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	// get artist
@@ -174,16 +184,28 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 		return
 	}
 
-        log.Print("id=", id)
-        log.Print("title=", title)
-        log.Print("description=", description)
-        log.Print("openingBid=", openingBid)
-        log.Print("minBidIncr=", minBidIncr)
-        log.Print("artist=", artist)
-        log.Print("imageFileName=", imageFileName)
+	// sanitize filename
+	imageFileName = strings.ReplaceAll(imageFileName, "\\", "/")
+	_, imageFileName = filepath.Split(imageFileName)
+
+	// update item if we have a valid user
+	item := Item{
+		ID:            id,
+		Title:         title,
+		Description:   description,
+		OpeningBid:    openingBid,
+		MinBidIncr:    minBidIncr,
+		Artist:        artist,
+		ImageFileName: imageFileName,
+	}
+	rows, err := app.BidDB.UpdateItem(item)
+	if rows > 1 || err != nil {
+		msg = "Could not update item"
+		log.Printf("unable to UpdateItem(%+v), %d, %q", item, rows, err)
+	}
 
 	// get item from database
-	item, err := app.BidDB.GetItem(id)
+	item, err = app.BidDB.GetItem(id)
 	if err != nil {
 		log.Printf("unable to GetItem(%d), %v", id, err)
 		w.WriteHeader(http.StatusNotFound)

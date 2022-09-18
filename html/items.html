@@ -1,44 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
+    <title>{{.Title}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/w3.css" />
   </head>
   <body>
     <div class="w3-container w3-indigo w3-large w3-padding">
-      <b>{{ .Title }} Items</b>
+      <b>{{.Title}} Items</b>
     </div>
+
     <div class="w3-bar w3-light-grey">
-      <div class="w3-bar-item">
-	<a href="/gallery">Gallery</a>
+      <div class="w3-bar-item"><a href="/gallery">Gallery</a></div>
+      <div class="w3-bar-item w3-right">
+      {{if .User.UserName}}
+        <a href="/logout">Logout {{.User.UserName}}</a>
+      {{else}}
+        <a href="/login">Login</a>
+      {{end}}
       </div>
     </div>
 
-    <p>Admin: {{ .User.Admin }}</p>
-
     <table class="w3-container w3-table w3-striped w3-responsive">
       <tr>
-	<th class="alignright">ID</th>
-	<th>Title</th>
-	<th>Description</th>
-	<th>Opening Bid</th>
-	<th>Increment</th>
-	<th>Artist</th>
-	<th>Image File</th>
+        {{if .User.Admin}}<th></th>{{end}}
+        <th class="alignright">ID</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Opening Bid</th>
+        <th>Increment</th>
+        <th>Artist</th>
+        <th>Image File</th>
       </tr>
-      {{ range .Items }}
+      {{range .Items}}
       <tr>
-	<td>{{ .ID }}</td>
-	<td>{{ .Title }}</td>
-	<td>{{ .Description }}</td>
-	<td class="w3-right-align">{{ printf "$%10.2f" .OpeningBid }}</td>
-	<td class="w3-right-align">{{ printf "$%10.2f" .MinBidIncr }}</td>
-	<td>{{ .Artist }}</td>
-	<td>{{ .ImageFileName }}</td>
+        {{if $.User.Admin}}<td><a href="edit/{{.ID}}">Edit</a></td>{{end}}
+        <td class="w3-right-align">{{.ID}}</td>
+        <td>{{.Title}}</td>
+        <td>{{.Description}}</td>
+        <td class="w3-right-align">{{printf "$%10.2f" .OpeningBid}}</td>
+        <td class="w3-right-align">{{printf "$%10.2f" .MinBidIncr}}</td>
+        <td>{{.Artist}}</td>
+        <td>{{.ImageFileName}}</td>
       </tr>
-      {{ end }}
+      {{end}}
     </table>
-
   </body>
 </html>

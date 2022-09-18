@@ -4,7 +4,7 @@ config.json
 *.swp
 gobid
 nohup.out
-gobid.log
+*.log
 gobid.service
 *.dump
 test_config.json

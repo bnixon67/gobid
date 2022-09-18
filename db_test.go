@@ -27,7 +27,7 @@ func TestPlaceBidValid(t *testing.T) {
 		t.Fatalf("GetItem failed: %v", err)
 	}
 
-	bidPlaced, msg, _, err := app.BidDB.PlaceBid(item.ID,item.MinBid, "test")
+	bidPlaced, msg, _, err := app.BidDB.PlaceBid(item.ID, item.MinBid, "test")
 	if err != nil {
 		t.Errorf("PlaceBid failed: %v", err)
 	}
@@ -53,7 +53,7 @@ func TestPlaceBidTooLow(t *testing.T) {
 		t.Fatalf("GetItem failed: %v", err)
 	}
 
-	bidPlaced, msg, _, err := app.BidDB.PlaceBid(item.ID,item.MinBid-1, "test")
+	bidPlaced, msg, _, err := app.BidDB.PlaceBid(item.ID, item.MinBid-1, "test")
 	if err != nil {
 		t.Errorf("PlaceBid failed: %v", err)
 	}
@@ -86,5 +86,27 @@ func TestPlaceBidInvalidItem(t *testing.T) {
 	expectedMsg := "No such item"
 	if msg != expectedMsg {
 		t.Errorf("Expected msg = %v, got %v", expectedMsg, msg)
+	}
+}
+
+func TestUpdateItem(t *testing.T) {
+	app := AppForTest(t)
+	if app == nil {
+		t.Fatalf("cannot create AppForTest")
+	}
+
+	item := Item{
+		ID:            1,
+		Title:         "Aquarium",
+		Description:   "Picture of an Aquarium",
+		OpeningBid:    10,
+		MinBidIncr:    5,
+		Artist:        "Microsoft",
+		ImageFileName: "Aquarium.jpg",
+	}
+
+	rows, err := app.BidDB.UpdateItem(item)
+	if rows > 1 || err != nil {
+		t.Errorf("UpdateItem failed, rows = %d, err = %v", rows, err)
 	}
 }

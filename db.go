@@ -27,7 +27,7 @@ type Item struct {
 	Created       time.Time
 	Modified      *time.Time
 	ModifiedBy    *string
-	Description   *string
+	Description   string
 	OpeningBid    float64
 	MinBidIncr    float64
 	CurrentBid    float64
@@ -163,4 +163,21 @@ func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (bool, stri
 	}
 
 	return br.BidPlaced, msg, br.PriorBidder, err
+}
+
+func (db BidDB) UpdateItem(item Item) (int64, error) {
+	update := "UPDATE items SET title = ?, description = ?, openingBid = ?, minBidIncr = ?, artist = ?, imageFileName = ? WHERE id = ?"
+	result, err := db.sqlDB.Exec(update, item.Title, item.Description, item.OpeningBid, item.MinBidIncr, item.Artist, item.ImageFileName, item.ID)
+	if err != nil {
+		log.Printf("UpdateItem failed for %d: %v", item.ID, err)
+		return 0, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("result.RowsAffected failed: %v", err)
+		return 0, err
+	}
+
+	return rows, err
 }
