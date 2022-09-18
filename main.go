@@ -70,7 +70,9 @@ func main() {
 	http.HandleFunc("/forgot", app.ForgotHandler)
 	http.HandleFunc("/reset", app.ResetHandler)
 	http.HandleFunc("/gallery", bidApp.GalleryHandler)
+	http.HandleFunc("/items", bidApp.ItemsHandler)
 	http.HandleFunc("/item/", bidApp.ItemHandler)
+	http.HandleFunc("/edit/", bidApp.ItemEditHandler)
 	http.HandleFunc("/winners", bidApp.WinnerHandler)
 	// TODO: define base html directory in config
 	http.HandleFunc("/w3.css", weblogin.ServeFileHandler("html/w3.css"))

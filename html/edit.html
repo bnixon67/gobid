@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{ .Title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/w3.css">
+  </head>
+  <body>
+    <div class="w3-container w3-indigo w3-large w3-padding">
+      <b>{{ .Title }} Item</b>
+    </div>
+
+    <div class="w3-bar w3-light-grey w3-mobile">
+      <div class="w3-bar-item w3-mobile">
+	<a href="/gallery">Return to Gallery</a>
+      </div>
+      <div class="w3-bar-item w3-mobile">
+	<a href="/item/{{ .Item.ID }}">Refresh Item</a>
+      </div>
+      {{ if .User.UserName }}
+      <div class="w3-bar-item w3-right w3-mobile">
+	<a href="/logout">Logout {{ .User.UserName }}</a>
+      </div>
+      {{ else }}
+      <div class="w3-bar-item w3-container w3-right w3-mobile">
+	<a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+      </div>
+      {{ end }}
+    </div>
+
+    <form method="post" class="w3-container">
+      {{ with .Item }}
+      <p>
+        <label class="w3-text-grey"><b>ID</b></label>
+        <input class="w3-input" type="number" id="id" name="id" value="{{ .ID }}" disabled>
+      </p>
+
+      <p>
+        <label><b>Title</b></label>
+        <input class="w3-input" type="text" id="title" name="title" value="{{ .Title }}">
+      </p>
+	
+      <p>
+        <label><b>Description</b></label>
+        <input class="w3-input" type="text" id="description" name="description" value="{{ .Description }}" maxlength="255">
+      </p>
+
+      <p>
+        <label><b>Opening Bid</b></label>
+        <input class="w3-input" type="number" id="openingBid" name="openingBid" value="{{ .OpeningBid }}">
+      </p>
+
+      <p>
+        <label><b>Minimum Bid Increment</b></label> 
+        <input class="w3-input" type="number" id="minBidIncr" name="minBidIncr" value="{{ .MinBidIncr }}"> 
+      </p>
+
+      <p>
+        <label><b>Artist</b></label> 
+        <input class="w3-input" type="text" id="artist" name="artist" value="{{ .Artist }}" maxlength="30"> 
+      </p>
+
+      <p>
+        <label><b>Image File</b></label> 
+        <input class="w3-input" type="text" id="imageFileName" name="imageFileName" value="{{ .ImageFileName }}" maxlength="255" size="80"> 
+      </p>
+      {{ end }}
+      <button type="submit" class="w3-button w3-indigo">Update</button>
+    </form>
+
+  </body>
+</html>

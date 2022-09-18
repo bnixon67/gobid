@@ -1,10 +1,6 @@
-github.com/bnixon67/go-weblogin v0.0.0-20220825013103-f5ac3c21fe8c h1:6CrS8cDPrvlkNbSsJXN/B4nyR6+axC58nFw6HxiH3w0=
-github.com/bnixon67/go-weblogin v0.0.0-20220825013103-f5ac3c21fe8c/go.mod h1:d63O1jHljCcNrVJqhscJRs08dLNh3zqv0k7Ee/LRw9Q=
-github.com/bnixon67/go-weblogin v0.0.0-20220825014902-43df850772aa h1:kfTALMGKnOhZF09bnEVCHKVDlSE/vhkNEGbIhJr+RHM=
-github.com/bnixon67/go-weblogin v0.0.0-20220825014902-43df850772aa/go.mod h1:d63O1jHljCcNrVJqhscJRs08dLNh3zqv0k7Ee/LRw9Q=
-github.com/bnixon67/go-weblogin v0.0.0-20220825021336-9c96bb109662 h1:9RCiC1+8kDKzTmPpVoDtJjz7CT4hlnBhNdi06qGy9U8=
-github.com/bnixon67/go-weblogin v0.0.0-20220825021336-9c96bb109662/go.mod h1:d63O1jHljCcNrVJqhscJRs08dLNh3zqv0k7Ee/LRw9Q=
+github.com/bnixon67/go-weblogin v0.0.0-20220918150212-ddc39f230f51 h1:7iERsYabRtVWstjzwfbD2wWwGwWIFVBDNHP0QjcQQ4g=
+github.com/bnixon67/go-weblogin v0.0.0-20220918150212-ddc39f230f51/go.mod h1:d63O1jHljCcNrVJqhscJRs08dLNh3zqv0k7Ee/LRw9Q=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
-golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa h1:zuSxTR4o9y82ebqCUJYNGJbGPo6sKVl54f/TVDObg1c=
-golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
+golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 h1:Y/gsMcFOcR+6S6f3YeMKl5g+dZMEWqcz5Czj/GWYbkM=
+golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
