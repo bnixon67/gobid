@@ -17,6 +17,9 @@
       <div class="w3-bar-item w3-mobile">
         <a href="/edit/{{ .Item.ID }}">Refresh Item</a>
       </div>
+      <div class="w3-bar-item w3-mobile">
+        <a href="/gallery">Gallery</a>
+      </div>
       <div class="w3-bar-item w3-right w3-mobile">
       {{ if .User.UserName }}
         <a href="/logout">Logout {{ .User.UserName }}</a>
@@ -44,13 +47,13 @@
       </p>
 
       <p>
-        <label><b>Opening Bid</b></label>
+        <label><b>Opening Bid (enter zero for display only item)</b></label>
         <input class="w3-input" type="number" id="openingBid" name="openingBid" value="{{ .OpeningBid }}" required min="0" />
       </p>
 
       <p>
         <label><b>Minimum Bid Increment</b></label>
-        <input class="w3-input" type="number" id="minBidIncr" name="minBidIncr" value="{{ .MinBidIncr }}" required min="0" />
+        <input class="w3-input" type="number" id="minBidIncr" name="minBidIncr" value="{{ .MinBidIncr }}" required min="1" />
       </p>
 
       <p>

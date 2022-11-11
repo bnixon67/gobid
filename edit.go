@@ -202,6 +202,8 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	if rows > 1 || err != nil {
 		msg = "Could not update item"
 		log.Printf("unable to UpdateItem(%+v), %d, %q", item, rows, err)
+	} else {
+		msg = "Updated item"
 	}
 
 	// get item from database
