@@ -12,16 +12,22 @@
     {{ if .User.UserName }}
     <div class="w3-bar w3-light-grey">
       <div class="w3-bar-item">
-	Hello {{ .User.FullName }} ({{ .User.UserName }}) 
+	Hello {{ .User.FullName }}
+      </div>
+      <div class="w3-bar-item">
+	<a href="/items">List of Items</a>
       </div>
       <div class="w3-bar-item w3-right">
-	<a href="/logout">Logout</a>
+	<a href="/logout">Logout {{.User.UserName}}</a>
       </div>
     </div>
     {{ else }}
     <div class="w3-bar w3-pale-red">
       <div class="w3-bar-item">
         You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+      </div>
+      <div class="w3-bar-item">
+	<a href="/items">List of Items</a>
       </div>
     </div>
     {{ end }}

@@ -27,10 +27,12 @@
         <th class="alignright">ID</th>
         <th>Title</th>
         <th>Description</th>
-        <th>Opening Bid</th>
+        <th>Opening</th>
         <th>Increment</th>
+        <th>Current</th>
+        <th>Bidder</th>
         <th>Artist</th>
-        <th>Image File</th>
+	{{if .User.Admin}}<th>Image File</th>{{end}}
       </tr>
       {{range .Items}}
       <tr>
@@ -38,10 +40,12 @@
         <td class="w3-right-align">{{.ID}}</td>
         <td>{{.Title}}</td>
         <td>{{.Description}}</td>
-        <td class="w3-right-align">{{printf "$%10.2f" .OpeningBid}}</td>
-        <td class="w3-right-align">{{printf "$%10.2f" .MinBidIncr}}</td>
+        <td class="w3-right-align" style="white-space:nowrap">{{printf "$%10.2f" .OpeningBid}}</td>
+        <td class="w3-right-align" style="white-space:nowrap">{{printf "$%10.2f" .MinBidIncr}}</td>
+        <td class="w3-right-align" style="white-space:nowrap">{{printf "$%10.2f" .CurrentBid}}</td>
+        <td>{{.Bidder}}</td>
         <td>{{.Artist}}</td>
-        <td>{{.ImageFileName}}</td>
+	{{if $.User.Admin}}<td>{{.ImageFileName}}</td>{{end}}
       </tr>
       {{end}}
     </table>

@@ -31,6 +31,7 @@ type Item struct {
 	OpeningBid    float64
 	MinBidIncr    float64
 	CurrentBid    float64
+	Bidder        string
 	Artist        string
 	ImageFileName string
 
@@ -75,7 +76,7 @@ func (db BidDB) GetItems() ([]Item, error) {
 		return items, errors.New("invalid db")
 	}
 
-	qry := "SELECT items.id, items.title, items.created, bids.created, bids.bidder, items.description, items.openingBid, items.minBidIncr, IFNULL(bids.amount,0), items.artist, items.imageFileName FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id"
+	qry := "SELECT items.id, items.title, items.created, bids.created, bids.bidder, items.description, items.openingBid, items.minBidIncr, IFNULL(bids.amount,0), IFNULL(bids.bidder,'<none>'), items.artist, items.imageFileName FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id"
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
@@ -86,9 +87,9 @@ func (db BidDB) GetItems() ([]Item, error) {
 	for rows.Next() {
 		var item Item
 
-		err = rows.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.ModifiedBy, &item.Description,
-			&item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Artist, &item.ImageFileName)
+		err = rows.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.ModifiedBy, &item.Description, &item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Bidder, &item.Artist, &item.ImageFileName)
 		if err != nil {
+			return items, err
 		} else {
 			// TODO: make this a database field
 			if item.CurrentBid == 0 {
