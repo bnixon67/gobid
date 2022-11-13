@@ -37,6 +37,11 @@
       </p>
 
       <p>
+        <label><b>Artist or Donor</b></label>
+        <input class="w3-input" type="text" id="artist" name="artist" value="{{ .Artist }}" maxlength="30" />
+      </p>
+
+      <p>
         <label><b>Title</b></label>
         <input class="w3-input" type="text" id="title" name="title" value="{{ .Title }}" maxlength="40" required />
       </p>
@@ -54,11 +59,6 @@
       <p>
         <label><b>Minimum Bid Increment</b></label>
         <input class="w3-input" type="number" id="minBidIncr" name="minBidIncr" value="{{ .MinBidIncr }}" required min="1" />
-      </p>
-
-      <p>
-        <label><b>Artist</b></label>
-        <input class="w3-input" type="text" id="artist" name="artist" value="{{ .Artist }}" maxlength="30" required />
       </p>
 
       <p>

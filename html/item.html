@@ -37,12 +37,8 @@
       <div class="w3-container w3-show-inline-block">
         {{ with .Item }}
         <div class="w3-container w3-xlarge">
-          <b>{{ .Title }} by {{ .Artist }}</b>
+          <b>{{if .Artist}}{{.Artist}} - {{end}}{{.Title}}</b>
         </div>
-        <img src="/images/{{.ImageFileName}}"
-             alt="{{.Title}}"
-             class="w3-image w3-mobile"
-             style="width=100%;height=auto;">
         {{ if .Description }}
         <div class="w3-container w3-auto" style="max-width:480px">
           {{ .Description }}
@@ -93,9 +89,15 @@
         </div>
         {{ end }}
         {{ if not .User.UserName }}
+        <div class="w3-container">
         You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+        </div>
         {{ end }}
         <br>
+        <img src="/images/{{.Item.ImageFileName}}"
+             alt="{{.Title}}"
+             class="w3-image w3-mobile"
+             style="width=100%;height=auto;">
       </div>
     </div>
 

@@ -178,11 +178,13 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 
 	// get artist
 	artist := r.PostFormValue("artist")
-	if artist == "" {
-		log.Print("no artist")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	/*
+		if artist == "" {
+			log.Print("no artist")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	*/
 
 	// get imageFileName
 	var imageFileName string

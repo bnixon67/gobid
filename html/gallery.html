@@ -40,8 +40,8 @@
 	    <img class="w3-image" src="images/thumbnails/{{ .ImageFileName }}" alt="{{ .Title }}" style="max-height:200px">
 	  </div>
 	  <div class="w3-container">
+	    {{if .Artist}}{{ .Artist }}<br>{{end}}
 	    {{ .Title }}<br>
-	    {{ .Artist }}<br>
 	    {{ if eq .OpeningBid 0.0 -}}
 	    Display Only
 	    {{- else -}}
