@@ -40,7 +40,7 @@
           <b>{{if .Artist}}{{.Artist}} - {{end}}{{.Title}}</b>
         </div>
         {{ if .Description }}
-        <div class="w3-container w3-auto" style="max-width:480px">
+	<div class="w3-container w3-auto">
           {{ .Description }}
         </div>
         {{ end }}
@@ -48,20 +48,21 @@
         {{ if eq .OpeningBid 0.0 }}
         <p>This item is display only</p>
         {{ else }}
-        <table class="w3-table w3-centered w3-container">
-          <tr>
-            <th class="w3-padding-small">Opening Bid</th>
-            <th class="w3-padding-small">Current Bid</th>
-            <th class="w3-padding-small">Min Increase</th>
-          </tr>
-          <tr>
-            <td class="w3-padding-small">${{ printf "%10.2f" .OpeningBid }}</td>
-            <td class="w3-padding-small">{{ if .CurrentBid }}${{ printf "%10.2f" .CurrentBid }}{{ else }}none{{ end }}</td>
-            <td class="w3-padding-small">${{ printf "%10.2f" .MinBidIncr }}</td>
-          </tr>
-        </table>
+	<div class="w3-container w3-show-inline-block">
+	  <div class="w3-container w3-cell w3-mobile">
+	    <b>Opening Bid:</b> ${{ printf "%10.2f" .OpeningBid }}
+	  </div>
+	  <div class="w3-container w3-cell w3-mobile">
+	    <b>Current Bid:</b> {{if .CurrentBid}}${{ printf "%10.2f" .CurrentBid }}{{else}}none{{end}}
+	  </div>
+	  <div class="w3-container w3-cell w3-mobile">
+	    <b>Minimum Increase:</b> ${{ printf "%10.2f" .MinBidIncr }}
+	  </div>
+	</div>
         {{ if .CurrentBid }}
-        Last bid at {{ .Modified.Format "1/02/06 3:04 PM" }} by {{ .ModifiedBy }}<br>
+	<div class="w3-container">
+	  Last bid at {{ .Modified.Format "1/02/06 3:04 PM" }} by {{ .ModifiedBy }}
+	</div>
         {{ end }}
         {{ end }}
         {{ end }}

@@ -15,6 +15,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -215,7 +216,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 
 		log.Printf("upload file %q size %v\n", newImageFilename, handler.Size)
 
-		img, err := ScaleDown(imageFile, 480, 0)
+		img, err := ScaleDown(imageFile, 1920, 0)
 		if err != nil {
 			log.Printf("could not ScaleDown: %v\n", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -231,7 +232,25 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 		defer output.Close()
 
 		imaging.Encode(output, img, imaging.JPEG, imaging.JPEGQuality(95))
-		os.Link("images/"+newImageFilename, "images/thumbnails/"+newImageFilename)
+		// thumbnail
+		imageFile.Seek(0, io.SeekStart)
+
+		img, err = ScaleDown(imageFile, 480, 0)
+		if err != nil {
+			log.Printf("could not ScaleDown: %v\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		output, err = os.Create("images/thumbnails/" + newImageFilename)
+		if err != nil {
+			log.Printf("could not Create %q: %v\n", "images/"+newImageFilename, err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		defer output.Close()
+
+		imaging.Encode(output, img, imaging.JPEG, imaging.JPEGQuality(95))
 
 		imageFileName = newImageFilename
 	}
