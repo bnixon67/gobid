@@ -182,3 +182,26 @@ func (db BidDB) UpdateItem(item Item) (int64, error) {
 
 	return rows, err
 }
+
+func (db BidDB) CreateItem(item Item) (int64, int64, error) {
+	insert := "INSERT INTO items(title, description, openingBid, minBidIncr, artist, imageFileName) VALUES (?, ?, ?, ?, ?, ?)"
+	result, err := db.sqlDB.Exec(insert, item.Title, item.Description, item.OpeningBid, item.MinBidIncr, item.Artist, item.ImageFileName)
+	if err != nil {
+		log.Printf("CreateItem failed for %d: %v", item.ID, err)
+		return 0, 0, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("result.RowsAffected failed: %v", err)
+		return 0, 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		log.Printf("result.RowsAffected failed: %v", err)
+		return 0, 0, err
+	}
+
+	return id, rows, err
+}

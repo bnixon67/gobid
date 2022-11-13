@@ -14,13 +14,16 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	weblogin "github.com/bnixon67/go-weblogin"
+	"github.com/disintegration/imaging"
 )
 
 // ItemEditPageData contains data passed to the HTML template.
@@ -45,7 +48,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if !errors.Is(err, http.ErrNoCookie) {
 			log.Println("error getting cookie", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			HttpError(w, http.StatusInternalServerError)
 			return
 		}
 	} else {
@@ -69,7 +72,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	// only allowed by admin users
 	if !currentUser.Admin {
 		log.Printf("non-admin user: %+v", currentUser)
-		w.WriteHeader(http.StatusUnauthorized)
+		HttpError(w, http.StatusUnauthorized)
 		return
 	}
 
@@ -98,12 +101,17 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user weblogin.User) {
-	// get item from database
-	item, err := app.BidDB.GetItem(id)
-	if err != nil {
-		log.Printf("unable to GetItem(%d), %v", id, err)
-		w.WriteHeader(http.StatusNotFound)
-		return
+	var item Item
+	var err error
+
+	if id != 0 {
+		// get item from database
+		item, err = app.BidDB.GetItem(id)
+		if err != nil {
+			log.Printf("unable to GetItem(%d), %v", id, err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 	}
 
 	// display page
@@ -177,18 +185,59 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	}
 
 	// get imageFileName
-	imageFileName := r.PostFormValue("imageFileName")
-	if imageFileName == "" {
-		log.Print("no imageFileName")
+	var imageFileName string
+	if id != 0 {
+		imageFileName = r.PostFormValue("imageFileName")
+		if imageFileName == "" {
+			log.Print("no imageFileName")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	// get imageFile
+	imageFile, handler, err := r.FormFile("imageFile")
+	if err != nil && err != http.ErrMissingFile {
+		log.Printf("no imageFile: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	}
+
+	// new imageFile to upload
+	if err != http.ErrMissingFile {
+		defer imageFile.Close()
+
+		// sanitize newImageFilename
+		newImageFilename := strings.ReplaceAll(handler.Filename, "\\", "/")
+		_, newImageFilename = filepath.Split(newImageFilename)
+
+		log.Printf("upload file %q size %v\n", newImageFilename, handler.Size)
+
+		img, err := ScaleDown(imageFile, 480, 0)
+		if err != nil {
+			log.Printf("could not ScaleDown: %v\n", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		output, err := os.Create("images/" + newImageFilename)
+		if err != nil {
+			log.Printf("could not Create %q: %v\n", "images/"+newImageFilename, err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		defer output.Close()
+
+		imaging.Encode(output, img, imaging.JPEG, imaging.JPEGQuality(95))
+		os.Link("images/"+newImageFilename, "images/thumbnails/"+newImageFilename)
+
+		imageFileName = newImageFilename
 	}
 
 	// sanitize filename
 	imageFileName = strings.ReplaceAll(imageFileName, "\\", "/")
 	_, imageFileName = filepath.Split(imageFileName)
 
-	// update item if we have a valid user
 	item := Item{
 		ID:            id,
 		Title:         title,
@@ -198,12 +247,27 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 		Artist:        artist,
 		ImageFileName: imageFileName,
 	}
-	rows, err := app.BidDB.UpdateItem(item)
-	if rows > 1 || err != nil {
-		msg = "Could not update item"
-		log.Printf("unable to UpdateItem(%+v), %d, %q", item, rows, err)
+
+	// create new item
+	if id == 0 {
+		newId, rows, err := app.BidDB.CreateItem(item)
+		if rows > 1 || err != nil {
+			msg = "Could not create item"
+			log.Printf("unable to CreateItem(%+v), %d, %q", item, rows, err)
+		} else {
+			log.Printf("created item %d", newId)
+			newUrl := fmt.Sprintf("/edit/%d", newId)
+			http.Redirect(w, r, newUrl, http.StatusSeeOther)
+			return
+		}
 	} else {
-		msg = "Updated item"
+		rows, err := app.BidDB.UpdateItem(item)
+		if rows > 1 || err != nil {
+			msg = "Could not update item"
+			log.Printf("unable to UpdateItem(%+v), %d, %q", item, rows, err)
+		} else {
+			msg = "Updated item"
+		}
 	}
 
 	// get item from database

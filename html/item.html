@@ -12,85 +12,90 @@
 
     <div class="w3-bar w3-light-grey w3-mobile">
       <div class="w3-bar-item w3-mobile">
-	<a href="/gallery">Return to Gallery</a>
+        <a href="/gallery">Return to Gallery</a>
       </div>
       <div class="w3-bar-item w3-mobile">
-	<a href="/item/{{ .Item.ID }}">Refresh Item</a>
+        <a href="/item/{{ .Item.ID }}">Refresh Item</a>
       </div>
+      {{ if .User.Admin}}
+      <div class="w3-bar-item w3-mobile">
+        <a href="/edit/{{ .Item.ID }}">Edit Item</a>
+      </div>
+      {{end }}
       {{ if .User.UserName }}
       <div class="w3-bar-item w3-right w3-mobile">
-	<a href="/logout">Logout {{ .User.UserName }}</a>
+        <a href="/logout">Logout {{ .User.UserName }}</a>
       </div>
       {{ else }}
       <div class="w3-bar-item w3-container w3-right w3-mobile">
-	<a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+        <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
       </div>
       {{ end }}
     </div>
 
     <div class="w3-container w3-center">
       <div class="w3-container w3-show-inline-block">
-	{{ with .Item }}
-	<div class="w3-container w3-xlarge">
-	  <b>{{ .Title }} by {{ .Artist }}</b>
-	</div>
-	<img src="/images/{{.ImageFileName}}"
-	     alt="{{.Title}}"
-	     class="w3-image w3-mobile"
-	     style="width=100%;height=auto;">
-	{{ if .Description }}
-	<div class="w3-container w3-auto" style="max-width:480px">
-	  {{ .Description }}
-	</div>
-	{{ end }}
-	<br>
-	{{ if eq .OpeningBid 0.0 }}
-	<p>This item is display only</p>
-	{{ else }}
-	<table class="w3-table w3-centered w3-container">
-	  <tr>
-	    <th class="w3-padding-small">Opening Bid</th>
-	    <th class="w3-padding-small">Current Bid</th>
-	    <th class="w3-padding-small">Min Increase</th>
-	  </tr>
-	  <tr>
-	    <td class="w3-padding-small">${{ printf "%10.2f" .OpeningBid }}</td>
-	    <td class="w3-padding-small">{{ if .CurrentBid }}${{ printf "%10.2f" .CurrentBid }}{{ else }}none{{ end }}</td>
-	    <td class="w3-padding-small">${{ printf "%10.2f" .MinBidIncr }}</td>
-	  </tr>
-	</table>
-	{{ if .CurrentBid }}
-	Last bid at {{ .Modified.Format "1/02/06 3:04 PM" }} by {{ .ModifiedBy }}<br>
-	{{ end }}
-	{{ end }}
-	{{ end }}
+        {{ with .Item }}
+        <div class="w3-container w3-xlarge">
+          <b>{{ .Title }} by {{ .Artist }}</b>
+        </div>
+        <img src="/images/{{.ImageFileName}}"
+             alt="{{.Title}}"
+             class="w3-image w3-mobile"
+             style="width=100%;height=auto;">
+        {{ if .Description }}
+        <div class="w3-container w3-auto" style="max-width:480px">
+          {{ .Description }}
+        </div>
+        {{ end }}
+        <br>
+        {{ if eq .OpeningBid 0.0 }}
+        <p>This item is display only</p>
+        {{ else }}
+        <table class="w3-table w3-centered w3-container">
+          <tr>
+            <th class="w3-padding-small">Opening Bid</th>
+            <th class="w3-padding-small">Current Bid</th>
+            <th class="w3-padding-small">Min Increase</th>
+          </tr>
+          <tr>
+            <td class="w3-padding-small">${{ printf "%10.2f" .OpeningBid }}</td>
+            <td class="w3-padding-small">{{ if .CurrentBid }}${{ printf "%10.2f" .CurrentBid }}{{ else }}none{{ end }}</td>
+            <td class="w3-padding-small">${{ printf "%10.2f" .MinBidIncr }}</td>
+          </tr>
+        </table>
+        {{ if .CurrentBid }}
+        Last bid at {{ .Modified.Format "1/02/06 3:04 PM" }} by {{ .ModifiedBy }}<br>
+        {{ end }}
+        {{ end }}
+        {{ end }}
 
-	{{ if and (.User.UserName) (ne .Item.OpeningBid 0.0) }}
-	<div class="w3-container w3-mobile">
-	  <form method="post" class="w3-container w3-show-inline-block">
-	    <div class="w3-container w3-cell w3-cell-middle w3-mobile">
-	      <label for="bidAmount"><b>Bid Amount</b></label>
-	    </div>
-	    <div class="w3-container w3-cell w3-mobile">
-	      <input class="w3-input" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" required value="{{ .Item.MinBid }}">
-	    </div>
-	    <div class="w3-container w3-cell w3-mobile">
-	      <button type="submit" class="w3-button w3-indigo">Place Bid</button>
-	    </div>
-	  </form>
-	</div>
-	<div class="w3-container">
-	  {{ if .Message }}
-	  {{ .Message }}
-	  {{ else }}
-	  Your bid must be at least {{ printf "$%10.2f" .Item.MinBid }}.
-	  {{ end }}
-	</div>
-	{{ end }}
-	{{ if not .User.UserName }}
-	You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
-	{{ end }}
-	<br>
+        {{ if and (.User.UserName) (ne .Item.OpeningBid 0.0) }}
+        <div class="w3-container w3-mobile">
+          <form method="post" class="w3-container w3-show-inline-block">
+            <div class="w3-container w3-cell w3-cell-middle w3-mobile">
+              <label for="bidAmount"><b>Bid Amount</b></label>
+            </div>
+            <div class="w3-container w3-cell w3-mobile">
+              <input class="w3-input" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" required value="{{ .Item.MinBid }}">
+            </div>
+            <div class="w3-container w3-cell w3-mobile">
+              <button type="submit" class="w3-button w3-indigo">Place Bid</button>
+            </div>
+          </form>
+        </div>
+        <div class="w3-container">
+          {{ if .Message }}
+          {{ .Message }}
+          {{ else }}
+          Your bid must be at least {{ printf "$%10.2f" .Item.MinBid }}.
+          {{ end }}
+        </div>
+        {{ end }}
+        {{ if not .User.UserName }}
+        You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+        {{ end }}
+        <br>
       </div>
     </div>
 

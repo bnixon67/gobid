@@ -29,7 +29,7 @@
       </div>
     </div>
 
-    <form method="post" class="w3-container">
+    <form method="post" enctype="multipart/form-data" class="w3-container">
       {{ with .Item }}
       <p>
         <label class="w3-text-grey"><b>ID</b></label>
@@ -63,11 +63,19 @@
 
       <p>
         <label><b>Image File</b></label>
-        <input class="w3-input" type="text" id="imageFileName" name="imageFileName" value="{{ .ImageFileName }}" maxlength="255" required />
+        {{if ne .ID 0}}
+          <input class="w3-input" type="text" id="imageFileName" name="imageFileName" value="{{ .ImageFileName }}" maxlength="255" required />
+        {{end}}
+        <input class="w3-input" type="file" name="imageFile">
       </p>
+
       {{ end }}
       {{if .User.Admin}}
-        <button type="submit" class="w3-button w3-indigo">Update</button>
+        {{if eq .Item.ID 0}}
+          <button type="submit" class="w3-button w3-indigo">Create</button>
+        {{else}}
+          <button type="submit" class="w3-button w3-indigo">Update</button>
+        {{end}}
       {{end}}
     </form>
     {{if .Message}}

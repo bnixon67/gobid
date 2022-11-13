@@ -8,3 +8,4 @@ nohup.out
 gobid.service
 *.dump
 test_config.json
+*~
