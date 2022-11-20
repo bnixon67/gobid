@@ -6,24 +6,24 @@
     <link rel="stylesheet" href="/w3.css">
   </head>
   <body>
-    <div class="w3-container w3-indigo w3-large w3-padding">
+    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
       <b>{{ .Title }} Winners</b>
     </div>
-    <div class="w3-bar w3-light-grey">
-      <div class="w3-bar-item">
+    <div class="w3-bar w3-mobile w3-light-grey">
+      <div class="w3-bar-item w3-mobile">
 	<a href="/gallery">Gallery</a>
       </div>
     </div>
 
-    <table class="w3-comntainer w3-table-all w3-responsive">
+    <table class="w3-container w3-mobile w3-table-all w3-responsive">
       <tr>
-	<th class="alignright">ID</th>
+	<th class="w3-right-align w3-mobile">ID</th>
 	<th>Title</th>
 	<th>Artist</th>
 	<th>Bidder&nbsp;Name</th>
 	<th>Bidder&nbsp;Email</th>
-	<th class="w3-right-align">Last&nbsp;Bid&nbsp;Amount</th>
-	<th class="w3-right-align">Last&nbsp;Bid&nbsp;At</th>
+	<th class="w3-right-align w3-mobile">Last&nbsp;Bid&nbsp;Amount</th>
+	<th class="w3-right-align w3-mobile">Last&nbsp;Bid&nbsp;At</th>
       </tr>
       {{ range .Winners }}
       <tr>
@@ -32,8 +32,8 @@
 	<td>{{ .Artist }}</td>
 	<td>{{ .FullName }}</td>
 	<td>{{ .Email }}</td>
-	<td class="w3-right-align">{{ printf "$%10.2f" .CurrentBid }}</td>
-	<td class="w3-right-align">{{ .Modified.Format "1/02/06 03:04 PM" }}</td>
+	<td class="w3-right-align w3-mobile">{{ printf "$%10.2f" .CurrentBid }}</td>
+	<td class="w3-right-align w3-mobile">{{ .Modified.Format "1/02/06 03:04 PM" }}</td>
       </tr>
       {{ end }}
     </table>

@@ -6,11 +6,11 @@
     <link rel="stylesheet" href="/w3.css">
   </head>
   <body>
-    <div class="w3-container w3-indigo w3-large w3-padding">
+    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
       <b>{{ .Title }} Item</b>
     </div>
 
-    <div class="w3-bar w3-light-grey w3-mobile">
+    <div class="w3-bar w3-mobile w3-light-grey">
       <div class="w3-bar-item w3-mobile">
         <a href="/gallery">Return to Gallery</a>
       </div>
@@ -33,14 +33,14 @@
       {{ end }}
     </div>
 
-    <div class="w3-container w3-center">
-      <div class="w3-container w3-show-inline-block">
+    <div class="w3-container w3-mobile w3-center">
+      <div class="w3-container w3-mobile w3-show-inline-block">
         {{ with .Item }}
-        <div class="w3-container w3-xlarge">
+        <div class="w3-container w3-mobile w3-xlarge">
           <b>{{if .Artist}}{{.Artist}} - {{end}}{{.Title}}</b>
         </div>
         {{ if .Description }}
-	<div class="w3-container w3-auto">
+	<div class="w3-container w3-mobile w3-auto">
           {{ .Description }}
         </div>
         {{ end }}
@@ -48,7 +48,7 @@
         {{ if eq .OpeningBid 0.0 }}
         <p>This item is display only</p>
         {{ else }}
-	<div class="w3-container w3-show-inline-block">
+	<div class="w3-container w3-mobile w3-show-inline-block">
 	  <div class="w3-container w3-cell w3-mobile">
 	    <b>Opening Bid:</b> ${{ printf "%10.2f" .OpeningBid }}
 	  </div>
@@ -60,7 +60,7 @@
 	  </div>
 	</div>
         {{ if .CurrentBid }}
-	<div class="w3-container">
+	<div class="w3-container w3-mobile">
 	  Last bid at {{ .Modified.Format "1/02/06 3:04 PM" }} by {{ .ModifiedBy }}
 	</div>
         {{ end }}
@@ -69,19 +69,19 @@
 
         {{ if and (.User.UserName) (ne .Item.OpeningBid 0.0) }}
         <div class="w3-container w3-mobile">
-          <form method="post" class="w3-container w3-show-inline-block">
+          <form method="post" class="w3-container w3-mobile w3-show-inline-block">
             <div class="w3-container w3-cell w3-cell-middle w3-mobile">
               <label for="bidAmount"><b>Bid Amount</b></label>
             </div>
             <div class="w3-container w3-cell w3-mobile">
-              <input class="w3-input" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" required value="{{ .Item.MinBid }}">
+              <input class="w3-input w3-mobile" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" required value="{{ .Item.MinBid }}">
             </div>
             <div class="w3-container w3-cell w3-mobile">
-              <button type="submit" class="w3-button w3-indigo">Place Bid</button>
+              <button type="submit" class="w3-button w3-mobile w3-indigo">Place Bid</button>
             </div>
           </form>
         </div>
-        <div class="w3-container">
+        <div class="w3-container w3-mobile">
           {{ if .Message }}
           {{ .Message }}
           {{ else }}
@@ -90,7 +90,7 @@
         </div>
         {{ end }}
         {{ if not .User.UserName }}
-        <div class="w3-container">
+        <div class="w3-container w3-mobile">
         You must <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
         </div>
         {{ end }}

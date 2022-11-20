@@ -6,16 +6,18 @@
     <link rel="stylesheet" href="/w3.css">
   </head>
   <body>
-    <div class="w3-container w3-indigo w3-large w3-padding">
+    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
       <b>Forgot User or Password</b>
     </div>
-    <div class="w3-container">
+
+    <div class="w3-bar w3-mobile w3-light-grey">
+      <a class="w3-bar-item w3-mobile" href="/login">Login</a>
+      <a class="w3-bar-item w3-mobile" href="/register">Register</a>
+    </div>
+
+    <div class="w3-container w3-mobile">
       <p>Please check your email for a message from {{ .EmailFrom }} for further information.</p>
       <p>It could take a few minutes to receive the email. Please check your spam, junk, promotional, or similar folders.</p>
-    </div>
-    <div class="w3-bar w3-light-grey">
-      <a class="w3-bar-item" href="/login">Login</a>
-      <a class="w3-bar-item" href="/register">Register</a>
     </div>
   </body>
 </html>

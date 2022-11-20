@@ -6,14 +6,14 @@
     <link rel="stylesheet" href="/w3.css" />
   </head>
   <body>
-    <div class="w3-container w3-indigo w3-large w3-padding">
+    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
       <b>{{.Title}} Items</b>
     </div>
 
-    <div class="w3-bar w3-light-grey">
-      <div class="w3-bar-item"><a href="/gallery">Gallery</a></div>
-      <div class="w3-bar-item"><a href="/edit/0">New Item</a></div>
-      <div class="w3-bar-item w3-right">
+    <div class="w3-bar w3-mobile w3-light-grey">
+      <div class="w3-bar-item w3-mobile"><a href="/gallery">Gallery</a></div>
+      <div class="w3-bar-item w3-mobile"><a href="/edit/0">New Item</a></div>
+      <div class="w3-bar-item w3-mobile w3-right">
       {{if .User.UserName}}
         <a href="/logout">Logout {{.User.UserName}}</a>
       {{else}}
@@ -22,10 +22,10 @@
       </div>
     </div>
 
-    <table class="w3-container w3-table w3-striped w3-responsive">
+    <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
       <tr>
         {{if .User.Admin}}<th></th>{{end}}
-        <th class="alignright">ID</th>
+        <th class="w3-right-align w3-mobile">ID</th>
         <th>Title</th>
         <th>Description</th>
         <th>Opening</th>
@@ -38,12 +38,12 @@
       {{range .Items}}
       <tr>
         {{if $.User.Admin}}<td><a href="edit/{{.ID}}">Edit</a></td>{{end}}
-        <td class="w3-right-align">{{.ID}}</td>
+        <td class="w3-right-align w3-mobile">{{.ID}}</td>
         <td>{{.Title}}</td>
         <td>{{.Description}}</td>
-        <td class="w3-right-align" style="white-space:nowrap">{{printf "$%10.2f" .OpeningBid}}</td>
-        <td class="w3-right-align" style="white-space:nowrap">{{printf "$%10.2f" .MinBidIncr}}</td>
-        <td class="w3-right-align" style="white-space:nowrap">{{printf "$%10.2f" .CurrentBid}}</td>
+        <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .OpeningBid}}</td>
+        <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .MinBidIncr}}</td>
+        <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .CurrentBid}}</td>
         <td>{{.Bidder}}</td>
         <td>{{.Artist}}</td>
 	{{if $.User.Admin}}<td>{{.ImageFileName}}</td>{{end}}
