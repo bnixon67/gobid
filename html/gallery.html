@@ -38,7 +38,7 @@
       <a href="/item/{{ .ID }}">
 	<div class="w3-quarter w3-mobile w3-margin-top" style="width:25%;height:300px;">
 	  <div class="w3-container w3-mobile">
-	    <img class="w3-image w3-mobile" src="images/thumbnails/{{ .ImageFileName }}" alt="{{ .Title }}" style="max-height:200px;width:100%">
+	    <img class="w3-image w3-mobile" src="images/thumbnails/{{ .ImageFileName }}" alt="{{ .Title }}" style="max-height:200px;width:100%;object-fit:contain">
 	  </div>
 	  <div class="w3-container w3-mobile">
 	    {{if .Artist}}{{ .Artist }}<br>{{end}}
