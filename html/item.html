@@ -69,15 +69,19 @@
           {{ if and (.User.UserName) (ne .Item.OpeningBid 0.0) }}
           <div class="w3-container w3-mobile">
             <form method="post" class="w3-container w3-mobile">
-              <div class="w3-cell-row w3-mobile">
-                <div class="w3-cell w3-mobile w3-cell-middle">
+              <div class="w3-row w3-mobile">
+                <div class="w3-third w3-container w3-mobile">
                   <label for="bidAmount"><b>Your Bid:</b></label>
                 </div>
-                <div class="w3-cell w3-mobile">
+                <div class="w3-third w3-container w3-mobile">
                   <input class="w3-input w3-mobile w3-right-align" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" autofocus required value="{{ .Item.MinBid }}">
                 </div>
-                <div class="w3-cell w3-mobile">
+                <div class="w3-third w3-container w3-mobile">
+                  {{if .IsAuctionOpen}}
                   <button type="submit" class="w3-button w3-mobile w3-indigo">Place Bid</button>
+                  {{else}}
+                  Auction Closed
+                  {{end}}
                 </div>
               </div>
             </form>

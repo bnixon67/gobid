@@ -26,6 +26,7 @@ import (
 type BidApp struct {
 	*weblogin.App
 	*BidDB
+	AuctionStart, AuctionEnd time.Time
 }
 
 func main() {
@@ -48,6 +49,18 @@ func main() {
 
 	bidApp := BidApp{App: app, BidDB: &BidDB{}}
 	bidApp.BidDB.sqlDB = app.DB
+
+	err = bidApp.ConfigAuction()
+	if err != nil {
+		log.Printf("failed to ConfigAuction: %v", err)
+		return
+	}
+	layout := "Monday January _2, 2006 3:04 PM"
+	log.Printf("Auction Start: %v", bidApp.AuctionStart.Format(layout))
+	log.Printf("Auction Started: %v", bidApp.IsAuctionStarted())
+	log.Printf("Auction End: %v", bidApp.AuctionEnd.Format(layout))
+	log.Printf("Auction Ended: %v", bidApp.IsAuctionEnded())
+	log.Printf("Auction Open: %v", bidApp.IsAuctionOpen())
 
 	// define HTTP server
 	// TODO: add values to config file

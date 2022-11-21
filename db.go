@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 )
@@ -38,6 +39,12 @@ type Item struct {
 	MinBid float64
 }
 
+type ConfigItem struct {
+	Name      string
+	Value     string
+	ValueType string
+}
+
 func (db BidDB) GetItem(id int) (Item, error) {
 	var item Item
 	var err error
@@ -66,6 +73,28 @@ func (db BidDB) GetItem(id int) (Item, error) {
 	}
 
 	return item, nil
+}
+
+func (db BidDB) GetConfigItem(name string) (ConfigItem, error) {
+	var config ConfigItem
+	var err error
+
+	if db.sqlDB == nil {
+		return ConfigItem{}, errors.New("invalid db")
+	}
+
+	qry := "SELECT name, value, value_type FROM config WHERE name = ?"
+
+	row := db.sqlDB.QueryRow(qry, name)
+	err = row.Scan(&config.Name, &config.Value, &config.ValueType)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return ConfigItem{}, fmt.Errorf("no such config: %s", name)
+		}
+		return ConfigItem{}, errors.New("query failed")
+	}
+
+	return config, nil
 }
 
 func (db BidDB) GetItems() ([]Item, error) {

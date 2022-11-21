@@ -25,10 +25,11 @@ import (
 
 // ItemPageData contains data passed to the HTML template.
 type ItemPageData struct {
-	Title   string
-	Message string
-	User    weblogin.User
-	Item    Item
+	Title         string
+	Message       string
+	User          weblogin.User
+	Item          Item
+	IsAuctionOpen bool
 }
 
 // ItemHandler display an item.
@@ -102,10 +103,11 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
 		ItemPageData{
-			Title:   app.Config.Title,
-			Message: "",
-			User:    user,
-			Item:    item,
+			Title:         app.Config.Title,
+			Message:       "",
+			User:          user,
+			Item:          item,
+			IsAuctionOpen: app.IsAuctionOpen(),
 		})
 	if err != nil {
 		log.Printf("error executing template: %v", err)
@@ -130,8 +132,8 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 		log.Printf("unable to convert bidAmount to float64")
 	}
 
-	// submit bid if we have a valid user and bidAmount
-	if user != (weblogin.User{}) && bidAmount >= 0 {
+	// submit bid if we have a valid user and bidAmount and open Auction
+	if user != (weblogin.User{}) && bidAmount >= 0 && app.IsAuctionOpen() {
 		var bidPlaced bool
 		var priorBidder string
 		var err error
@@ -170,6 +172,10 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 				}
 			}
 		}
+	} else {
+		if !app.IsAuctionOpen() {
+			msg = "Auction is not open"
+		}
 	}
 
 	// get item from database
@@ -183,10 +189,11 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
 		ItemPageData{
-			Title:   app.Config.Title,
-			Message: msg,
-			User:    user,
-			Item:    item,
+			Title:         app.Config.Title,
+			Message:       msg,
+			User:          user,
+			Item:          item,
+			IsAuctionOpen: app.IsAuctionOpen(),
 		})
 	if err != nil {
 		log.Printf("error executing template: %v", err)

@@ -14,6 +14,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -67,11 +68,14 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("GetItems failed: %v", err)
 	}
 
+	layout := "Mon Jan 2, 2006 3:04 PM"
+	message := fmt.Sprintf("Auction starts %s until %s", app.AuctionStart.Format(layout), app.AuctionEnd.Format(layout))
+
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "gallery.html",
 		GalleryPageData{
 			Title:   app.Config.Title,
-			Message: "",
+			Message: message,
 			User:    currentUser,
 			Items:   items,
 		})
