@@ -26,26 +26,26 @@
       <tr>
         {{if .User.Admin}}<th></th>{{end}}
         <th class="w3-right-align w3-mobile">ID</th>
+        <th>Artist/Donor</th>
         <th>Title</th>
         <th>Description</th>
         <th>Opening</th>
         <th>Increment</th>
         <th>Current</th>
         <th>Bidder</th>
-        <th>Artist</th>
 	{{if .User.Admin}}<th>Image File</th>{{end}}
       </tr>
       {{range .Items}}
       <tr>
         {{if $.User.Admin}}<td><a href="edit/{{.ID}}">Edit</a></td>{{end}}
         <td class="w3-right-align w3-mobile">{{.ID}}</td>
+        <td>{{.Artist}}</td>
         <td>{{.Title}}</td>
         <td>{{.Description}}</td>
         <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .OpeningBid}}</td>
         <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .MinBidIncr}}</td>
         <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .CurrentBid}}</td>
         <td>{{.Bidder}}</td>
-        <td>{{.Artist}}</td>
 	{{if $.User.Admin}}<td>{{.ImageFileName}}</td>{{end}}
       </tr>
       {{end}}
