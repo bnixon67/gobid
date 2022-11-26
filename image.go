@@ -2,8 +2,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"image"
 	"io"
+	"log"
+	"os"
 
 	"github.com/disintegration/imaging"
 )
@@ -26,28 +29,30 @@ func ScaleDown(r io.ReadSeeker, maxWidth, maxHeight int) (image.Image, error) {
 		return src, err
 	}
 
-	/*
-		// determine scaling ratio
-		var ratio float64
-		switch {
-		case maxWidth == 0:
-			ratio = float64(maxHeight) / float64(srcHeight)
-		case maxHeight == 0:
-			ratio = float64(maxWidth) / float64(srcWidth)
-		default:
-			ratio = math.Min(
-				float64(maxWidth)/float64(srcWidth),
-				float64(maxHeight)/float64(srcHeight),
-			)
-		}
-
-		// scaled down dimension
-		newWidth := int(math.Round(float64(srcWidth) * ratio))
-		newHeight := int(math.Round(float64(srcHeight) * ratio))
-	*/
-
 	// Resize
 	dst := imaging.Resize(src, maxWidth, maxHeight, imaging.Lanczos)
 
 	return dst, err
+}
+
+func SaveScaledJPEG(imgFile io.ReadSeeker, name string, maxWidth, maxHeight int) error {
+	imgFile.Seek(0, io.SeekStart)
+
+	img, err := ScaleDown(imgFile, maxWidth, maxHeight)
+	if err != nil {
+		return fmt.Errorf("could not ScaleDown: %v", err)
+	}
+
+	flag := os.O_CREATE | os.O_WRONLY
+	perm := os.FileMode(0400)
+	log.Printf("name = %q, flag = %v, perm = %v", name, flag, perm)
+	output, err := os.OpenFile(name, flag, perm)
+	if err != nil {
+		return fmt.Errorf("could not Create %q: %v\n", name, err)
+	}
+	defer output.Close()
+
+	imaging.Encode(output, img, imaging.JPEG, imaging.JPEGQuality(95))
+
+	return err
 }

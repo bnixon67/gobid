@@ -15,16 +15,13 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	weblogin "github.com/bnixon67/go-weblogin"
-	"github.com/disintegration/imaging"
 )
 
 // ItemEditPageData contains data passed to the HTML template.
@@ -179,27 +176,12 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 
 	// get artist
 	artist := r.PostFormValue("artist")
-	/*
-		if artist == "" {
-			log.Print("no artist")
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	*/
 
 	// get imageFileName
-	var imageFileName string
-	if id != 0 {
-		imageFileName = r.PostFormValue("imageFileName")
-		if imageFileName == "" {
-			log.Print("no imageFileName")
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	}
+	imageFileName := r.PostFormValue("imageFileName")
 
 	// get imageFile
-	imageFile, handler, err := r.FormFile("imageFile")
+	imageFile, _, err := r.FormFile("imageFile")
 	if err != nil && err != http.ErrMissingFile {
 		log.Printf("no imageFile: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -210,54 +192,28 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	if err != http.ErrMissingFile {
 		defer imageFile.Close()
 
-		// sanitize newImageFilename
-		newImageFilename := strings.ReplaceAll(handler.Filename, "\\", "/")
-		_, newImageFilename = filepath.Split(newImageFilename)
+		// generate random file name to avoid potential security issues
+		imageFileName = RandomFileName("jpg")
 
-		log.Printf("upload file %q size %v\n", newImageFilename, handler.Size)
+		var err error
+		var name string
 
-		img, err := ScaleDown(imageFile, 1920, 0)
+		name = filepath.Join("images", imageFileName)
+		err = SaveScaledJPEG(imageFile, name, 1920, 0)
 		if err != nil {
-			log.Printf("could not ScaleDown: %v\n", err)
-			w.WriteHeader(http.StatusBadRequest)
+			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		output, err := os.Create("images/" + newImageFilename)
+		name = filepath.Join("images", "thumbnails", imageFileName)
+		err = SaveScaledJPEG(imageFile, name, 480, 0)
 		if err != nil {
-			log.Printf("could not Create %q: %v\n", "images/"+newImageFilename, err)
-			w.WriteHeader(http.StatusBadRequest)
+			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		defer output.Close()
-
-		imaging.Encode(output, img, imaging.JPEG, imaging.JPEGQuality(95))
-		// thumbnail
-		imageFile.Seek(0, io.SeekStart)
-
-		img, err = ScaleDown(imageFile, 480, 0)
-		if err != nil {
-			log.Printf("could not ScaleDown: %v\n", err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		output, err = os.Create("images/thumbnails/" + newImageFilename)
-		if err != nil {
-			log.Printf("could not Create %q: %v\n", "images/"+newImageFilename, err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		defer output.Close()
-
-		imaging.Encode(output, img, imaging.JPEG, imaging.JPEGQuality(95))
-
-		imageFileName = newImageFilename
 	}
-
-	// sanitize filename
-	imageFileName = strings.ReplaceAll(imageFileName, "\\", "/")
-	_, imageFileName = filepath.Split(imageFileName)
 
 	item := Item{
 		ID:            id,
