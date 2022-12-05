@@ -43,12 +43,12 @@ func SaveScaledJPEG(imgFile io.ReadSeeker, name string, maxWidth, maxHeight int)
 		return fmt.Errorf("could not ScaleDown: %v", err)
 	}
 
-	flag := os.O_CREATE | os.O_WRONLY
+	flag := os.O_CREATE | os.O_WRONLY | os.O_EXCL
 	perm := os.FileMode(0400)
 	log.Printf("name = %q, flag = %v, perm = %v", name, flag, perm)
 	output, err := os.OpenFile(name, flag, perm)
 	if err != nil {
-		return fmt.Errorf("could not Create %q: %v\n", name, err)
+		return err
 	}
 	defer output.Close()
 

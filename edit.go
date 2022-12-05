@@ -181,7 +181,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	imageFileName := r.PostFormValue("imageFileName")
 
 	// get imageFile
-	imageFile, _, err := r.FormFile("imageFile")
+	imageFile, fileHeader, err := r.FormFile("imageFile")
 	if err != nil && err != http.ErrMissingFile {
 		log.Printf("no imageFile: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -192,8 +192,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	if err != http.ErrMissingFile {
 		defer imageFile.Close()
 
-		// generate random file name to avoid potential security issues
-		imageFileName = RandomFileName("jpg")
+		imageFileName = SafeFileName(fileHeader.Filename, "jpg")
 
 		var err error
 		var name string
@@ -202,16 +201,14 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 		err = SaveScaledJPEG(imageFile, name, 1920, 0)
 		if err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			msg = err.Error()
 		}
 
 		name = filepath.Join("images", "thumbnails", imageFileName)
 		err = SaveScaledJPEG(imageFile, name, 480, 0)
 		if err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			msg = err.Error()
 		}
 	}
 
@@ -225,25 +222,27 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 		ImageFileName: imageFileName,
 	}
 
-	// create new item
-	if id == 0 {
-		newId, rows, err := app.BidDB.CreateItem(item)
-		if rows > 1 || err != nil {
-			msg = "Could not create item"
-			log.Printf("unable to CreateItem(%+v), %d, %q", item, rows, err)
-		} else {
-			log.Printf("created item %d", newId)
-			newUrl := fmt.Sprintf("/edit/%d", newId)
-			http.Redirect(w, r, newUrl, http.StatusSeeOther)
-			return
-		}
-	} else {
-		rows, err := app.BidDB.UpdateItem(item)
-		if rows > 1 || err != nil {
-			msg = "Could not update item"
-			log.Printf("unable to UpdateItem(%+v), %d, %q", item, rows, err)
-		} else {
-			msg = "Updated item"
+	// only continue if msg is null, otherwise there was a prior error
+	if msg == "" {
+		if id == 0 { // create new item
+			newId, rows, err := app.BidDB.CreateItem(item)
+			if rows > 1 || err != nil {
+				msg = "Could not create item"
+				log.Printf("unable to CreateItem(%+v), %d, %q", item, rows, err)
+			} else {
+				log.Printf("created item %d", newId)
+				newUrl := fmt.Sprintf("/edit/%d", newId)
+				http.Redirect(w, r, newUrl, http.StatusSeeOther)
+				return
+			}
+		} else { // update existing item
+			rows, err := app.BidDB.UpdateItem(item)
+			if rows > 1 || err != nil {
+				msg = "Could not update item"
+				log.Printf("unable to UpdateItem(%+v), %d, %q", item, rows, err)
+			} else {
+				msg = "Updated item"
+			}
 		}
 	}
 
