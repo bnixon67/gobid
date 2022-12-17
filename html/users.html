@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{ .Title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/w3.css">
+  </head>
+  <body>
+    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
+      <b>{{ .Title }} Users</b>
+    </div>
+    <div class="w3-bar w3-mobile w3-light-grey">
+      <div class="w3-bar-item w3-mobile"> <a href="/">Home</a> </div>
+      {{ if .User.UserName }}
+      <div class="w3-bar-item w3-mobile w3-right">
+        <a href="/logout">Logout</a>
+      </div>
+      {{ end}}
+    </div>
+
+    {{ if .User.UserName }}
+    <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
+      <tr>
+	<th>User Name</th>
+	<th>Full Name</th>
+        {{ if $.User.Admin }}
+	<th>Email</th>
+	<th class="w3-center">Admin</th>
+	<th>Created</th>
+        {{ end }}
+      </tr>
+      {{ range .Users }}
+      <tr>
+	<td>{{ .UserName }}</td>
+	<td>{{ .FullName }}</td>
+        {{ if $.User.Admin }}
+	<td>{{ .Email }}</td>
+	<td class="w3-center">{{ .Admin }}</td>
+	<td>{{ .Created.Format "2006-01-02 03:04 PM" }}</td>
+        {{ end }}
+      </tr>
+      {{ end }}
+    </table>
+    {{ else }}
+    <div class="w3-panel w3-pale-red">
+      You must <a href="/login?r=/users">Login</a>
+    </div>
+    {{ end }}
+
+  </body>
+</html>

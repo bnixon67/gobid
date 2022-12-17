@@ -82,6 +82,7 @@ func main() {
 	http.HandleFunc("/logout", app.LogoutHandler)
 	http.HandleFunc("/forgot", app.ForgotHandler)
 	http.HandleFunc("/reset", app.ResetHandler)
+	http.HandleFunc("/users", app.UsersHandler)
 	http.HandleFunc("/gallery", bidApp.GalleryHandler)
 	http.HandleFunc("/items", bidApp.ItemsHandler)
 	http.HandleFunc("/item/", bidApp.ItemHandler)
