@@ -13,6 +13,7 @@ specific language governing permissions and limitations under the License.
 package main
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -108,5 +109,18 @@ func TestUpdateItem(t *testing.T) {
 	rows, err := app.BidDB.UpdateItem(item)
 	if rows > 1 || err != nil {
 		t.Errorf("UpdateItem failed, rows = %d, err = %v", rows, err)
+	}
+}
+
+func TestGetBidsForItem(t *testing.T) {
+	app := AppForTest(t)
+	if app == nil {
+		t.Fatalf("cannot create AppForTest")
+	}
+
+	bids, err := app.BidDB.GetBidsForItem(1)
+	fmt.Printf("%+v\n", bids)
+	if err != nil {
+		t.Errorf("GetBidsForItem failed: %v", err)
 	}
 }

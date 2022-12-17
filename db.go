@@ -45,6 +45,13 @@ type ConfigItem struct {
 	ValueType string
 }
 
+type Bid struct {
+	ID      int
+	Created time.Time
+	Bidder  string
+	Amount  float64
+}
+
 func (db BidDB) GetItem(id int) (Item, error) {
 	var item Item
 	var err error
@@ -233,4 +240,40 @@ func (db BidDB) CreateItem(item Item) (int64, int64, error) {
 	}
 
 	return id, rows, err
+}
+
+func (db BidDB) GetBidsForItem(id int) ([]Bid, error) {
+	var bids []Bid
+	var err error
+
+	if db.sqlDB == nil {
+		log.Print("db is nil")
+		return bids, errors.New("invalid db")
+	}
+
+	qry := "SELECT id, created, bidder, amount FROM bids WHERE id = ? ORDER BY created DESC"
+
+	rows, err := db.sqlDB.Query(qry, id)
+	if err != nil {
+		log.Printf("query for bids failed, %v", err)
+		return bids, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var bid Bid
+
+		err = rows.Scan(&bid.ID, &bid.Created, &bid.Bidder, &bid.Amount)
+		if err != nil {
+			log.Printf("row.Scan failed, %v", err)
+		}
+
+		bids = append(bids, bid)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Printf("rows.Err failed, %v", err)
+	}
+
+	return bids, err
 }

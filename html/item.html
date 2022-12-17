@@ -96,14 +96,25 @@
           {{ end }}
         </div>
 
-        <div class="w3-container w3-mobile w3-center w3-section">
-          {{ if .Item.CurrentBid }}
-          <div class="w3-container w3-padding w3-mobile">
-            Last bid at {{ .Item.Modified.Format "1/02/06 3:04 PM" }} by {{ .Item.ModifiedBy }}
-          </div>
+        {{ if and .User.UserName .Bids }}
+        <table class="w3-mobile w3-table w3-striped w3-center">
+          <tr>
+            <th>Bidder</th>
+            <th>Amount</th>
+            <th>Placed</th>
+          </tr>
+          {{ range .Bids }}
+          <tr>
+            <td>{{ .Bidder }}</td>
+            <td>${{ printf "%.2f" .Amount }}</td>
+            <td>{{ .Created.Format "01/02/06 03:04 pm" }}</td>
+          </tr>
           {{ end }}
-        </div>
+        </table>
+        {{ end }}
       </div>
     </div>
+
+
   </body>
 </html>

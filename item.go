@@ -30,6 +30,7 @@ type ItemPageData struct {
 	User          weblogin.User
 	Item          Item
 	IsAuctionOpen bool
+	Bids          []Bid
 }
 
 // ItemHandler display an item.
@@ -100,6 +101,13 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 		return
 	}
 
+	// get bids for item from database
+	bids, err := app.BidDB.GetBidsForItem(id)
+	if err != nil {
+		log.Printf("unable to GetBidsForItem(%d), %v", id, err)
+		// TODO: what to display to user if this fails
+	}
+
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
 		ItemPageData{
@@ -108,6 +116,7 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 			User:          user,
 			Item:          item,
 			IsAuctionOpen: app.IsAuctionOpen(),
+			Bids:          bids,
 		})
 	if err != nil {
 		log.Printf("error executing template: %v", err)
@@ -186,6 +195,13 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 		return
 	}
 
+	// get bids for item from database
+	bids, err := app.BidDB.GetBidsForItem(id)
+	if err != nil {
+		log.Printf("unable to GetBidsForItem(%d), %v", id, err)
+		// TODO: what to display to user if this fails
+	}
+
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
 		ItemPageData{
@@ -194,6 +210,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 			User:          user,
 			Item:          item,
 			IsAuctionOpen: app.IsAuctionOpen(),
+			Bids:          bids,
 		})
 	if err != nil {
 		log.Printf("error executing template: %v", err)
