@@ -26,7 +26,7 @@
       {{- if .User.UserName }}
         <a href="/logout">Logout {{ .User.UserName }}</a>
       {{ else }}
-        <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
+      <a href="/login?r=/item/{{.Item.ID}}">Login</a> or <a href="/register">Register</a> to bid.
       {{ end -}}
       </div>
     </div>
