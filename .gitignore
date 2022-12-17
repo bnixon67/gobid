@@ -1,11 +1,10 @@
-config.json
 **/cert/
 **/images/
 *.swp
+*.json
+*.log
+*.dump
+*~
 gobid
 nohup.out
-*.log
 gobid.service
-*.dump
-test_config.json
-*~
