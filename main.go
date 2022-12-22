@@ -88,6 +88,7 @@ func main() {
 	http.HandleFunc("/item/", bidApp.ItemHandler)
 	http.HandleFunc("/edit/", bidApp.ItemEditHandler)
 	http.HandleFunc("/winners", bidApp.WinnerHandler)
+	http.HandleFunc("/bids", bidApp.BidsHandler)
 	// TODO: define base html directory in config
 	http.HandleFunc("/w3.css", weblogin.ServeFileHandler("html/w3.css"))
 	http.HandleFunc("/favicon.ico", weblogin.ServeFileHandler("html/favicon.ico"))

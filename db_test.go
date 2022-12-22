@@ -124,3 +124,16 @@ func TestGetBidsForItem(t *testing.T) {
 		t.Errorf("GetBidsForItem failed: %v", err)
 	}
 }
+
+func TestGetBids(t *testing.T) {
+	app := AppForTest(t)
+	if app == nil {
+		t.Fatalf("cannot create AppForTest")
+	}
+
+	bids, err := app.BidDB.GetBids()
+	fmt.Printf("%+v\n", bids)
+	if err != nil {
+		t.Errorf("GetBidsForItem failed: %v", err)
+	}
+}

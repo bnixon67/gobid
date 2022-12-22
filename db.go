@@ -46,10 +46,12 @@ type ConfigItem struct {
 }
 
 type Bid struct {
-	ID      int
-	Created time.Time
-	Bidder  string
-	Amount  float64
+	ID       int
+	Created  time.Time
+	Bidder   string
+	Amount   float64
+	FullName string
+	Email    string
 }
 
 func (db BidDB) GetItem(id int) (Item, error) {
@@ -264,6 +266,42 @@ func (db BidDB) GetBidsForItem(id int) ([]Bid, error) {
 		var bid Bid
 
 		err = rows.Scan(&bid.ID, &bid.Created, &bid.Bidder, &bid.Amount)
+		if err != nil {
+			log.Printf("row.Scan failed, %v", err)
+		}
+
+		bids = append(bids, bid)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Printf("rows.Err failed, %v", err)
+	}
+
+	return bids, err
+}
+
+func (db BidDB) GetBids() ([]Bid, error) {
+	var bids []Bid
+	var err error
+
+	if db.sqlDB == nil {
+		log.Print("db is nil")
+		return bids, errors.New("invalid db")
+	}
+
+	qry := "SELECT b.id, b.created, b.bidder, b.amount, u.fullName, u.email FROM bids b INNER JOIN users u ON b.bidder = u.userName ORDER BY b.id, b.created DESC"
+
+	rows, err := db.sqlDB.Query(qry)
+	if err != nil {
+		log.Printf("query for bids failed, %v", err)
+		return bids, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var bid Bid
+
+		err = rows.Scan(&bid.ID, &bid.Created, &bid.Bidder, &bid.Amount, &bid.FullName, &bid.Email)
 		if err != nil {
 			log.Printf("row.Scan failed, %v", err)
 		}
