@@ -39,6 +39,18 @@ type Item struct {
 	MinBid float64
 }
 
+type ItemWithBids struct {
+	ID            int
+	Title         string
+	Created       time.Time
+	Description   string
+	OpeningBid    float64
+	MinBidIncr    float64
+	Artist        string
+	ImageFileName string
+	Bids          []Bid
+}
+
 type ConfigItem struct {
 	Name      string
 	Value     string
@@ -314,4 +326,68 @@ func (db BidDB) GetBids() ([]Bid, error) {
 	}
 
 	return bids, err
+}
+
+type ItemsWithBidsResult struct {
+	ID            int
+	Title         string
+	ItemCreated   time.Time
+	Description   string
+	OpeningBid    float64
+	MinBidIncr    float64
+	Artist        string
+	ImageFileName string
+	BidCreated    time.Time
+	Bidder        string
+	Amount        float64
+	FullName      string
+	Email         string
+}
+
+func (db BidDB) GetItemsWithBids() ([]ItemWithBids, error) {
+	var items []ItemWithBids
+	var err error
+
+	if db.sqlDB == nil {
+		log.Print("db is nil")
+		return items, errors.New("invalid db")
+	}
+
+	qry := "SELECT items.id, items.title, items.created AS itemCreated, items.description, items.openingBid, items.minBidIncr, items.artist, items.imageFileName, bids.created AS bidCreated, bids.bidder, bids.amount, users.fullName, users.email FROM items INNER JOIN bids ON items.id = bids.id INNER JOIN users ON bids.bidder = users.UserName ORDER BY items.id, bids.created DESC"
+
+	rows, err := db.sqlDB.Query(qry)
+	if err != nil {
+		log.Printf("query for ItemsWithBids failed, %v", err)
+		return items, err
+	}
+	defer rows.Close()
+
+	var priorID int
+
+	for rows.Next() {
+		var item ItemWithBids
+		var bid Bid
+
+		err = rows.Scan(&item.ID, &item.Title, &item.Created, &item.Description, &item.OpeningBid, &item.MinBidIncr, &item.Artist, &item.ImageFileName, &bid.Created, &bid.Bidder, &bid.Amount, &bid.FullName, &bid.Email)
+		if err != nil {
+			log.Printf("row.Scan failed, %v", err)
+		}
+
+		bid.ID = item.ID
+
+		if item.ID != priorID {
+			items = append(items, item)
+		}
+
+		n := len(items) - 1
+		items[n].Bids = append(items[n].Bids, bid)
+
+		priorID = item.ID
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Printf("rows.Err failed, %v", err)
+	}
+
+	return items, err
 }

@@ -25,7 +25,7 @@ type BidsPageData struct {
 	Title   string
 	Message string
 	User    weblogin.User
-	Bids    []Bid
+	Items   []ItemWithBids
 }
 
 // BidsHandler displays all the items in a table.
@@ -62,9 +62,9 @@ func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	bids, err := app.BidDB.GetBids()
+	itemsWithBids, err := app.BidDB.GetItemsWithBids()
 	if err != nil {
-		log.Printf("GetBids failed: %v", err)
+		log.Printf("GetItemsWIthBids failed: %v", err)
 	}
 
 	// display page
@@ -73,7 +73,7 @@ func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 			Title:   app.Config.Title,
 			Message: "",
 			User:    currentUser,
-			Bids:    bids,
+			Items:   itemsWithBids,
 		})
 	if err != nil {
 		log.Printf("error executing template: %v", err)

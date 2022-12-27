@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <title>{{.Title}}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/w3.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/w3.css">
   </head>
+
   <body>
+
     <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
       <b>{{.Title}} Bids</b>
     </div>
@@ -16,33 +19,67 @@
       <div class="w3-bar-item w3-mobile"><a href="/edit/0">New Item</a></div>
       {{ end }}
       <div class="w3-bar-item w3-mobile w3-right">
-      {{if .User.UserName}}
+        {{if .User.UserName}}
         <a href="/logout">Logout {{.User.UserName}}</a>
-      {{else}}
+        {{else}}
         <a href="/login?r=/items">Login</a>
-      {{end}}
+        {{end}}
       </div>
     </div>
 
-    <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
+    <table class="w3-table w3-mobile w3-responsive">
+      <thead> <tr>
+        <th>ID</th>
+        <th>Item</th>
+        <th class="w3-right-align">Opening</th>
+        <th class="w3-right-align">Increment</th>
+        <th class="w3-center">Bids</th>
+      </tr> </thead>
+      {{ range .Items }}
       <tr>
-        <th class="w3-right-align w3-mobile">ID</th>
-        <th>Created</th>
-        <th>Amount</th>
-        <th>Bidder</th>
-        <th>Full Name</th>
-        <th>Email</th>
+        <td>{{ .ID }}</td>
+        <td>{{ .Artist }} {{ .Title }}</td>
+        <td class="w3-right-align">{{ printf "$%.2f" .OpeningBid }}</td>
+        <td class="w3-right-align">{{ printf "$%.2f" .MinBidIncr }}</td>
+        <td class="w3-center">
+          <u onclick="ToggleBids('{{.ID}}')">{{ len .Bids }}</u>
+        </td>
       </tr>
-      {{range .Bids}}
+
       <tr>
-        <td class="w3-right-align">{{.ID}}</td>
-        <td>{{.Created.Format "01/02/06 03:04 pm"}}</td>
-        <td class="w3-right-align">${{printf "%.2f" .Amount}}</td>
-        <td>{{.Bidder}}</td>
-        <td>{{.FullName}}</td>
-        <td>{{.Email}}</td>
+        <td colspan="5">
+          <table id="{{ .ID }}" class="w3-table w3-striped w3-mobile w3-hide">
+            <thead> <tr>
+              <th>When</th>
+              <th>Amount</th>
+              <th>Bidder</th>
+              <th>Full Name</th>
+              <th>Email</th>
+            </tr> </thead>
+            {{range .Bids}}
+            <tr>
+              <td>{{.Created.Format "01/02/06 03:04 pm"}}</td>
+              <td class="w3-right-align">${{printf "%.2f" .Amount}}</td>
+              <td>{{.Bidder}}</td>
+              <td>{{.FullName}}</td>
+              <td>{{.Email}}</td>
+            </tr>
+            {{end}}
+          </table>
+        </td>
       </tr>
-      {{end}}
+      {{ end }}
     </table>
+
+    <script>
+      function ToggleBids(id) {
+        var x = document.getElementById(id);
+        if (x.className.indexOf("w3-show") == -1) {
+          x.className += " w3-show";
+        } else {
+          x.className = x.className.replace(" w3-show", "");
+        }
+      }
+    </script>
   </body>
 </html>
