@@ -149,7 +149,6 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 
 		bidPlaced, msg, priorBidder, err = app.BidDB.PlaceBid(id, bidAmount, user.UserName)
 		if err != nil {
-			msg = "Unable to place bid"
 			log.Printf("unable to PlaceBid: %v", err)
 		} else {
 

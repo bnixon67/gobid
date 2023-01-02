@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS `items`;
-
 CREATE TABLE `items` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(40) NOT NULL,

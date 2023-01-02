@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"math/rand"
 	"path/filepath"
 	"regexp"
@@ -45,4 +46,13 @@ func SafeFileName(name, ext string) string {
 	}
 
 	return name + "." + ext
+}
+
+func AsJson(v any) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		err.Error()
+	}
+
+	return string(b)
 }

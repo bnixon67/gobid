@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS `tokens`;
-
 CREATE TABLE `tokens` (
   `hashedValue` binary(64) NOT NULL,
   `expires` datetime NOT NULL,

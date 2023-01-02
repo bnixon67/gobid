@@ -14,7 +14,7 @@ type BidDB struct {
 
 type BidResult struct {
 	BidPlaced   bool
-	ID          int
+	ID          int // TODO: int or int64
 	Message     string
 	PriorBidder string
 	MinAmount   float64
@@ -26,17 +26,15 @@ type Item struct {
 	ID            int
 	Title         string
 	Created       time.Time
-	Modified      *time.Time
-	ModifiedBy    *string
 	Description   string
 	OpeningBid    float64
 	MinBidIncr    float64
-	CurrentBid    float64
-	Bidder        string
 	Artist        string
 	ImageFileName string
-
-	MinBid float64
+	Bidder        string
+	CurrentBid    float64
+	Modified      *time.Time
+	MinBid        float64
 }
 
 type ItemWithBids struct {
@@ -66,24 +64,28 @@ type Bid struct {
 	Email    string
 }
 
+var (
+	ErrNotFound  = errors.New("not found")
+	ErrInvalidDB = errors.New("invalid db")
+)
+
 func (db BidDB) GetItem(id int) (Item, error) {
 	var item Item
 	var err error
 
 	if db.sqlDB == nil {
-		return Item{}, errors.New("invalid db")
+		return item, ErrInvalidDB
 	}
 
-	qry := "SELECT items.id, items.title, items.created, bids.created, bids.bidder, items.description, items.openingBid, items.minBidIncr, IFNULL(bids.amount,0), items.artist, items.imageFileName FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id WHERE items.id = ?"
+	qry := "SELECT items.id, items.title, items.created, bids.created, IFNULL(bids.bidder,''), items.description, items.openingBid, items.minBidIncr, IFNULL(bids.amount,0), items.artist, items.imageFileName FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id WHERE items.id = ?"
 
 	row := db.sqlDB.QueryRow(qry, id)
-	err = row.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.ModifiedBy, &item.Description,
-		&item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Artist, &item.ImageFileName)
+	err = row.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.Bidder, &item.Description, &item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Artist, &item.ImageFileName)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return Item{}, errors.New("no such item")
+			return item, fmt.Errorf("item %d %w", id, ErrNotFound)
 		}
-		return Item{}, errors.New("query failed")
+		return item, err
 	}
 
 	// TODO: make this a database field
@@ -101,7 +103,7 @@ func (db BidDB) GetConfigItem(name string) (ConfigItem, error) {
 	var err error
 
 	if db.sqlDB == nil {
-		return ConfigItem{}, errors.New("invalid db")
+		return config, ErrInvalidDB
 	}
 
 	qry := "SELECT name, value, value_type FROM config WHERE name = ?"
@@ -110,9 +112,9 @@ func (db BidDB) GetConfigItem(name string) (ConfigItem, error) {
 	err = row.Scan(&config.Name, &config.Value, &config.ValueType)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return ConfigItem{}, fmt.Errorf("no such config: %s", name)
+			return ConfigItem{}, fmt.Errorf("config %q %w", name, ErrNotFound)
 		}
-		return ConfigItem{}, errors.New("query failed")
+		return config, err
 	}
 
 	return config, nil
@@ -123,10 +125,10 @@ func (db BidDB) GetItems() ([]Item, error) {
 	var err error
 
 	if db.sqlDB == nil {
-		return items, errors.New("invalid db")
+		return items, ErrInvalidDB
 	}
 
-	qry := "SELECT items.id, items.title, items.created, bids.created, bids.bidder, items.description, items.openingBid, items.minBidIncr, IFNULL(bids.amount,0), IFNULL(bids.bidder,'<none>'), items.artist, items.imageFileName FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id"
+	qry := "SELECT items.id, items.title, items.created, bids.created, items.description, items.openingBid, items.minBidIncr, IFNULL(bids.amount,0), IFNULL(bids.bidder,''), items.artist, items.imageFileName FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id"
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
@@ -137,7 +139,7 @@ func (db BidDB) GetItems() ([]Item, error) {
 	for rows.Next() {
 		var item Item
 
-		err = rows.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.ModifiedBy, &item.Description, &item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Bidder, &item.Artist, &item.ImageFileName)
+		err = rows.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.Description, &item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Bidder, &item.Artist, &item.ImageFileName)
 		if err != nil {
 			return items, err
 		} else {
@@ -153,6 +155,7 @@ func (db BidDB) GetItems() ([]Item, error) {
 	}
 	err = rows.Err()
 	if err != nil {
+		return items, err
 	}
 
 	return items, err
@@ -163,11 +166,10 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 	var err error
 
 	if db.sqlDB == nil {
-		log.Print("db is nil")
-		return winners, errors.New("invalid db")
+		return winners, ErrInvalidDB
 	}
 
-	qry := "SELECT items.id, title, artist, amount, fullName, email, bids.created FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id LEFT JOIN users ON bids.bidder = users.userName WHERE bids.Amount <> 0 ORDER BY items.id"
+	qry := "SELECT items.id, items.title, items.artist, bids.amount, bids.created, bids.bidder, IFNULL(users.fullName,'<missing>'), IFNULL(users.email,'<missing>') FROM items LEFT OUTER JOIN current_bids bids ON items.id = bids.id LEFT JOIN users ON bids.bidder = users.userName WHERE bids.Amount <> 0 ORDER BY items.id"
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
@@ -179,7 +181,7 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 	for rows.Next() {
 		var winner Winner
 
-		err = rows.Scan(&winner.ID, &winner.Title, &winner.Artist, &winner.CurrentBid, &winner.FullName, &winner.Email, &winner.Modified)
+		err = rows.Scan(&winner.ID, &winner.Title, &winner.Artist, &winner.CurrentBid, &winner.Modified, &winner.ModifiedBy, &winner.FullName, &winner.Email)
 		if err != nil {
 			log.Printf("row.Scan failed, %v", err)
 		}
@@ -198,35 +200,39 @@ func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (bool, stri
 	var msg string
 	var br BidResult
 
-	row := db.sqlDB.QueryRow("CALL placeBid(?, ?, ?)", id, bidAmount, userName)
-	err := row.Scan(&br.BidPlaced, &br.ID, &br.Message, &br.PriorBidder, &br.MinAmount,
-		&br.NewBidder, &br.NewAmount)
-	if err != nil {
-		msg = "Unable to submit bid. Please try again."
-		log.Printf("Unable to place bid of %v for item %v by %s",
-			bidAmount, id, userName)
-		log.Print(err)
-	} else {
-		msg = br.Message
-		log.Printf("%s for item %v for amount %v by %s",
-			msg, id, bidAmount, userName)
-		log.Printf("%s was outbid", br.PriorBidder)
+	if db.sqlDB == nil {
+		return br.BidPlaced, msg, br.PriorBidder, ErrInvalidDB
 	}
+
+	row := db.sqlDB.QueryRow("CALL placeBid(?, ?, ?)", id, bidAmount, userName)
+	err := row.Scan(&br.BidPlaced, &br.ID, &br.Message, &br.PriorBidder, &br.MinAmount, &br.NewBidder, &br.NewAmount)
+	if err != nil {
+		msg = "Unable to place bid. Try again."
+
+		return br.BidPlaced, msg, br.PriorBidder, err
+	}
+
+	msg = br.Message
+	log.Printf("%s for item %v for amount %v by %s",
+		msg, id, bidAmount, userName)
+	log.Printf("%s was outbid", br.PriorBidder)
 
 	return br.BidPlaced, msg, br.PriorBidder, err
 }
 
 func (db BidDB) UpdateItem(item Item) (int64, error) {
+	if db.sqlDB == nil {
+		return 0, ErrInvalidDB
+	}
+
 	update := "UPDATE items SET title = ?, description = ?, openingBid = ?, minBidIncr = ?, artist = ?, imageFileName = ? WHERE id = ?"
 	result, err := db.sqlDB.Exec(update, item.Title, item.Description, item.OpeningBid, item.MinBidIncr, item.Artist, item.ImageFileName, item.ID)
 	if err != nil {
-		log.Printf("UpdateItem failed for %d: %v", item.ID, err)
 		return 0, err
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("result.RowsAffected failed: %v", err)
 		return 0, err
 	}
 
@@ -261,8 +267,7 @@ func (db BidDB) GetBidsForItem(id int) ([]Bid, error) {
 	var err error
 
 	if db.sqlDB == nil {
-		log.Print("db is nil")
-		return bids, errors.New("invalid db")
+		return bids, ErrInvalidDB
 	}
 
 	qry := "SELECT id, created, bidder, amount FROM bids WHERE id = ? ORDER BY created DESC"
@@ -297,8 +302,7 @@ func (db BidDB) GetBids() ([]Bid, error) {
 	var err error
 
 	if db.sqlDB == nil {
-		log.Print("db is nil")
-		return bids, errors.New("invalid db")
+		return bids, ErrInvalidDB
 	}
 
 	qry := "SELECT b.id, b.created, b.bidder, b.amount, u.fullName, u.email FROM bids b INNER JOIN users u ON b.bidder = u.userName ORDER BY b.id, b.created DESC"
@@ -349,8 +353,7 @@ func (db BidDB) GetItemsWithBids() ([]ItemWithBids, error) {
 	var err error
 
 	if db.sqlDB == nil {
-		log.Print("db is nil")
-		return items, errors.New("invalid db")
+		return items, ErrInvalidDB
 	}
 
 	qry := "SELECT items.id, items.title, items.created AS itemCreated, items.description, items.openingBid, items.minBidIncr, items.artist, items.imageFileName, bids.created AS bidCreated, bids.bidder, bids.amount, users.fullName, users.email FROM items INNER JOIN bids ON items.id = bids.id INNER JOIN users ON bids.bidder = users.UserName ORDER BY items.id, bids.created DESC"

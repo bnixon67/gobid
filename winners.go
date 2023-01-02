@@ -22,15 +22,14 @@ import (
 )
 
 type Winner struct {
-	ID          int
-	Title       string
-	Modified    time.Time
-	ModifiedBy  *string
-	Description *string
-	CurrentBid  float64
-	Artist      string
-	Email       string
-	FullName    string
+	ID         int
+	Title      string
+	Artist     string
+	CurrentBid float64
+	Modified   time.Time
+	ModifiedBy string
+	Email      string
+	FullName   string
 }
 
 // WinnerPageData contains data passed to the HTML template.

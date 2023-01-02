@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS `bids`;
-
 CREATE TABLE `bids` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `created` timestamp NOT NULL DEFAULT current_timestamp(),

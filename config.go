@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -26,14 +27,16 @@ func (app *BidApp) GetTimeConfig(name string) (time.Time, error) {
 func (app *BidApp) ConfigAuction() error {
 	var err error
 
-	app.AuctionStart, err = app.GetTimeConfig("auction_start")
+	s := "auction_start"
+	app.AuctionStart, err = app.GetTimeConfig(s)
 	if err != nil {
-		return err
+		return fmt.Errorf("%q %w", s, err)
 	}
 
-	app.AuctionEnd, err = app.GetTimeConfig("auction_end")
+	s = "auction_end"
+	app.AuctionEnd, err = app.GetTimeConfig(s)
 	if err != nil {
-		return err
+		return fmt.Errorf("%q %w", s, err)
 	}
 
 	return err
