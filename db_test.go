@@ -24,7 +24,7 @@ var (
 	mt = time.Date(2022, time.December, 31, 0, 0, 0, 0, time.UTC)
 	mb = "test"
 
-	testItem2 = Item{
+	testID2 = Item{
 		ID:            2,
 		Title:         "Item Test",
 		Created:       ct.Add(time.Hour * 2),
@@ -36,7 +36,7 @@ var (
 		MinBid:        10.0,
 	}
 
-	testItem3 = Item{
+	testID3 = Item{
 		ID:            3,
 		Title:         "Item Test with Bid",
 		Created:       ct.Add(time.Hour * 3),
@@ -58,26 +58,10 @@ func TestGetItem(t *testing.T) {
 		want Item
 		err  error
 	}{
-		{
-			id:   0,
-			want: Item{},
-			err:  ErrNotFound,
-		},
-		{
-			id:   999,
-			want: Item{},
-			err:  ErrNotFound,
-		},
-		{
-			id:   2,
-			want: testItem2,
-			err:  nil,
-		},
-		{
-			id:   3,
-			want: testItem3,
-			err:  nil,
-		},
+		{id: 0, want: Item{}, err: ErrNotFound},
+		{id: 999, want: Item{}, err: ErrNotFound},
+		{id: 2, want: testID2, err: nil},
+		{id: 3, want: testID3, err: nil},
 	}
 
 	app := AppForTest(t)
@@ -88,45 +72,38 @@ func TestGetItem(t *testing.T) {
 	for _, tc := range cases {
 		got, err := app.BidDB.GetItem(tc.id)
 		if !errors.Is(err, tc.err) {
-			t.Errorf("got err %q want %q for GetItem(%d)",
-				err, tc.err, tc.id)
+			t.Errorf("GetItem(%d)\ngot err '%v' want '%v'",
+				tc.id, err, tc.err)
 		}
 		if !reflect.DeepEqual(got, tc.want) {
-			t.Errorf("got\n%s\nwant\n%s\nfor GetItem(%d)",
-				AsJson(got), AsJson(tc.want), tc.id)
+			t.Errorf("GetItem(%d)\n got %s\nwant %s",
+				tc.id, AsJson(got), AsJson(tc.want))
 		}
 	}
 
+	// test for invalid DB
 	sqlDB := app.BidDB.sqlDB
 	app.BidDB.sqlDB = nil
 	_, err := app.BidDB.GetItem(0)
 	if err != ErrInvalidDB {
-		t.Errorf("got err %q want %q", err, ErrInvalidDB)
+		t.Errorf("got err '%v' want '%v'", err, ErrInvalidDB)
 	}
 	app.BidDB.sqlDB = sqlDB
 }
 
 func TestGetConfigItem(t *testing.T) {
+	testConfigItem := ConfigItem{
+		Name: "cname", Value: "cvalue", ValueType: "ctype",
+	}
+
 	cases := []struct {
 		cname string
 		want  ConfigItem
 		err   error
 	}{
-		{
-			cname: "",
-			want:  ConfigItem{},
-			err:   ErrNotFound,
-		},
-		{
-			cname: "foo",
-			want:  ConfigItem{},
-			err:   ErrNotFound,
-		},
-		{
-			cname: "cname",
-			want:  ConfigItem{Name: "cname", Value: "cvalue", ValueType: "ctype"},
-			err:   nil,
-		},
+		{cname: "", want: ConfigItem{}, err: ErrNotFound},
+		{cname: "nosuchitem", want: ConfigItem{}, err: ErrNotFound},
+		{cname: "cname", want: testConfigItem, err: nil},
 	}
 
 	app := AppForTest(t)
@@ -137,20 +114,21 @@ func TestGetConfigItem(t *testing.T) {
 	for _, tc := range cases {
 		got, err := app.BidDB.GetConfigItem(tc.cname)
 		if !errors.Is(err, tc.err) {
-			t.Errorf("got err '%v' want '%v' for GetConfigItem(%q)",
-				err, tc.err, tc.cname)
+			t.Errorf("GetConfigItem(%q)\ngot err '%v' want '%v'",
+				tc.cname, err, tc.err)
 		}
 		if got != tc.want {
-			t.Errorf("got %+v want %+v for GetConfigItem(%q)",
-				got, tc.want, tc.cname)
+			t.Errorf("GetConfigItem(%q)\n got %+v\nwant %+v",
+				tc.cname, got, tc.want)
 		}
 	}
 
+	// test for invalid DB
 	sqlDB := app.BidDB.sqlDB
 	app.BidDB.sqlDB = nil
 	_, err := app.BidDB.GetConfigItem("")
 	if err != ErrInvalidDB {
-		t.Errorf("got err %q want %q", err, ErrInvalidDB)
+		t.Errorf("got err '%v' want '%v'", err, ErrInvalidDB)
 	}
 	app.BidDB.sqlDB = sqlDB
 }
@@ -163,22 +141,30 @@ func TestGetItems(t *testing.T) {
 
 	got, err := app.BidDB.GetItems()
 	if err != nil {
-		t.Errorf("got err %q want nil", err)
+		t.Fatalf("got err '%v' want '%v'", err, nil)
 	}
 
-	if !reflect.DeepEqual(got[1], testItem2) {
-		t.Errorf("got\n%s\nwant\n%s", AsJson(got[1]), AsJson(testItem2))
+	// test for a few results in Items
+	cases := []struct {
+		idx  int
+		want Item
+	}{
+		{idx: 1, want: testID2}, // arrary is 0 based, so idx-1 = id
+		{idx: 2, want: testID3},
+	}
+	for _, tc := range cases {
+		if !reflect.DeepEqual(got[tc.idx], tc.want) {
+			t.Errorf("Item[%d]:\n got %s\nwant %s",
+				tc.idx, AsJson(got[tc.idx]), AsJson(tc.want))
+		}
 	}
 
-	if !reflect.DeepEqual(got[2], testItem3) {
-		t.Errorf("got\n%s\nwant\n%s", AsJson(got[2]), AsJson(testItem3))
-	}
-
+	// test for invalid DB
 	sqlDB := app.BidDB.sqlDB
 	app.BidDB.sqlDB = nil
 	_, err = app.BidDB.GetItems()
 	if err != ErrInvalidDB {
-		t.Errorf("got err %q want %q", err, ErrInvalidDB)
+		t.Errorf("got err '%v' want '%v'", err, ErrInvalidDB)
 	}
 	app.BidDB.sqlDB = sqlDB
 }
@@ -189,19 +175,14 @@ func TestGetWinners(t *testing.T) {
 		t.Fatalf("cannot create AppForTest")
 	}
 
-	want := 2
 	got, err := app.BidDB.GetWinners()
 	if err != nil {
-		t.Errorf("got err %q want nil", err)
+		t.Errorf("got err '%v' want '%v'", err, nil)
 	}
 
-	if len(got) != want {
-		t.Errorf("got %d want %d for len(GetWinners())",
-			len(got), want)
-	}
-
+	// test to see if there is a specific winner in the results
 	modified := time.Date(2022, time.December, 31, 0, 0, 0, 0, time.UTC)
-	winner := Winner{
+	tWinner := Winner{
 		ID:         3,
 		Title:      "Item Test with Bid",
 		Artist:     "Art",
@@ -211,17 +192,26 @@ func TestGetWinners(t *testing.T) {
 		Email:      "test@user",
 		FullName:   "Test User",
 	}
-
-	if !reflect.DeepEqual(got[1], winner) {
-		t.Errorf("got\n%s\nwant\n%s\nfor GetWinners()[1]",
-			AsJson(got[1]), AsJson(winner))
+	found := false
+	for idx, _ := range got {
+		if got[idx].ID == tWinner.ID {
+			found = true
+			if !reflect.DeepEqual(got[idx], tWinner) {
+				t.Errorf("GetWinners[%d]:\n got %s\nwant %s\n",
+					idx, AsJson(got[idx]), AsJson(tWinner))
+			}
+		}
+	}
+	if !found {
+		t.Errorf("did not find Winner with ID=%d", tWinner.ID)
 	}
 
+	// test for invalid DB
 	sqlDB := app.BidDB.sqlDB
 	app.BidDB.sqlDB = nil
 	_, err = app.BidDB.GetWinners()
 	if err != ErrInvalidDB {
-		t.Errorf("got err %q want %q", err, ErrInvalidDB)
+		t.Errorf("got err '%v' want '%v'", err, ErrInvalidDB)
 	}
 	app.BidDB.sqlDB = sqlDB
 }
@@ -234,12 +224,12 @@ func TestPlaceBidValid(t *testing.T) {
 
 	item, err := app.BidDB.GetItem(1)
 	if err != nil {
-		t.Fatalf("GetItem failed: %v", err)
+		t.Fatalf("GetItem(1) failed: %v", err)
 	}
 
 	bidPlaced, msg, _, err := app.BidDB.PlaceBid(item.ID, item.MinBid, "test")
 	if err != nil {
-		t.Errorf("PlaceBid failed: %v", err)
+		t.Fatalf("PlaceBid failed: %v", err)
 	}
 
 	if !bidPlaced {
@@ -251,11 +241,12 @@ func TestPlaceBidValid(t *testing.T) {
 		t.Errorf("got msg = %v, want %v", msg, wantMsg)
 	}
 
+	// test for invalid DB
 	sqlDB := app.BidDB.sqlDB
 	app.BidDB.sqlDB = nil
 	_, _, _, err = app.BidDB.PlaceBid(item.ID, item.MinBid, "test")
 	if err != ErrInvalidDB {
-		t.Errorf("got err %q want %q", err, ErrInvalidDB)
+		t.Errorf("got err '%v' want '%v'", err, ErrInvalidDB)
 	}
 	app.BidDB.sqlDB = sqlDB
 }

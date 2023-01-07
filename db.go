@@ -83,7 +83,7 @@ func (db BidDB) GetItem(id int) (Item, error) {
 	err = row.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.Bidder, &item.Description, &item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Artist, &item.ImageFileName)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return item, fmt.Errorf("item %d %w", id, ErrNotFound)
+			return item, fmt.Errorf("item %d: %w", id, ErrNotFound)
 		}
 		return item, err
 	}
@@ -112,7 +112,8 @@ func (db BidDB) GetConfigItem(name string) (ConfigItem, error) {
 	err = row.Scan(&config.Name, &config.Value, &config.ValueType)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return ConfigItem{}, fmt.Errorf("config %q %w", name, ErrNotFound)
+			return ConfigItem{}, fmt.Errorf("name %q: %w",
+				name, ErrNotFound)
 		}
 		return config, err
 	}
