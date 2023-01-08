@@ -90,7 +90,7 @@ func (db BidDB) GetItem(id int) (Item, error) {
 		item.MinBid = item.CurrentBid + item.MinBidIncr
 	}
 
-	return item, nil
+	return item, err
 }
 
 func (db BidDB) GetConfigItem(name string) (ConfigItem, error) {
@@ -113,7 +113,7 @@ func (db BidDB) GetConfigItem(name string) (ConfigItem, error) {
 		return config, err
 	}
 
-	return config, nil
+	return config, err
 }
 
 func (db BidDB) GetItems() ([]Item, error) {
@@ -138,16 +138,16 @@ func (db BidDB) GetItems() ([]Item, error) {
 		err = rows.Scan(&item.ID, &item.Title, &item.Created, &item.Modified, &item.Description, &item.OpeningBid, &item.MinBidIncr, &item.CurrentBid, &item.Bidder, &item.Artist, &item.ImageFileName)
 		if err != nil {
 			return items, err
-		} else {
-			// TODO: make this a database field
-			if item.CurrentBid == 0 {
-				item.MinBid = item.OpeningBid
-			} else {
-				item.MinBid = item.CurrentBid + item.MinBidIncr
-			}
-
-			items = append(items, item)
 		}
+
+		// TODO: make this a database field
+		if item.CurrentBid == 0 {
+			item.MinBid = item.OpeningBid
+		} else {
+			item.MinBid = item.CurrentBid + item.MinBidIncr
+		}
+
+		items = append(items, item)
 	}
 	err = rows.Err()
 	if err != nil {
@@ -204,36 +204,27 @@ func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (BidResult,
 	err := row.Scan(&bidResult.BidPlaced, &bidResult.Message, &bidResult.PriorBidder)
 	if err != nil {
 		bidResult.Message = PlaceBidError
-
 		return bidResult, err
 	}
 
 	return bidResult, err
 }
 
-var ErrInvalidUpdate = errors.New("update item invalid")
-
-func anyStringEmpty(strings ...string) bool {
-	for _, s := range strings {
-		if s == "" {
-			return true
-		}
-	}
-	return false
-}
+var ErrInvalidItem = errors.New("invalid item")
 
 func (db BidDB) UpdateItem(item Item) (int64, error) {
 	if db.sqlDB == nil {
 		return 0, ErrInvalidDB
 	}
 
-	if anyStringEmpty(
+	// require non-empty strings for some fields
+	if AnyEmpty(
 		item.Title,
 		item.Description,
 		item.Artist,
 		item.ImageFileName,
 	) {
-		return 0, ErrInvalidUpdate
+		return 0, ErrInvalidItem
 	}
 
 	update := "UPDATE items SET title = ?, description = ?, openingBid = ?, minBidIncr = ?, artist = ?, imageFileName = ? WHERE id = ?"
@@ -242,32 +233,50 @@ func (db BidDB) UpdateItem(item Item) (int64, error) {
 		return 0, err
 	}
 
-	rows, err := result.RowsAffected()
+	cnt, err := result.RowsAffected()
 	if err != nil {
 		return 0, err
 	}
 
-	return rows, err
+	return cnt, err
 }
 
-func (db BidDB) CreateItem(item Item) (int64, int64, error) {
+var ErrCreateFailed = errors.New("create failed")
+
+func (db BidDB) CreateItem(item Item) (int64, error) {
+	if db.sqlDB == nil {
+		return 0, ErrInvalidDB
+	}
+
+	// require non-empty strings for some fields
+	if AnyEmpty(
+		item.Title,
+		item.Description,
+		item.Artist,
+	) {
+		return 0, ErrInvalidItem
+	}
+
 	insert := "INSERT INTO items(title, description, openingBid, minBidIncr, artist, imageFileName) VALUES (?, ?, ?, ?, ?, ?)"
 	result, err := db.sqlDB.Exec(insert, item.Title, item.Description, item.OpeningBid, item.MinBidIncr, item.Artist, item.ImageFileName)
 	if err != nil {
-		return 0, 0, err
+		return 0, fmt.Errorf("%w: %v", ErrCreateFailed, err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return 0, 0, err
+		return 0, fmt.Errorf("%w: %v", ErrCreateFailed, err)
+	}
+	if rows != 1 {
+		return 0, fmt.Errorf("%w: %v", ErrCreateFailed, "multiple rows affected")
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return 0, 0, err
+		return 0, fmt.Errorf("%w: %v", ErrCreateFailed, err)
 	}
 
-	return id, rows, err
+	return id, err
 }
 
 func (db BidDB) GetBidsForItem(id int) ([]Bid, error) {

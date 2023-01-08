@@ -39,3 +39,31 @@ func TestSafeFileName(t *testing.T) {
 		}
 	}
 }
+
+func TestAnyEmpty(t *testing.T) {
+	cases := []struct {
+		strings []string
+		want    bool
+	}{
+		{[]string{}, false},
+		{[]string{""}, true},
+		{[]string{"one"}, false},
+		{[]string{"", ""}, true},
+		{[]string{"one", ""}, true},
+		{[]string{"", "two"}, true},
+		{[]string{"one", "two"}, false},
+		{[]string{"", "", ""}, true},
+		{[]string{"one", "", ""}, true},
+		{[]string{"one", "two", ""}, true},
+		{[]string{"one", "", "three"}, true},
+		{[]string{"one", "two", "three"}, false},
+	}
+
+	for _, tc := range cases {
+		got := AnyEmpty(tc.strings...)
+		if got != tc.want {
+			t.Errorf("AnyEmpty(%q): got %v want %v",
+				tc.strings, got, tc.want)
+		}
+	}
+}

@@ -48,6 +48,7 @@ func SafeFileName(name, ext string) string {
 	return name + "." + ext
 }
 
+// AsJson returns v as a Json string. If Marshal fails, then the error string is returned instead of a Json string.
 func AsJson(v any) string {
 	b, err := json.Marshal(v)
 	if err != nil {
@@ -55,4 +56,14 @@ func AsJson(v any) string {
 	}
 
 	return string(b)
+}
+
+// AnyEmpty returns true if any of the strings are empty.
+func AnyEmpty(strings ...string) bool {
+	for _, s := range strings {
+		if s == "" {
+			return true
+		}
+	}
+	return false
 }

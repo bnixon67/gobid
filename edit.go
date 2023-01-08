@@ -225,10 +225,10 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// only continue if msg is null, otherwise there was a prior error
 	if msg == "" {
 		if id == 0 { // create new item
-			newId, rows, err := app.BidDB.CreateItem(item)
-			if rows > 1 || err != nil {
+			newId, err := app.BidDB.CreateItem(item)
+			if err != nil {
 				msg = "Could not create item"
-				log.Printf("unable to CreateItem(%+v), %d, %q", item, rows, err)
+				log.Printf("unable to CreateItem(%+v): %v", item, err)
 			} else {
 				log.Printf("created item %d", newId)
 				newUrl := fmt.Sprintf("/edit/%d", newId)

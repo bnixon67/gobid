@@ -15,6 +15,7 @@ package main
 import (
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -22,6 +23,7 @@ import (
 var (
 	ct = time.Date(2022, time.December, 30, 0, 0, 0, 0, time.UTC)
 	mt = time.Date(2022, time.December, 31, 0, 0, 0, 0, time.UTC)
+	bt = time.Date(2022, time.December, 31, 0, 0, 0, 0, time.UTC)
 	mb = "test"
 
 	testID2 = Item{
@@ -297,6 +299,15 @@ func TestPlaceBid(t *testing.T) {
 				AsJson(got), AsJson(tc.want))
 		}
 	}
+
+	// test for invalid DB
+	sqlDB := app.BidDB.sqlDB
+	app.BidDB.sqlDB = nil
+	_, err = app.BidDB.PlaceBid(0, 0, "test")
+	if err != ErrInvalidDB {
+		t.Errorf("got err '%v' want '%v'", err, ErrInvalidDB)
+	}
+	app.BidDB.sqlDB = sqlDB
 }
 
 func TestUpdateItem(t *testing.T) {
@@ -317,13 +328,34 @@ func TestUpdateItem(t *testing.T) {
 		want int64
 		err  error
 	}{
-		{item: testItem, want: 1, err: nil},
-		{item: Item{}, want: 0, err: ErrInvalidUpdate},
-		{item: Item{ID: 5}, want: 0, err: ErrInvalidUpdate},
-		{item: Item{ID: 5, Title: "t"}, want: 0, err: ErrInvalidUpdate},
-		{item: Item{ID: 5, Title: "t", Description: "d"}, want: 0, err: ErrInvalidUpdate},
-		{item: Item{ID: 5, Title: "t", Description: "d", Artist: "a"}, want: 0, err: ErrInvalidUpdate},
-		{item: Item{ID: 5, Title: "t", Description: "d", Artist: "a", ImageFileName: "i", Created: ct.Add(time.Hour * 5)}, want: 1, err: nil},
+		{
+			item: testItem,
+			want: 1, err: nil,
+		},
+		{
+			item: Item{},
+			want: 0, err: ErrInvalidItem,
+		},
+		{
+			item: Item{ID: 5},
+			want: 0, err: ErrInvalidItem,
+		},
+		{
+			item: Item{ID: 5, Title: "t"},
+			want: 0, err: ErrInvalidItem,
+		},
+		{
+			item: Item{ID: 5, Title: "t", Description: "d"},
+			want: 0, err: ErrInvalidItem,
+		},
+		{
+			item: Item{ID: 5, Title: "t", Description: "d", Artist: "a"},
+			want: 0, err: ErrInvalidItem,
+		},
+		{
+			item: Item{ID: 5, Title: "t", Description: "d", Artist: "a", ImageFileName: "i", Created: ct.Add(time.Hour * 5)},
+			want: 1, err: nil,
+		},
 	}
 
 	for _, tc := range cases {
@@ -367,7 +399,7 @@ func TestCreateItem(t *testing.T) {
 		t.Fatalf("cannot create AppForTest")
 	}
 
-	item := Item{
+	testItem := Item{
 		Title:         "Test CreateItem",
 		Description:   "This is a test of CreateItem",
 		OpeningBid:    42,
@@ -375,24 +407,45 @@ func TestCreateItem(t *testing.T) {
 		Artist:        "CreateItem Artist",
 		ImageFileName: "CreateItem.jpg",
 	}
+	errorItem := testItem
+	errorItem.Title = strings.Repeat("x", 100)
 
-	id, rows, err := app.BidDB.CreateItem(item)
-	if rows > 1 || err != nil {
-		t.Fatalf("CreateItem failed, id = %d, rows = %d, err = %v", id, rows, err)
+	cases := []struct {
+		item Item
+		err  error
+	}{
+		{item: testItem, err: nil},
+		{item: Item{}, err: ErrInvalidItem},
+		{item: errorItem, err: ErrCreateFailed},
 	}
 
-	got, err := app.BidDB.GetItem(int(id))
-	if err != nil {
-		t.Fatalf("GetItem(%d) failed: %v", id, err)
+	for _, tc := range cases {
+		newID, err := app.BidDB.CreateItem(tc.item)
+		if !errors.Is(err, tc.err) {
+			t.Errorf("UpdateItem(%+v)\ngot err '%v' want '%v'",
+				tc.item, err, tc.err)
+		}
+		if err == nil {
+			item, err := app.BidDB.GetItem(int(newID))
+			if err != nil {
+				t.Fatalf("GetItem(%d) failed: %v",
+					newID, err)
+			}
+			tc.item.ID = int(newID)
+			tc.item.Created = item.Created
+			tc.item.MinBid = item.MinBid
+			if !reflect.DeepEqual(item, tc.item) {
+				t.Errorf("GetItem(%d)\n got %s\nwant %s",
+					newID,
+					AsJson(item), AsJson(tc.item))
+			}
+		}
 	}
 
-	if got.Title != item.Title && got.Description != item.Description && got.OpeningBid != item.OpeningBid && got.MinBidIncr != item.MinBidIncr && got.Artist != item.Artist && got.ImageFileName != item.ImageFileName {
-		t.Fatalf("got %v, want %v", got, item)
-	}
-
+	// test for invalid DB
 	sqlDB := app.BidDB.sqlDB
 	app.BidDB.sqlDB = nil
-	_, err = app.BidDB.UpdateItem(item)
+	_, err := app.BidDB.CreateItem(Item{})
 	if err != ErrInvalidDB {
 		t.Errorf("got err %q want %q", err, ErrInvalidDB)
 	}
@@ -405,10 +458,60 @@ func TestGetBidsForItem(t *testing.T) {
 		t.Fatalf("cannot create AppForTest")
 	}
 
-	_, err := app.BidDB.GetBidsForItem(1)
-	if err != nil {
-		t.Errorf("GetBidsForItem failed: %v", err)
+	var noBids []Bid
+
+	testBidsID3 := []Bid{
+		Bid{ID: 3, Created: bt, Bidder: "test", Amount: 15, FullName: "", Email: ""},
 	}
+
+	testBidsID6 := []Bid{
+		Bid{ID: 6, Created: bt.Add(time.Hour * 3), Bidder: "test", Amount: 7, FullName: "", Email: ""},
+		Bid{ID: 6, Created: bt.Add(time.Hour * 2), Bidder: "test", Amount: 5, FullName: "", Email: ""},
+		Bid{ID: 6, Created: bt.Add(time.Hour * 1), Bidder: "test", Amount: 3, FullName: "", Email: ""},
+	}
+
+	cases := []struct {
+		id   int
+		want []Bid
+		err  error
+	}{
+		{id: 0, want: noBids, err: nil},
+		{id: 2, want: noBids, err: nil},
+		{id: 4, want: noBids, err: nil},
+		{id: 3, want: testBidsID3, err: nil},
+		{id: 6, want: testBidsID6, err: nil},
+	}
+
+	for _, tc := range cases {
+		got, err := app.BidDB.GetBidsForItem(tc.id)
+		if !errors.Is(err, tc.err) {
+			t.Errorf("GetBidsForItem(%d)\ngot err '%v' want '%v'",
+				tc.id, err, tc.err)
+		}
+		if !reflect.DeepEqual(got, tc.want) {
+			t.Errorf("GetBidsForItem(%d)\n got %s\nwant %s",
+				tc.id,
+				AsJson(got), AsJson(tc.want))
+		}
+	}
+
+	// test for invalid DB
+	sqlDB := app.BidDB.sqlDB
+	app.BidDB.sqlDB = nil
+	_, err := app.BidDB.CreateItem(Item{})
+	if err != ErrInvalidDB {
+		t.Errorf("got err %q want %q", err, ErrInvalidDB)
+	}
+	app.BidDB.sqlDB = sqlDB
+}
+
+func containsBid(bids []Bid, bid Bid) bool {
+	for _, b := range bids {
+		if reflect.DeepEqual(bid, b) {
+			return true
+		}
+	}
+	return false
 }
 
 func TestGetBids(t *testing.T) {
@@ -417,12 +520,106 @@ func TestGetBids(t *testing.T) {
 		t.Fatalf("cannot create AppForTest")
 	}
 
-	_, err := app.BidDB.GetBids()
+	got, err := app.BidDB.GetBids()
 	if err != nil {
-		t.Errorf("GetBidsForItem failed: %v", err)
+		t.Errorf("GetBids failed: %v", err)
 	}
+
+	want := []Bid{
+		Bid{ID: 3, Created: bt, Bidder: "test", Amount: 15, FullName: "Test User", Email: "test@user"},
+		Bid{ID: 6, Created: bt.Add(time.Hour * 3), Bidder: "test", Amount: 7, FullName: "Test User", Email: "test@user"},
+		Bid{ID: 6, Created: bt.Add(time.Hour * 2), Bidder: "test", Amount: 5, FullName: "Test User", Email: "test@user"},
+		Bid{ID: 6, Created: bt.Add(time.Hour * 1), Bidder: "test", Amount: 3, FullName: "Test User", Email: "test@user"},
+	}
+
+	// check if want elements are in got
+	for _, w := range want {
+		if !containsBid(got, w) {
+			t.Errorf("Did not find bid\n%s\nin\n%s",
+				AsJson(w), AsJson(got))
+		}
+	}
+
+	// test for invalid DB
+	sqlDB := app.BidDB.sqlDB
+	app.BidDB.sqlDB = nil
+	_, err = app.BidDB.GetBids()
+	if err != ErrInvalidDB {
+		t.Errorf("got err %q want %q", err, ErrInvalidDB)
+	}
+	app.BidDB.sqlDB = sqlDB
 }
 
+func containsItemWithBids(items []ItemWithBids, item ItemWithBids) bool {
+	for _, i := range items {
+		if reflect.DeepEqual(item, i) {
+			return true
+		}
+	}
+	return false
+}
+
+func TestGetItemsWithBids(t *testing.T) {
+	app := AppForTest(t)
+	if app == nil {
+		t.Fatalf("cannot create AppForTest")
+	}
+
+	got, err := app.BidDB.GetItemsWithBids()
+	if err != nil {
+		t.Errorf("GetBids failed: %v", err)
+	}
+
+	bidsID3 := []Bid{
+		Bid{
+			ID: 3, Created: bt, Bidder: "test", Amount: 15,
+			FullName: "Test User", Email: "test@user",
+		},
+	}
+	bidsID6 := []Bid{
+		Bid{ID: 6, Created: bt.Add(time.Hour * 3), Bidder: "test", Amount: 7, FullName: "Test User", Email: "test@user"},
+		Bid{ID: 6, Created: bt.Add(time.Hour * 2), Bidder: "test", Amount: 5, FullName: "Test User", Email: "test@user"},
+		Bid{ID: 6, Created: bt.Add(time.Hour * 1), Bidder: "test", Amount: 3, FullName: "Test User", Email: "test@user"},
+	}
+
+	want := []ItemWithBids{
+		ItemWithBids{
+			ID: 3, Title: "Item Test with Bid",
+			Created:     ct.Add(time.Hour * 3),
+			Description: "Item to test GetItem with Bid",
+			OpeningBid:  5, MinBidIncr: 1,
+			Artist: "Art", ImageFileName: "File",
+			Bids: bidsID3,
+		},
+		ItemWithBids{
+			ID: 6, Title: "Item Test with 3 Bids",
+			Created:     ct.Add(time.Hour * 6),
+			Description: "Item to test GetItem with 3 Bids",
+			OpeningBid:  3, MinBidIncr: 2,
+			Artist: "Art 3 Bid", ImageFileName: "File 3 Bid",
+			Bids: bidsID6,
+		},
+	}
+
+	// check if want elements are in got
+	for _, w := range want {
+		if !containsItemWithBids(got, w) {
+			t.Errorf("Did not find bid\n%s\nin\n%s",
+				AsJson(w), AsJson(got))
+		}
+	}
+
+	// test for invalid DB
+	sqlDB := app.BidDB.sqlDB
+	app.BidDB.sqlDB = nil
+	_, err = app.BidDB.GetBids()
+	if err != ErrInvalidDB {
+		t.Errorf("got err %q want %q", err, ErrInvalidDB)
+	}
+	app.BidDB.sqlDB = sqlDB
+}
+
+/*
 func TestGetItemsWithBids(t *testing.T) {
 	app := AppForTest(t)
 	if app == nil {
@@ -434,3 +631,4 @@ func TestGetItemsWithBids(t *testing.T) {
 		t.Errorf("GetItemsWithBids failed: %v", err)
 	}
 }
+*/
