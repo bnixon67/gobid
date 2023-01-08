@@ -57,10 +57,7 @@ BEGIN
     END IF;
   END IF;
 
-  SELECT bidPlaced, bidId, message,
-         IFNULL(curBidder,"") AS priorBidder,
-         IFNULL(minAmount,0) AS minAmount,
-	 newBidder, newAmount;
+  SELECT bidPlaced, message, IFNULL(curBidder,"") AS priorBidder;
 
   COMMIT;
 

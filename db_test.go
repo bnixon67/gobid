@@ -216,85 +216,86 @@ func TestGetWinners(t *testing.T) {
 	app.BidDB.sqlDB = sqlDB
 }
 
-func TestPlaceBidValid(t *testing.T) {
+func TestPlaceBid(t *testing.T) {
 	app := AppForTest(t)
 	if app == nil {
 		t.Fatalf("cannot create AppForTest")
 	}
 
-	item, err := app.BidDB.GetItem(1)
+	// get item to test
+	id1, err := app.BidDB.GetItem(1)
 	if err != nil {
 		t.Fatalf("GetItem(1) failed: %v", err)
 	}
 
-	bidPlaced, msg, _, err := app.BidDB.PlaceBid(item.ID, item.MinBid, "test")
-	if err != nil {
-		t.Fatalf("PlaceBid failed: %v", err)
+	cases := []struct {
+		id        int
+		bidAmount float64
+		bidder    string
+		want      BidResult
+		err       error
+		sleep     bool
+	}{
+		{
+			id: 0, bidAmount: 1.0, bidder: "test",
+			want: BidResult{
+				BidPlaced: false,
+				Message:   "No such item",
+			},
+			err: nil,
+		},
+		{
+			id: 4, bidAmount: 1.0, bidder: "test",
+			want: BidResult{
+				BidPlaced: false,
+				Message:   "Display only item",
+			},
+			err: nil,
+		},
+		{
+			id: 3, bidAmount: 1.0, bidder: "test",
+			want: BidResult{
+				BidPlaced:   false,
+				Message:     "Bid too low",
+				PriorBidder: "test",
+			},
+			err: nil,
+		},
+		{
+			id: 1, bidAmount: id1.MinBid, bidder: "test",
+			want: BidResult{
+				BidPlaced:   true,
+				Message:     "Bid placed",
+				PriorBidder: "",
+			},
+			err: nil,
+		},
+		{
+			id: 1, bidAmount: 100, bidder: "test",
+			want: BidResult{
+				BidPlaced:   true,
+				Message:     "Bid placed",
+				PriorBidder: "test",
+			},
+			err:   nil,
+			sleep: true,
+		},
 	}
 
-	if !bidPlaced {
-		t.Errorf("got bidPlaced = %v, want %v", bidPlaced, true)
-	}
-
-	wantMsg := "Bid placed"
-	if msg != wantMsg {
-		t.Errorf("got msg = %v, want %v", msg, wantMsg)
-	}
-
-	// test for invalid DB
-	sqlDB := app.BidDB.sqlDB
-	app.BidDB.sqlDB = nil
-	_, _, _, err = app.BidDB.PlaceBid(item.ID, item.MinBid, "test")
-	if err != ErrInvalidDB {
-		t.Errorf("got err '%v' want '%v'", err, ErrInvalidDB)
-	}
-	app.BidDB.sqlDB = sqlDB
-}
-
-func TestPlaceBidTooLow(t *testing.T) {
-	app := AppForTest(t)
-	if app == nil {
-		t.Fatalf("cannot create AppForTest")
-	}
-
-	item, err := app.BidDB.GetItem(1)
-	if err != nil {
-		t.Fatalf("GetItem failed: %v", err)
-	}
-
-	bidPlaced, msg, _, err := app.BidDB.PlaceBid(item.ID, item.MinBid-1, "test")
-	if err != nil {
-		t.Errorf("PlaceBid failed: %v", err)
-	}
-
-	if bidPlaced {
-		t.Errorf("got bidPlaced = %v, want %v", bidPlaced, true)
-	}
-
-	wantMsg := "Bid too low"
-	if msg != wantMsg {
-		t.Errorf("got msg = %v, want %v", msg, wantMsg)
-	}
-}
-
-func TestPlaceBidInvalidItem(t *testing.T) {
-	app := AppForTest(t)
-	if app == nil {
-		t.Fatalf("cannot create AppForTest")
-	}
-
-	bidPlaced, msg, _, err := app.BidDB.PlaceBid(0, 0, "test")
-	if err != nil {
-		t.Errorf("PlaceBid failed: %v", err)
-	}
-
-	if bidPlaced {
-		t.Errorf("got bidPlaced = %v, want %v", bidPlaced, true)
-	}
-
-	wantMsg := "No such item"
-	if msg != wantMsg {
-		t.Errorf("got msg = %v, want %v", msg, wantMsg)
+	for _, tc := range cases {
+		if tc.sleep {
+			time.Sleep(time.Second)
+		}
+		got, err := app.BidDB.PlaceBid(tc.id, tc.bidAmount, tc.bidder)
+		if !errors.Is(err, tc.err) {
+			t.Errorf("PlaceBid(%d, %f, %q)\ngot err '%v' want '%v'",
+				tc.id, tc.bidAmount, tc.bidder, err, tc.err)
+		}
+		if !reflect.DeepEqual(got, tc.want) {
+			t.Errorf("PlaceBid(%d, %f, %q)\n got %s\nwant %s",
+				tc.id, tc.bidAmount, tc.bidder,
+				AsJson(got), AsJson(tc.want))
+		}
 	}
 }
 
@@ -304,24 +305,56 @@ func TestUpdateItem(t *testing.T) {
 		t.Fatalf("cannot create AppForTest")
 	}
 
-	item := Item{
-		ID:            1,
-		Title:         "Aquarium",
-		Description:   "Picture of an Aquarium",
-		OpeningBid:    10,
-		MinBidIncr:    5,
-		Artist:        "Microsoft",
-		ImageFileName: "Aquarium.jpg",
+	// get item to test
+	testItem, err := app.BidDB.GetItem(5)
+	if err != nil {
+		t.Fatalf("GetItem(1) failed: %v", err)
+	}
+	testItem.MinBidIncr += 1
+
+	cases := []struct {
+		item Item
+		want int64
+		err  error
+	}{
+		{item: testItem, want: 1, err: nil},
+		{item: Item{}, want: 0, err: ErrInvalidUpdate},
+		{item: Item{ID: 5}, want: 0, err: ErrInvalidUpdate},
+		{item: Item{ID: 5, Title: "t"}, want: 0, err: ErrInvalidUpdate},
+		{item: Item{ID: 5, Title: "t", Description: "d"}, want: 0, err: ErrInvalidUpdate},
+		{item: Item{ID: 5, Title: "t", Description: "d", Artist: "a"}, want: 0, err: ErrInvalidUpdate},
+		{item: Item{ID: 5, Title: "t", Description: "d", Artist: "a", ImageFileName: "i", Created: ct.Add(time.Hour * 5)}, want: 1, err: nil},
 	}
 
-	rows, err := app.BidDB.UpdateItem(item)
-	if rows > 1 || err != nil {
-		t.Errorf("UpdateItem failed, rows = %d, err = %v", rows, err)
+	for _, tc := range cases {
+		got, err := app.BidDB.UpdateItem(tc.item)
+		if !errors.Is(err, tc.err) {
+			t.Errorf("UpdateItem(%+v)\ngot err '%v' want '%v'",
+				tc.item, err, tc.err)
+		}
+		if got != tc.want {
+			t.Errorf("UpdateItem(%+v)\ngot %d want %d",
+				tc.item, got, tc.want)
+		}
+		if got == 1 {
+			item, err := app.BidDB.GetItem(tc.item.ID)
+			if err != nil {
+				t.Fatalf("GetItem(%d) failed: %v",
+					tc.item.ID, err)
+			}
+			if !reflect.DeepEqual(item, tc.item) {
+				t.Errorf("GetItem(%d)\n got %s\nwant %s",
+					tc.item.ID,
+					AsJson(item), AsJson(tc.item))
+			}
+
+		}
 	}
 
+	// test for invalid DB
 	sqlDB := app.BidDB.sqlDB
 	app.BidDB.sqlDB = nil
-	_, err = app.BidDB.UpdateItem(item)
+	_, err = app.BidDB.UpdateItem(Item{})
 	if err != ErrInvalidDB {
 		t.Errorf("got err %q want %q", err, ErrInvalidDB)
 	}

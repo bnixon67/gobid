@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -14,12 +13,8 @@ type BidDB struct {
 
 type BidResult struct {
 	BidPlaced   bool
-	ID          int // TODO: int or int64
 	Message     string
 	PriorBidder string
-	MinAmount   float64
-	NewBidder   string
-	NewAmount   float64
 }
 
 type Item struct {
@@ -174,7 +169,6 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
-		log.Printf("query for winners failed, %v", err)
 		return winners, err
 	}
 	defer rows.Close()
@@ -184,46 +178,62 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 
 		err = rows.Scan(&winner.ID, &winner.Title, &winner.Artist, &winner.CurrentBid, &winner.Modified, &winner.ModifiedBy, &winner.FullName, &winner.Email)
 		if err != nil {
-			log.Printf("row.Scan failed, %v", err)
+			return winners, err
 		}
 
 		winners = append(winners, winner)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Printf("rows.Err failed, %v", err)
+		return winners, err
 	}
 
 	return winners, err
 }
 
-func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (bool, string, string, error) {
-	var msg string
-	var br BidResult
+const PlaceBidError = "Unable to place bid. Try again."
+
+func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (BidResult, error) {
+	var bidResult BidResult
 
 	if db.sqlDB == nil {
-		return br.BidPlaced, msg, br.PriorBidder, ErrInvalidDB
+		return bidResult, ErrInvalidDB
 	}
 
 	row := db.sqlDB.QueryRow("CALL placeBid(?, ?, ?)", id, bidAmount, userName)
-	err := row.Scan(&br.BidPlaced, &br.ID, &br.Message, &br.PriorBidder, &br.MinAmount, &br.NewBidder, &br.NewAmount)
+	err := row.Scan(&bidResult.BidPlaced, &bidResult.Message, &bidResult.PriorBidder)
 	if err != nil {
-		msg = "Unable to place bid. Try again."
+		bidResult.Message = PlaceBidError
 
-		return br.BidPlaced, msg, br.PriorBidder, err
+		return bidResult, err
 	}
 
-	msg = br.Message
-	log.Printf("%s for item %v for amount %v by %s",
-		msg, id, bidAmount, userName)
-	log.Printf("%s was outbid", br.PriorBidder)
+	return bidResult, err
+}
 
-	return br.BidPlaced, msg, br.PriorBidder, err
+var ErrInvalidUpdate = errors.New("update item invalid")
+
+func anyStringEmpty(strings ...string) bool {
+	for _, s := range strings {
+		if s == "" {
+			return true
+		}
+	}
+	return false
 }
 
 func (db BidDB) UpdateItem(item Item) (int64, error) {
 	if db.sqlDB == nil {
 		return 0, ErrInvalidDB
+	}
+
+	if anyStringEmpty(
+		item.Title,
+		item.Description,
+		item.Artist,
+		item.ImageFileName,
+	) {
+		return 0, ErrInvalidUpdate
 	}
 
 	update := "UPDATE items SET title = ?, description = ?, openingBid = ?, minBidIncr = ?, artist = ?, imageFileName = ? WHERE id = ?"
@@ -244,19 +254,16 @@ func (db BidDB) CreateItem(item Item) (int64, int64, error) {
 	insert := "INSERT INTO items(title, description, openingBid, minBidIncr, artist, imageFileName) VALUES (?, ?, ?, ?, ?, ?)"
 	result, err := db.sqlDB.Exec(insert, item.Title, item.Description, item.OpeningBid, item.MinBidIncr, item.Artist, item.ImageFileName)
 	if err != nil {
-		log.Printf("CreateItem failed for %d: %v", item.ID, err)
 		return 0, 0, err
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("result.RowsAffected failed: %v", err)
 		return 0, 0, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		log.Printf("result.RowsAffected failed: %v", err)
 		return 0, 0, err
 	}
 
@@ -275,7 +282,6 @@ func (db BidDB) GetBidsForItem(id int) ([]Bid, error) {
 
 	rows, err := db.sqlDB.Query(qry, id)
 	if err != nil {
-		log.Printf("query for bids failed, %v", err)
 		return bids, err
 	}
 	defer rows.Close()
@@ -285,14 +291,14 @@ func (db BidDB) GetBidsForItem(id int) ([]Bid, error) {
 
 		err = rows.Scan(&bid.ID, &bid.Created, &bid.Bidder, &bid.Amount)
 		if err != nil {
-			log.Printf("row.Scan failed, %v", err)
+			return bids, err
 		}
 
 		bids = append(bids, bid)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Printf("rows.Err failed, %v", err)
+		return bids, err
 	}
 
 	return bids, err
@@ -310,7 +316,6 @@ func (db BidDB) GetBids() ([]Bid, error) {
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
-		log.Printf("query for bids failed, %v", err)
 		return bids, err
 	}
 	defer rows.Close()
@@ -320,14 +325,14 @@ func (db BidDB) GetBids() ([]Bid, error) {
 
 		err = rows.Scan(&bid.ID, &bid.Created, &bid.Bidder, &bid.Amount, &bid.FullName, &bid.Email)
 		if err != nil {
-			log.Printf("row.Scan failed, %v", err)
+			return bids, err
 		}
 
 		bids = append(bids, bid)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Printf("rows.Err failed, %v", err)
+		return bids, err
 	}
 
 	return bids, err
@@ -361,7 +366,6 @@ func (db BidDB) GetItemsWithBids() ([]ItemWithBids, error) {
 
 	rows, err := db.sqlDB.Query(qry)
 	if err != nil {
-		log.Printf("query for ItemsWithBids failed, %v", err)
 		return items, err
 	}
 	defer rows.Close()
@@ -374,7 +378,7 @@ func (db BidDB) GetItemsWithBids() ([]ItemWithBids, error) {
 
 		err = rows.Scan(&item.ID, &item.Title, &item.Created, &item.Description, &item.OpeningBid, &item.MinBidIncr, &item.Artist, &item.ImageFileName, &bid.Created, &bid.Bidder, &bid.Amount, &bid.FullName, &bid.Email)
 		if err != nil {
-			log.Printf("row.Scan failed, %v", err)
+			return items, err
 		}
 
 		bid.ID = item.ID
@@ -390,7 +394,7 @@ func (db BidDB) GetItemsWithBids() ([]ItemWithBids, error) {
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Printf("rows.Err failed, %v", err)
+		return items, err
 	}
 
 	return items, err

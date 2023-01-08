@@ -143,22 +143,19 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 
 	// submit bid if we have a valid user and bidAmount and open Auction
 	if user != (weblogin.User{}) && bidAmount >= 0 && app.IsAuctionOpen() {
-		var bidPlaced bool
-		var priorBidder string
-		var err error
-
-		bidPlaced, msg, priorBidder, err = app.BidDB.PlaceBid(id, bidAmount, user.UserName)
+		log.Printf("PlaceBid(%d, %f, %q)", id, bidAmount, user.UserName)
+		bidResult, err := app.BidDB.PlaceBid(id, bidAmount, user.UserName)
 		if err != nil {
 			log.Printf("unable to PlaceBid: %v", err)
+			msg = bidResult.Message
 		} else {
+			log.Printf("PlaceBid(%d, %f, %q) result %+v", id, bidAmount, user.UserName, bidResult)
 
-			log.Printf("%v for item %v by %v for $%v",
-				msg, id, user.UserName, bidAmount)
-			if bidPlaced && priorBidder != "" && priorBidder != user.UserName {
-				user, err := weblogin.GetUserForName(app.DB, priorBidder)
+			if bidResult.BidPlaced && bidResult.PriorBidder != "" && bidResult.PriorBidder != user.UserName {
+				user, err := weblogin.GetUserForName(app.DB, bidResult.PriorBidder)
 				if err != nil {
 					log.Printf("unable to GetUserForName(%q): %v",
-						priorBidder, err)
+						bidResult.PriorBidder, err)
 				}
 
 				// get item from database
