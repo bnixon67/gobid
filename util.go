@@ -52,7 +52,7 @@ func SafeFileName(name, ext string) string {
 func AsJson(v any) string {
 	b, err := json.Marshal(v)
 	if err != nil {
-		err.Error()
+		return err.Error()
 	}
 
 	return string(b)
