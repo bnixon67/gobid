@@ -195,7 +195,7 @@ func TestGetWinners(t *testing.T) {
 		FullName:   "Test User",
 	}
 	found := false
-	for idx, _ := range got {
+	for idx := range got {
 		if got[idx].ID == tWinner.ID {
 			found = true
 			if !reflect.DeepEqual(got[idx], tWinner) {

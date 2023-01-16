@@ -156,10 +156,8 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 				}
 			}
 		}
-	} else {
-		if !app.IsAuctionOpen() {
-			msg = "Auction is not open"
-		}
+	} else if !app.IsAuctionOpen() {
+		msg = "Auction is not open"
 	}
 
 	// get item from database
