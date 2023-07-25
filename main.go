@@ -13,14 +13,17 @@ specific language governing permissions and limitations under the License.
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 
 	weblogin "github.com/bnixon67/go-weblogin"
 	_ "github.com/go-sql-driver/mysql"
+	"golang.org/x/exp/slog"
 )
 
 type BidApp struct {
@@ -41,34 +44,35 @@ func main() {
 	logFileName := ""
 	app, err := weblogin.NewApp(configFileName, logFileName)
 	if err != nil {
-		log.Printf("failed to create app: %v", err)
+		slog.Error("failed to create app", "err", err)
 		return
 	}
-	log.Printf("created app using config %q and log %q",
-		configFileName, logFileName)
+	slog.Info("created app", "config", configFileName, "log", logFileName)
 
 	bidApp := BidApp{App: app, BidDB: &BidDB{}}
 	bidApp.BidDB.sqlDB = app.DB
 
 	err = bidApp.ConfigAuction()
 	if err != nil {
-		log.Printf("failed to ConfigAuction: %v", err)
+		slog.Error("failed to ConfigAuction", "err", err)
 		return
 	}
 	layout := "Monday January _2, 2006 3:04 PM"
-	log.Printf("Auction Start: %v", bidApp.AuctionStart.Format(layout))
-	log.Printf("Auction Started: %v", bidApp.IsAuctionStarted())
-	log.Printf("Auction End: %v", bidApp.AuctionEnd.Format(layout))
-	log.Printf("Auction Ended: %v", bidApp.IsAuctionEnded())
-	log.Printf("Auction Open: %v", bidApp.IsAuctionOpen())
+	slog.Info("Auction",
+		"Start", bidApp.AuctionStart.Format(layout),
+		"IsAuctionStarted", bidApp.IsAuctionStarted(),
+		"AuctionEnd", bidApp.AuctionEnd.Format(layout),
+		"IsAuctionEnded", bidApp.IsAuctionEnded(),
+		"IsAuctionOpen", bidApp.IsAuctionOpen(),
+	)
+
+	mux := http.NewServeMux()
 
 	// define HTTP server
 	// TODO: add values to config file
-	s := &http.Server{
-		Addr: ":" + app.Config.ServerPort,
-		Handler: &weblogin.LogRequestHandler{
-			Next: http.DefaultServeMux,
-		},
+	srv := &http.Server{
+		Addr:              ":" + app.Config.ServerPort,
+		Handler:           &weblogin.LogRequestHandler{Next: mux},
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
 		IdleTimeout:       30 * time.Second,
@@ -77,29 +81,51 @@ func main() {
 	}
 
 	// register handlers
-	http.HandleFunc("/login", app.LoginHandler)
-	http.HandleFunc("/register", app.RegisterHandler)
-	http.HandleFunc("/logout", app.LogoutHandler)
-	http.HandleFunc("/forgot", app.ForgotHandler)
-	http.HandleFunc("/reset", app.ResetHandler)
-	http.HandleFunc("/users", app.UsersHandler)
-	http.HandleFunc("/gallery", bidApp.GalleryHandler)
-	http.HandleFunc("/items", bidApp.ItemsHandler)
-	http.HandleFunc("/item/", bidApp.ItemHandler)
-	http.HandleFunc("/edit/", bidApp.ItemEditHandler)
-	http.HandleFunc("/winners", bidApp.WinnerHandler)
-	http.HandleFunc("/bids", bidApp.BidsHandler)
+	mux.HandleFunc("/login", app.LoginHandler)
+	mux.HandleFunc("/register", app.RegisterHandler)
+	mux.HandleFunc("/logout", app.LogoutHandler)
+	mux.HandleFunc("/forgot", app.ForgotHandler)
+	mux.HandleFunc("/reset", app.ResetHandler)
+	mux.HandleFunc("/users", app.UsersHandler)
+	mux.HandleFunc("/gallery", bidApp.GalleryHandler)
+	mux.HandleFunc("/items", bidApp.ItemsHandler)
+	mux.HandleFunc("/item/", bidApp.ItemHandler)
+	mux.HandleFunc("/edit/", bidApp.ItemEditHandler)
+	mux.HandleFunc("/winners", bidApp.WinnerHandler)
+	mux.HandleFunc("/bids", bidApp.BidsHandler)
 	// TODO: define base html directory in config
-	http.HandleFunc("/w3.css", weblogin.ServeFileHandler("html/w3.css"))
-	http.HandleFunc("/favicon.ico", weblogin.ServeFileHandler("html/favicon.ico"))
-	http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
-	http.Handle("/", http.RedirectHandler("/gallery", http.StatusMovedPermanently))
+	mux.HandleFunc("/w3.css", weblogin.ServeFileHandler("html/w3.css"))
+	mux.HandleFunc("/favicon.ico", weblogin.ServeFileHandler("html/favicon.ico"))
+	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
+	mux.Handle("/", http.RedirectHandler("/gallery", http.StatusMovedPermanently))
 
-	// run server
-	// TODO: move cert locations to config file
-	log.Println("Listening on", s.Addr)
-	err = s.ListenAndServeTLS("cert/cert.pem", "cert/key.pem")
+	// create a channel to receive signals
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
+	// start the server in a goroutine
+	go func() {
+		slog.Info("server", "addr", srv.Addr)
+		// TODO: move cert locations to config file
+		err = srv.ListenAndServeTLS("cert/cert.pem", "cert/key.pem")
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("server failed", "err", err)
+			os.Exit(1)
+		}
+	}()
+
+	// wait for an interrupt signal
+	<-interrupt
+
+	// create a context with a timeout for shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// initiate the shutdown process
+	err = srv.Shutdown(ctx)
 	if err != nil {
-		log.Printf("ListandServeTLS failed: %v", err)
+		slog.Error("server shutdown error", "err", err)
 	}
+
+	slog.Info("server closed")
 }

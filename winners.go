@@ -13,11 +13,11 @@ specific language governing permissions and limitations under the License.
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 
 	weblogin "github.com/bnixon67/go-weblogin"
+	"golang.org/x/exp/slog"
 )
 
 type Winner struct {
@@ -40,13 +40,13 @@ type WinnerPageData struct {
 // WinnerHandler prints a simple hello message.
 func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 	if !weblogin.ValidMethod(w, r, []string{http.MethodGet}) {
-		log.Println("invalid method", r.Method)
+		slog.Warn("invalid", "method", r.Method)
 		return
 	}
 
 	currentUser, err := weblogin.GetUser(w, r, app.DB)
 	if err != nil {
-		log.Printf("error getting user: %v", err)
+		slog.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -58,7 +58,7 @@ func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 
 	winners, err := app.BidDB.GetWinners()
 	if err != nil {
-		log.Printf("GetWinners failed: %v", err)
+		slog.Error("failed to GetWinners", "err", err)
 	}
 
 	// display page
@@ -68,7 +68,7 @@ func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 			Winners: winners,
 		})
 	if err != nil {
-		log.Printf("error executing template: %v", err)
+		slog.Error("unable to RenderTemplate", "err", err)
 		return
 	}
 }

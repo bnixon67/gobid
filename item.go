@@ -14,12 +14,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
 	weblogin "github.com/bnixon67/go-weblogin"
+	"golang.org/x/exp/slog"
 )
 
 // ItemPageData contains data passed to the HTML template.
@@ -36,13 +36,13 @@ type ItemPageData struct {
 func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 	validMethods := []string{http.MethodGet, http.MethodPost}
 	if !weblogin.ValidMethod(w, r, validMethods) {
-		log.Println("invalid method", r.Method)
+		slog.Warn("invalid", "method", r.Method)
 		return
 	}
 
 	currentUser, err := weblogin.GetUser(w, r, app.DB)
 	if err != nil {
-		log.Printf("error getting user: %v", err)
+		slog.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -50,7 +50,7 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 	// get idString from URL path
 	idString := strings.TrimPrefix(r.URL.Path, "/item/")
 	if idString == "" {
-		log.Print("id string is empty")
+		slog.Warn("id string is empty")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -58,7 +58,10 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 	// convert idString to int
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		log.Printf("unable to convert id string %q to int, %v", idString, err)
+		slog.Error("unable to convert id string",
+			"idString", idString,
+			"err", err,
+		)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -75,7 +78,7 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 	// get item from database
 	item, err := app.BidDB.GetItem(id)
 	if err != nil {
-		log.Printf("unable to GetItem(%d), %v", id, err)
+		slog.Error("unable to GetItem", "id", id, "err", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -83,7 +86,7 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 	// get bids for item from database
 	bids, err := app.BidDB.GetBidsForItem(id)
 	if err != nil {
-		log.Printf("unable to GetBidsForItem(%d), %v", id, err)
+		slog.Error("unable to GetBidsForItem", "id", id, "err", err)
 		// TODO: what to display to user if this fails
 	}
 
@@ -98,7 +101,7 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 			Bids:          bids,
 		})
 	if err != nil {
-		log.Printf("error executing template: %v", err)
+		slog.Error("unable to RenderTemplate", "err", err)
 		return
 	}
 }
@@ -110,38 +113,46 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	// get bidAmount
 	bidAmountStr := r.PostFormValue("bidAmount")
 	if bidAmountStr == "" {
-		log.Print("no bidAmount")
+		slog.Warn("no bidAmount")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	bidAmount, err := strconv.ParseFloat(bidAmountStr, 64)
 	if err != nil {
 		msg = "Invalid bid amount."
-		log.Printf("unable to convert bidAmount to float64")
+		slog.Error("unable to convert bidAmount to float64", "err", err)
 	}
 
 	// submit bid if we have a valid user and bidAmount and open Auction
 	if user != (weblogin.User{}) && bidAmount >= 0 && app.IsAuctionOpen() {
-		log.Printf("PlaceBid(%d, %f, %q)", id, bidAmount, user.UserName)
 		bidResult, err := app.BidDB.PlaceBid(id, bidAmount, user.UserName)
 		if err != nil {
-			log.Printf("unable to PlaceBid: %v", err)
+			slog.Error("unable to PlaceBid",
+				"id", id, "bidAmount", bidAmount, "user", user,
+				"err", err)
 			msg = bidResult.Message
 		} else {
-			log.Printf("PlaceBid(%d, %f, %q) result %+v", id, bidAmount, user.UserName, bidResult)
+			slog.Info("PlaceBid",
+				"id", id,
+				"bidAmount", bidAmount,
+				"user", user,
+				"bidResult", bidResult,
+			)
 
 			if bidResult.BidPlaced && bidResult.PriorBidder != "" && bidResult.PriorBidder != user.UserName {
 				user, err := weblogin.GetUserForName(app.DB, bidResult.PriorBidder)
 				if err != nil {
-					log.Printf("unable to GetUserForName(%q): %v",
-						bidResult.PriorBidder, err)
+					slog.Error("unable to GetUserForName",
+						"PriorBidder", bidResult.PriorBidder, "err", err)
 				}
 
 				// get item from database
 				// TODO: eliminate extra GetItem call
 				item, err := app.BidDB.GetItem(id)
 				if err != nil {
-					log.Printf("unable to GetItem(%d), %v", id, err)
+					slog.Error("unable to GetItem",
+						"id", id, "err", err,
+					)
 				}
 
 				emailText := fmt.Sprintf(
@@ -152,7 +163,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 					app.Config.SMTPHost, app.Config.SMTPPort, user.Email,
 					app.Config.Title, emailText)
 				if err != nil {
-					log.Printf("unable to SendEmail: %v", err)
+					slog.Error("unable to SendEmail", "err", err)
 				}
 			}
 		}
@@ -163,7 +174,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	// get item from database
 	item, err := app.BidDB.GetItem(id)
 	if err != nil {
-		log.Printf("unable to GetItem(%d), %v", id, err)
+		slog.Error("unable to GetItem", "id", id, "err", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -171,7 +182,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	// get bids for item from database
 	bids, err := app.BidDB.GetBidsForItem(id)
 	if err != nil {
-		log.Printf("unable to GetBidsForItem(%d), %v", id, err)
+		slog.Error("unable to GetBidsForItem", "id", id, "err", err)
 		// TODO: what to display to user if this fails
 	}
 
@@ -186,7 +197,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 			Bids:          bids,
 		})
 	if err != nil {
-		log.Printf("error executing template: %v", err)
+		slog.Error("unable to RenderTemplate", "err", err)
 		return
 	}
 }

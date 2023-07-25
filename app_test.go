@@ -39,5 +39,5 @@ func AppForTest(t *testing.T) *BidApp {
 		bidApp.BidDB.sqlDB = app.DB
 	}
 
-	return  bidApp
+	return bidApp
 }

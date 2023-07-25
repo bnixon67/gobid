@@ -14,13 +14,13 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	weblogin "github.com/bnixon67/go-weblogin"
+	"golang.org/x/exp/slog"
 )
 
 // ItemEditPageData contains data passed to the HTML template.
@@ -35,20 +35,20 @@ type ItemEditPageData struct {
 func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	validMethods := []string{http.MethodGet, http.MethodPost}
 	if !weblogin.ValidMethod(w, r, validMethods) {
-		log.Println("invalid method", r.Method)
+		slog.Warn("invalid", "method", r.Method)
 		return
 	}
 
 	currentUser, err := weblogin.GetUser(w, r, app.DB)
 	if err != nil {
-		log.Printf("error getting user: %v", err)
+		slog.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	// only allowed by admin users
 	if !currentUser.Admin {
-		log.Printf("non-admin user: %+v", currentUser)
+		slog.Warn("non-admin user", "currentUser", currentUser)
 		HttpError(w, http.StatusUnauthorized)
 		return
 	}
@@ -56,7 +56,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	// get idString from URL path
 	idString := strings.TrimPrefix(r.URL.Path, "/edit/")
 	if idString == "" {
-		log.Print("id string is empty")
+		slog.Warn("id string is empty")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -64,7 +64,8 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	// convert idString to int
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		log.Printf("unable to convert id string %q to int, %v", idString, err)
+		slog.Warn("unable to convert id string to int",
+			"idString", idString, "err", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -85,7 +86,7 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 		// get item from database
 		item, err = app.BidDB.GetItem(id)
 		if err != nil {
-			log.Printf("unable to GetItem(%d), %v", id, err)
+			slog.Error("unable to GetItem", "id", id, "err", err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -100,7 +101,7 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 			Item:    item,
 		})
 	if err != nil {
-		log.Printf("error executing template: %v", err)
+		slog.Error("unable to RenderTemplate", "err", err)
 		return
 	}
 }
@@ -112,7 +113,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// get title
 	title := r.PostFormValue("title")
 	if title == "" {
-		log.Print("no title")
+		slog.Warn("no title")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -120,7 +121,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// get description
 	description := r.PostFormValue("description")
 	if description == "" {
-		log.Print("no description")
+		slog.Warn("no description")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -128,13 +129,16 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// get openingBid
 	openingBidStr := r.PostFormValue("openingBid")
 	if openingBidStr == "" {
-		log.Print("no openingBid")
+		slog.Warn("no openingBid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	openingBid, err := strconv.ParseFloat(openingBidStr, 64)
 	if err != nil {
-		log.Print("unable to convert openingBid to float64:", err)
+		slog.Error("unable to convert openingBid to float64",
+			"openingBidStr", openingBidStr,
+			"err", err,
+		)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -142,13 +146,16 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// get minBidIncr
 	minBidIncrStr := r.PostFormValue("minBidIncr")
 	if minBidIncrStr == "" {
-		log.Print("no minBidIncr")
+		slog.Warn("no minBidIncr")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	minBidIncr, err := strconv.ParseFloat(minBidIncrStr, 64)
 	if err != nil {
-		log.Print("unable to convert minBidIncr to float64:", err)
+		slog.Error("unable to convert minBidIncr to float64",
+			"minBidIncrStr", minBidIncrStr,
+			"err", err,
+		)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -162,7 +169,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// get imageFile
 	imageFile, fileHeader, err := r.FormFile("imageFile")
 	if err != nil && err != http.ErrMissingFile {
-		log.Printf("no imageFile: %v", err)
+		slog.Error("no imageFile", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -179,14 +186,20 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 		name = filepath.Join("images", imageFileName)
 		err = SaveScaledJPEG(imageFile, name, 1920, 0)
 		if err != nil {
-			log.Print(err)
+			slog.Error("unable to SaveScaledJPEG",
+				"imageFile", imageFile,
+				"name", name,
+				"err", err)
 			msg = err.Error()
 		}
 
 		name = filepath.Join("images", "thumbnails", imageFileName)
 		err = SaveScaledJPEG(imageFile, name, 480, 0)
 		if err != nil {
-			log.Print(err)
+			slog.Error("unable to SaveScaledJPEG",
+				"imageFile", imageFile,
+				"name", name,
+				"err", err)
 			msg = err.Error()
 		}
 	}
@@ -207,9 +220,10 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 			newId, err := app.BidDB.CreateItem(item)
 			if err != nil {
 				msg = "Could not create item"
-				log.Printf("unable to CreateItem(%+v): %v", item, err)
+				slog.Error("unable to CreateItem",
+					"item", item, "err", err)
 			} else {
-				log.Printf("created item %d", newId)
+				slog.Info("created item", "newId", newId)
 				newUrl := fmt.Sprintf("/edit/%d", newId)
 				http.Redirect(w, r, newUrl, http.StatusSeeOther)
 				return
@@ -218,7 +232,8 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 			rows, err := app.BidDB.UpdateItem(item)
 			if rows > 1 || err != nil {
 				msg = "Could not update item"
-				log.Printf("unable to UpdateItem(%+v), %d, %q", item, rows, err)
+				slog.Error("unable to UpdateItem",
+					"item", item, "rows", rows, "err", err)
 			} else {
 				msg = "Updated item"
 			}
@@ -228,7 +243,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// get item from database
 	item, err = app.BidDB.GetItem(id)
 	if err != nil {
-		log.Printf("unable to GetItem(%d), %v", id, err)
+		slog.Error("unable to GetItem", "id", id, "err", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -242,7 +257,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 			Item:    item,
 		})
 	if err != nil {
-		log.Printf("error executing template: %v", err)
+		slog.Error("unable to RenderTemplate", "err", err)
 		return
 	}
 }
