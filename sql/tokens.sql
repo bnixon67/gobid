@@ -3,5 +3,6 @@ CREATE TABLE `tokens` (
   `expires` datetime NOT NULL,
   `type` varchar(7) NOT NULL,
   `userName` varchar(30) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`hashedValue`)
 );
