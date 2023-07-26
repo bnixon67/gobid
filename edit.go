@@ -35,20 +35,21 @@ type ItemEditPageData struct {
 func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	validMethods := []string{http.MethodGet, http.MethodPost}
 	if !weblogin.ValidMethod(w, r, validMethods) {
-		slog.Warn("invalid", "method", r.Method)
+		slog.Error("invalid HTTP method", "method", r.Method)
+		HttpError(w, http.StatusMethodNotAllowed)
 		return
 	}
 
-	currentUser, err := weblogin.GetUser(w, r, app.DB)
+	user, err := weblogin.GetUser(w, r, app.DB)
 	if err != nil {
-		slog.Error("failed to GetUser", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		slog.Error("failed to get user", "err", err)
+		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	// only allowed by admin users
-	if !currentUser.Admin {
-		slog.Warn("non-admin user", "currentUser", currentUser)
+	if !user.Admin {
+		slog.Warn("non-admin user", "user", user)
 		HttpError(w, http.StatusUnauthorized)
 		return
 	}
@@ -56,8 +57,8 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	// get idString from URL path
 	idString := strings.TrimPrefix(r.URL.Path, "/edit/")
 	if idString == "" {
-		slog.Warn("id string is empty")
-		w.WriteHeader(http.StatusBadRequest)
+		slog.Error("id string is empty")
+		HttpError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -66,15 +67,15 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Warn("unable to convert id string to int",
 			"idString", idString, "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+		HttpError(w, http.StatusBadRequest)
 		return
 	}
 
 	switch r.Method {
 	case http.MethodGet:
-		app.getItemEditHandler(w, r, id, currentUser)
+		app.getItemEditHandler(w, r, id, user)
 	case http.MethodPost:
-		app.postItemEditHandler(w, r, id, currentUser)
+		app.postItemEditHandler(w, r, id, user)
 	}
 }
 
@@ -83,16 +84,14 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 	var err error
 
 	if id != 0 {
-		// get item from database
 		item, err = app.BidDB.GetItem(id)
 		if err != nil {
-			slog.Error("unable to GetItem", "id", id, "err", err)
-			w.WriteHeader(http.StatusNotFound)
+			slog.Error("unable to get item", "id", id, "err", err)
+			HttpError(w, http.StatusNotFound)
 			return
 		}
 	}
 
-	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "edit.html",
 		ItemEditPageData{
 			Title:   app.Config.Title,
@@ -101,7 +100,8 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 			Item:    item,
 		})
 	if err != nil {
-		slog.Error("unable to RenderTemplate", "err", err)
+		slog.Error("unable to render template", "err", err)
+		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 }
@@ -113,8 +113,8 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// get title
 	title := r.PostFormValue("title")
 	if title == "" {
-		slog.Warn("no title")
-		w.WriteHeader(http.StatusBadRequest)
+		slog.Error("no title")
+		HttpError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -122,7 +122,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	description := r.PostFormValue("description")
 	if description == "" {
 		slog.Warn("no description")
-		w.WriteHeader(http.StatusBadRequest)
+		HttpError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -130,7 +130,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	openingBidStr := r.PostFormValue("openingBid")
 	if openingBidStr == "" {
 		slog.Warn("no openingBid")
-		w.WriteHeader(http.StatusBadRequest)
+		HttpError(w, http.StatusBadRequest)
 		return
 	}
 	openingBid, err := strconv.ParseFloat(openingBidStr, 64)
@@ -139,7 +139,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 			"openingBidStr", openingBidStr,
 			"err", err,
 		)
-		w.WriteHeader(http.StatusBadRequest)
+		HttpError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -147,7 +147,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	minBidIncrStr := r.PostFormValue("minBidIncr")
 	if minBidIncrStr == "" {
 		slog.Warn("no minBidIncr")
-		w.WriteHeader(http.StatusBadRequest)
+		HttpError(w, http.StatusBadRequest)
 		return
 	}
 	minBidIncr, err := strconv.ParseFloat(minBidIncrStr, 64)
@@ -156,7 +156,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 			"minBidIncrStr", minBidIncrStr,
 			"err", err,
 		)
-		w.WriteHeader(http.StatusBadRequest)
+		HttpError(w, http.StatusBadRequest)
 		return
 	}
 

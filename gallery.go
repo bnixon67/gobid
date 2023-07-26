@@ -28,38 +28,56 @@ type GalleryPageData struct {
 	Items   []Item
 }
 
-// GalleryHandler prints a simple hello message.
+// GalleryHandler displays a gallery of items.
 func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 	if !weblogin.ValidMethod(w, r, []string{http.MethodGet}) {
-		slog.Warn("invalid", "method", r.Method)
+		slog.Error("invalid HTTP method", "method", r.Method)
+		HttpError(w, http.StatusMethodNotAllowed)
 		return
 	}
 
-	currentUser, err := weblogin.GetUser(w, r, app.DB)
+	user, err := weblogin.GetUser(w, r, app.DB)
 	if err != nil {
-		slog.Error("failed to GetUser", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		slog.Error("failed to get user", "err", err)
+		HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	if app.BidDB == nil {
+		slog.Error("database is nil")
+		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	items, err := app.BidDB.GetItems()
 	if err != nil {
-		slog.Error("failed to GetItems", "err", err)
+		slog.Error("failed to get items", "err", err)
+		HttpError(w, http.StatusInternalServerError)
+		return
 	}
 
 	layout := "Mon Jan 2, 2006 3:04 PM"
-	message := fmt.Sprintf("Auction starts %s until %s", app.AuctionStart.Format(layout), app.AuctionEnd.Format(layout))
+	message := fmt.Sprintf("Auction is open from %s through %s",
+		app.AuctionStart.Format(layout),
+		app.AuctionEnd.Format(layout),
+	)
 
-	// display page
+	slog.Info("GalleryHandler",
+		"message", message,
+		"user", user,
+		"len(items)", len(items),
+	)
+
 	err = weblogin.RenderTemplate(app.Tmpls, w, "gallery.html",
 		GalleryPageData{
 			Title:   app.Config.Title,
 			Message: message,
-			User:    currentUser,
+			User:    user,
 			Items:   items,
 		})
 	if err != nil {
-		slog.Error("unable to RenderTemplate", "err", err)
+		slog.Error("unable to render template", "err", err)
+		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 }

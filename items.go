@@ -30,32 +30,46 @@ type ItemsPageData struct {
 // ItemsHandler displays all the items in a table.
 func (app *BidApp) ItemsHandler(w http.ResponseWriter, r *http.Request) {
 	if !weblogin.ValidMethod(w, r, []string{http.MethodGet}) {
-		slog.Warn("invalid", "method", r.Method)
+		slog.Error("invalid HTTP method", "method", r.Method)
+		HttpError(w, http.StatusMethodNotAllowed)
 		return
 	}
 
-	currentUser, err := weblogin.GetUser(w, r, app.DB)
+	user, err := weblogin.GetUser(w, r, app.DB)
 	if err != nil {
-		slog.Error("failed to GetUser", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		slog.Error("failed to get user", "err", err)
+		HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	if app.BidDB == nil {
+		slog.Error("database is nil")
+		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	items, err := app.BidDB.GetItems()
 	if err != nil {
-		slog.Error("failed to GetItems", "err", err)
+		slog.Error("failed to get items", "err", err)
+		HttpError(w, http.StatusInternalServerError)
+		return
 	}
 
-	// display page
+	slog.Info("ItemsHandler",
+		"user", user,
+		"len(items)", len(items),
+	)
+
 	err = weblogin.RenderTemplate(app.Tmpls, w, "items.html",
 		ItemsPageData{
 			Title:   app.Config.Title,
 			Message: "",
-			User:    currentUser,
+			User:    user,
 			Items:   items,
 		})
 	if err != nil {
-		slog.Error("unable to RenderTemplate", "err", err)
+		slog.Error("unable to render template", "err", err)
+		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 }

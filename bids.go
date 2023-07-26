@@ -27,35 +27,50 @@ type BidsPageData struct {
 	Items   []ItemWithBids
 }
 
-// BidsHandler displays all the items in a table.
+// BidsHandler displays all of the bids.
 func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 	if !weblogin.ValidMethod(w, r, []string{http.MethodGet}) {
-		slog.Warn("invalid", "method", r.Method)
+		slog.Error("invalid HTTP method", "method", r.Method)
+		HttpError(w, http.StatusMethodNotAllowed)
 		return
 	}
 
-	currentUser, err := weblogin.GetUser(w, r, app.DB)
+	user, err := weblogin.GetUser(w, r, app.DB)
 	if err != nil {
-		slog.Error("failed to GetUser", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		slog.Error("failed to get user", "err", err)
+		HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	if app.BidDB == nil {
+		slog.Error("database is nil")
+		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	itemsWithBids, err := app.BidDB.GetItemsWithBids()
 	if err != nil {
-		slog.Error("failed to GetItemsWithBids", "err", err)
+		slog.Error("failed to get items with bids", "err", err)
+		HttpError(w, http.StatusInternalServerError)
+		return
+
 	}
 
-	// display page
+	slog.Info("BidsHandler",
+		"user", user,
+		"len(itemsWithBids)", len(itemsWithBids),
+	)
+
 	err = weblogin.RenderTemplate(app.Tmpls, w, "bids.html",
 		BidsPageData{
 			Title:   app.Config.Title,
 			Message: "",
-			User:    currentUser,
+			User:    user,
 			Items:   itemsWithBids,
 		})
 	if err != nil {
 		slog.Error("unable to RenderTemplate", "err", err)
+		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 }
