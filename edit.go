@@ -36,7 +36,6 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	validMethods := []string{http.MethodGet, http.MethodPost}
 	if !weblogin.ValidMethod(w, r, validMethods) {
 		slog.Error("invalid HTTP method", "method", r.Method)
-		HttpError(w, http.StatusMethodNotAllowed)
 		return
 	}
 

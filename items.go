@@ -31,7 +31,6 @@ type ItemsPageData struct {
 func (app *BidApp) ItemsHandler(w http.ResponseWriter, r *http.Request) {
 	if !weblogin.ValidMethod(w, r, []string{http.MethodGet}) {
 		slog.Error("invalid HTTP method", "method", r.Method)
-		HttpError(w, http.StatusMethodNotAllowed)
 		return
 	}
 

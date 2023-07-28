@@ -40,7 +40,7 @@ type WinnerPageData struct {
 // WinnerHandler prints a simple hello message.
 func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 	if !weblogin.ValidMethod(w, r, []string{http.MethodGet}) {
-		slog.Warn("invalid", "method", r.Method)
+		slog.Error("invalid HTTP method", "method", r.Method)
 		return
 	}
 
