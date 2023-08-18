@@ -12,7 +12,7 @@
 
     <div class="w3-bar w3-mobile w3-light-grey">
       <div class="w3-bar-item w3-mobile"><a href="/gallery">Gallery</a></div>
-      {{ if .User.Admin }}
+      {{ if .User.IsAdmin }}
       <div class="w3-bar-item w3-mobile"><a href="/edit/0">New Item</a></div>
       {{ end }}
       <div class="w3-bar-item w3-mobile w3-right">
@@ -26,7 +26,7 @@
 
     <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
       <tr>
-        {{if .User.Admin}}<th></th>{{end}}
+        {{if .User.IsAdmin}}<th></th>{{end}}
         <th class="w3-right-align w3-mobile">ID</th>
         <th>Artist/Donor</th>
         <th>Title</th>
@@ -35,11 +35,11 @@
         <th>Increment</th>
         <th>Current</th>
         <th>Bidder</th>
-	{{if .User.Admin}}<th>Image File</th>{{end}}
+	{{if .User.IsAdmin}}<th>Image File</th>{{end}}
       </tr>
       {{range .Items}}
       <tr>
-        {{if $.User.Admin}}<td><a href="edit/{{.ID}}">Edit</a></td>{{end}}
+        {{if $.User.IsAdmin}}<td><a href="edit/{{.ID}}">Edit</a></td>{{end}}
         <td class="w3-right-align w3-mobile">{{.ID}}</td>
         <td>{{.Artist}}</td>
         <td>{{.Title}}</td>
@@ -48,7 +48,7 @@
         <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .MinBidIncr}}</td>
         <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .CurrentBid}}</td>
         <td>{{.Bidder}}</td>
-	{{if $.User.Admin}}<td>{{.ImageFileName}}</td>{{end}}
+	{{if $.User.IsAdmin}}<td>{{.ImageFileName}}</td>{{end}}
       </tr>
       {{end}}
     </table>

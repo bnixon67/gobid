@@ -14,13 +14,13 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	weblogin "github.com/bnixon67/go-weblogin"
-	"golang.org/x/exp/slog"
 )
 
 // ItemEditPageData contains data passed to the HTML template.
@@ -39,7 +39,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := weblogin.GetUser(w, r, app.DB)
+	user, err := weblogin.GetUserFromRequest(w, r, app.DB)
 	if err != nil {
 		slog.Error("failed to get user", "err", err)
 		HttpError(w, http.StatusInternalServerError)
@@ -47,7 +47,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// only allowed by admin users
-	if !user.Admin {
+	if !user.IsAdmin {
 		slog.Warn("non-admin user", "user", user)
 		HttpError(w, http.StatusUnauthorized)
 		return
@@ -93,7 +93,7 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 
 	err = weblogin.RenderTemplate(app.Tmpls, w, "edit.html",
 		ItemEditPageData{
-			Title:   app.Config.Title,
+			Title:   app.Cfg.Title,
 			Message: "",
 			User:    user,
 			Item:    item,
@@ -250,7 +250,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "edit.html",
 		ItemEditPageData{
-			Title:   app.Config.Title,
+			Title:   app.Cfg.Title,
 			Message: msg,
 			User:    user,
 			Item:    item,

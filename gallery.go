@@ -14,10 +14,10 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	weblogin "github.com/bnixon67/go-weblogin"
-	"golang.org/x/exp/slog"
 )
 
 // GalleryPageData contains data passed to the HTML template.
@@ -35,7 +35,7 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := weblogin.GetUser(w, r, app.DB)
+	user, err := weblogin.GetUserFromRequest(w, r, app.DB)
 	if err != nil {
 		slog.Error("failed to get user", "err", err)
 		HttpError(w, http.StatusInternalServerError)
@@ -69,7 +69,7 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = weblogin.RenderTemplate(app.Tmpls, w, "gallery.html",
 		GalleryPageData{
-			Title:   app.Config.Title,
+			Title:   app.Cfg.Title,
 			Message: message,
 			User:    user,
 			Items:   items,

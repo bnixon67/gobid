@@ -13,6 +13,7 @@ specific language governing permissions and limitations under the License.
 package main
 
 import (
+	"log/slog"
 	"testing"
 
 	weblogin "github.com/bnixon67/go-weblogin"
@@ -28,7 +29,8 @@ var bidApp *BidApp //nolint
 func AppForTest(t *testing.T) *BidApp {
 	if bidApp == nil {
 		var err error
-		app, err := weblogin.NewApp("test_config.json", TestLogFile)
+		weblogin.InitLog(TestLogFile, slog.LevelDebug, true)
+		app, err := weblogin.NewApp("test_config.json")
 		if err != nil {
 			app = nil
 

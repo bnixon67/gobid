@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"image"
 	"io"
+	"log/slog"
 	"os"
 
 	"github.com/disintegration/imaging"
-	"golang.org/x/exp/slog"
 )
 
 func ScaleDown(r io.ReadSeeker, maxWidth, maxHeight int) (image.Image, error) {
@@ -44,7 +44,7 @@ func SaveScaledJPEG(imgFile io.ReadSeeker, name string, maxWidth, maxHeight int)
 	}
 
 	flag := os.O_CREATE | os.O_WRONLY | os.O_EXCL
-	perm := os.FileMode(0400)
+	perm := os.FileMode(0o400)
 	slog.Info("SaveScaledJPEG",
 		"name", name, "flag", flag, "perm", perm)
 	output, err := os.OpenFile(name, flag, perm)

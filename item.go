@@ -14,12 +14,12 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 
 	weblogin "github.com/bnixon67/go-weblogin"
-	"golang.org/x/exp/slog"
 )
 
 // ItemPageData contains data passed to the HTML template.
@@ -40,7 +40,7 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUser, err := weblogin.GetUser(w, r, app.DB)
+	currentUser, err := weblogin.GetUserFromRequest(w, r, app.DB)
 	if err != nil {
 		slog.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -93,7 +93,7 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
 		ItemPageData{
-			Title:         app.Config.Title,
+			Title:         app.Cfg.Title,
 			Message:       "",
 			User:          user,
 			Item:          item,
@@ -157,11 +157,9 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 
 				emailText := fmt.Sprintf(
 					"You have been outbid on %q. Visit %s/item/%d to rebid.",
-					item.Title, app.Config.BaseURL, id)
+					item.Title, app.Cfg.BaseURL, id)
 
-				err = weblogin.SendEmail(app.Config.SMTPUser, app.Config.SMTPPassword,
-					app.Config.SMTPHost, app.Config.SMTPPort, user.Email,
-					app.Config.Title, emailText)
+				err = weblogin.SendEmail(app.Cfg.SMTP.User, app.Cfg.SMTP.Password, app.Cfg.SMTP.Host, app.Cfg.SMTP.Port, user.Email, app.Cfg.Title, emailText)
 				if err != nil {
 					slog.Error("unable to SendEmail", "err", err)
 				}
@@ -189,7 +187,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
 		ItemPageData{
-			Title:         app.Config.Title,
+			Title:         app.Cfg.Title,
 			Message:       msg,
 			User:          user,
 			Item:          item,

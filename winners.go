@@ -13,11 +13,11 @@ specific language governing permissions and limitations under the License.
 package main
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 
 	weblogin "github.com/bnixon67/go-weblogin"
-	"golang.org/x/exp/slog"
 )
 
 type Winner struct {
@@ -44,7 +44,7 @@ func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUser, err := weblogin.GetUser(w, r, app.DB)
+	currentUser, err := weblogin.GetUserFromRequest(w, r, app.DB)
 	if err != nil {
 		slog.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -64,7 +64,7 @@ func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 	// display page
 	err = weblogin.RenderTemplate(app.Tmpls, w, "winners.html",
 		WinnerPageData{
-			Title:   app.Config.Title,
+			Title:   app.Cfg.Title,
 			Winners: winners,
 		})
 	if err != nil {

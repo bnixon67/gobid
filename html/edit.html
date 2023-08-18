@@ -71,7 +71,7 @@
       </p>
 
       {{ end }}
-      {{if .User.Admin}}
+      {{if .User.IsAdmin}}
         {{if eq .Item.ID 0}}
           <button type="submit" class="w3-button w3-indigo w3-mobile">Create</button>
         {{else}}

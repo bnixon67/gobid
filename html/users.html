@@ -23,9 +23,9 @@
       <tr>
 	<th>User Name</th>
 	<th>Full Name</th>
-        {{ if $.User.Admin }}
+        {{ if $.User.IsAdmin }}
 	<th>Email</th>
-	<th class="w3-center">Admin</th>
+	<th class="w3-center">IsAdmin</th>
 	<th>Created</th>
         {{ end }}
       </tr>
@@ -33,9 +33,9 @@
       <tr>
 	<td>{{ .UserName }}</td>
 	<td>{{ .FullName }}</td>
-        {{ if $.User.Admin }}
+        {{ if $.User.IsAdmin }}
 	<td>{{ .Email }}</td>
-	<td class="w3-center">{{ .Admin }}</td>
+	<td class="w3-center">{{ .IsAdmin }}</td>
 	<td>{{ .Created.Format "2006-01-02 03:04 PM" }}</td>
         {{ end }}
       </tr>
