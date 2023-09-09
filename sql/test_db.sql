@@ -13,7 +13,7 @@ source tokens.sql;
 DROP TABLE IF EXISTS events;
 source events.sql;
 
-INSERT INTO events(userName, created, action, result)
+INSERT INTO events(userName, created, name, result)
 VALUES
 ("test1", "2023-01-15 01:00:00", "login", true),
 
