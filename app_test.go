@@ -1,22 +1,17 @@
-/*
-Copyright 2022 Bill Nixon
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License.  You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations under the License.
-*/
 package main
 
 import (
-	"log/slog"
+	"fmt"
+	"os"
 	"testing"
 
-	weblogin "github.com/bnixon67/go-weblogin"
+	"github.com/bnixon67/webapp/webapp"
+	"github.com/bnixon67/webapp/weblog"
+	"github.com/bnixon67/webapp/weblogin"
+	"github.com/bnixon67/webapp/webutil"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -29,15 +24,43 @@ var bidApp *BidApp //nolint
 func AppForTest(t *testing.T) *BidApp {
 	if bidApp == nil {
 		var err error
-		weblogin.InitLog(TestLogFile, slog.LevelDebug, true)
-		app, err := weblogin.NewApp("test_config.json")
-		if err != nil {
-			app = nil
 
-			t.Fatalf("cannot create NewApp, %v", err)
+		// Read config.
+		cfg, err := weblogin.GetConfigFromFile("testdata/config.json")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Failed to get config:", err)
+			os.Exit(ExitConfig)
 		}
 
-		bidApp = &BidApp{App: app, BidDB: &BidDB{}}
+		// Initialize logging.
+		err = weblog.Init(weblog.WithFilename(TestLogFile),
+			weblog.WithLevel("debug"),
+			weblog.WithSource(true))
+		if err != nil {
+			t.Fatalf("cannot init logging: %v", err)
+		}
+
+		// Initialize templates
+		tmpl, err := webutil.InitTemplates(cfg.ParseGlobPattern)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
+			os.Exit(ExitTemplate)
+		}
+
+		// Initialize db
+		db, err := weblogin.InitDB(cfg.SQL.DriverName, cfg.SQL.DataSourceName)
+		if err != nil {
+			t.Fatalf("cannot init db: %v", err)
+		}
+
+		// Create the web login app.
+		app, err := weblogin.New(webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl), weblogin.WithConfig(cfg), weblogin.WithDB(db))
+		if err != nil {
+			t.Fatalf("cannot create app: %v", err)
+		}
+
+		// Embed web login app into BidApp
+		bidApp = &BidApp{LoginApp: app, BidDB: &BidDB{}}
 		bidApp.BidDB.sqlDB = app.DB
 	}
 

@@ -1,108 +1,89 @@
-/*
-Copyright 2022 Bill Nixon
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License.  You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations under the License.
-*/
 package main
 
 import (
 	"context"
-	"errors"
-	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
-	"os/signal"
-	"strings"
-	"syscall"
 	"time"
 
-	weblogin "github.com/bnixon67/go-weblogin"
+	"github.com/bnixon67/webapp/webapp"
+	"github.com/bnixon67/webapp/webhandler"
+	"github.com/bnixon67/webapp/weblog"
+	"github.com/bnixon67/webapp/weblogin"
+	"github.com/bnixon67/webapp/webserver"
+	"github.com/bnixon67/webapp/webutil"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type BidApp struct {
-	*weblogin.App
+	*weblogin.LoginApp
 	*BidDB
 	AuctionStart, AuctionEnd time.Time
 }
 
-// keys returns a slice of the keys in the map m.
-func keys[K comparable, V any](m map[K]V) []K {
-	keys := make([]K, 0, len(m))
-
-	for k := range m {
-		keys = append(keys, k)
-	}
-
-	return keys
-}
+const (
+	ExitUsage    = iota + 1 // ExitUsage indicates a usage error.
+	ExitConfig              // ExitConfig indicates a config error.
+	ExitLog                 // ExitLog indicates a log error.
+	ExitTemplate            // ExitTemplate indicates a template error.
+	ExitDB                  // ExitConfig indicates a database error.
+	ExitApp                 // ExitHandler indicates an app error.
+	ExitServer              // ExitServer indicates a server error.
+)
 
 func main() {
-	// map of log levels
-	logLevels := map[string]slog.Level{
-		"debug": slog.LevelDebug,
-		"info":  slog.LevelInfo,
-		"warn":  slog.LevelWarn,
-		"error": slog.LevelError,
+	// Check for command line argument with config file.
+	if len(os.Args) != 2 {
+		fmt.Fprintf(os.Stderr, "Usage: %s [config file]\n", os.Args[0])
+		os.Exit(ExitUsage)
 	}
 
-	logLevelMsg := fmt.Sprintf("log level [%s]",
-		strings.Join(keys(logLevels), "|"))
-
-	// define command-line flags
-	configFilename := flag.String("config", "", "config file")
-	logFilename := flag.String("log", "", "log file")
-	logLevel := flag.String("logLevel", "Info", logLevelMsg)
-	logAddSource := flag.Bool("logAddSource", false, "add source code position to log")
-
-	// define custom usage message
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [flags]\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "The flags are:\n")
-		flag.PrintDefaults()
-	}
-
-	// parse command-line flags
-	flag.Parse()
-
-	// get log level from map
-	level, ok := logLevels[strings.ToLower(*logLevel)]
-	if !ok {
-		flag.Usage()
-		fmt.Fprintf(os.Stderr, "logLevel %q is undefined.\n", *logLevel)
-		os.Exit(2)
-	}
-
-	// configFilename is required
-	if *configFilename == "" {
-		flag.Usage()
-		os.Exit(2)
-	}
-
-	// check for additional command-line arguments
-	if flag.NArg() > 0 {
-		flag.Usage()
-		os.Exit(2)
-	}
-
-	weblogin.InitLog(*logFilename, level, *logAddSource)
-
-	app, err := weblogin.NewApp(*configFilename)
+	// Read config.
+	cfg, err := weblogin.GetConfigFromFile(os.Args[1])
 	if err != nil {
-		slog.Error("failed to create app", "err", err)
-		return
+		fmt.Fprintln(os.Stderr, "Failed to get config:", err)
+		os.Exit(ExitConfig)
 	}
 
-	bidApp := BidApp{App: app, BidDB: &BidDB{}}
+	// Initialize logging.
+	err = weblog.Init(weblog.WithFilename(cfg.Log.Filename),
+		weblog.WithLogType(cfg.Log.Type),
+		weblog.WithLevel(cfg.Log.Level),
+		weblog.WithSource(cfg.Log.WithSource))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error initializing logger:", err)
+		os.Exit(ExitLog)
+	}
+
+	// Initialize templates
+	tmpl, err := webutil.InitTemplates(cfg.ParseGlobPattern)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
+		os.Exit(ExitTemplate)
+	}
+
+	// Initialize db
+	db, err := weblogin.InitDB(cfg.SQL.DriverName, cfg.SQL.DataSourceName)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to initialize database:", err)
+		os.Exit(ExitDB)
+	}
+
+	// Create the web login app.
+	app, err := weblogin.New(webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl),
+		weblogin.WithConfig(cfg), weblogin.WithDB(db))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to create new weblogin:", err)
+		os.Exit(ExitApp)
+	}
+
+	// Embed web login app into BidApp
+	bidApp := BidApp{LoginApp: app, BidDB: &BidDB{}}
 	bidApp.BidDB.sqlDB = app.DB
 
 	err = bidApp.ConfigAuction()
@@ -113,21 +94,14 @@ func main() {
 	// layout := "Monday January _2, 2006 3:04 PM"
 	slog.Info("create app", "bidApp", bidApp)
 
+	// Create a new ServeMux to handle HTTP requests.
 	mux := http.NewServeMux()
 
-	// define HTTP server
-	// TODO: add values to config file
-	srv := &http.Server{
-		Addr:              ":" + app.Cfg.Server.Port,
-		Handler:           weblogin.RequestIDHandler(weblogin.LogRequestHandler(mux)),
-		ReadTimeout:       10 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       30 * time.Second,
-		ReadHeaderTimeout: 30 * time.Second,
-		MaxHeaderBytes:    1 << 20,
-	}
-
-	// register handlers
+	// Register handlers
+	mux.Handle("/", http.RedirectHandler("/gallery", http.StatusMovedPermanently))
+	mux.HandleFunc("/w3.css", webutil.ServeFileHandler("html/w3.css"))
+	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler("html/favicon.ico"))
+	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
 	mux.HandleFunc("/login", app.LoginHandler)
 	mux.HandleFunc("/register", app.RegisterHandler)
 	mux.HandleFunc("/logout", app.LogoutHandler)
@@ -140,48 +114,26 @@ func main() {
 	mux.HandleFunc("/edit/", bidApp.ItemEditHandler)
 	mux.HandleFunc("/winners", bidApp.WinnerHandler)
 	mux.HandleFunc("/bids", bidApp.BidsHandler)
-	// TODO: define base html directory in config
-	mux.HandleFunc("/w3.css", weblogin.ServeFileHandler("html/w3.css"))
-	mux.HandleFunc("/favicon.ico", weblogin.ServeFileHandler("html/favicon.ico"))
-	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
-	mux.Handle("/", http.RedirectHandler("/gallery", http.StatusMovedPermanently))
 
-	// create a channel to receive signals
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-
-	// start the server in a goroutine
-	go func() {
-		slog.Info("starting server",
-			slog.Group("srv",
-				"Addr", srv.Addr,
-				"ReadTimeout (s)", srv.ReadTimeout/time.Second,
-				"WriteTimeout (s)", srv.WriteTimeout/time.Second,
-				"IdleTimeout (s)", srv.IdleTimeout/time.Second,
-				"ReadHeaderTimeout (s)", srv.ReadHeaderTimeout/time.Second,
-				"MaxHeaderBytes (kb)", srv.MaxHeaderBytes/1024,
-			),
-		)
-		// TODO: move cert locations to config file
-		err = srv.ListenAndServeTLS("cert/cert.pem", "cert/key.pem")
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("failed to start server", "err", err)
-			os.Exit(1)
-		}
-	}()
-
-	// wait for a signal
-	<-sigChan
-
-	// create a context with a timeout for shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	// initiate the shutdown process
-	err = srv.Shutdown(ctx)
+	// Create the web server.
+	srv, err := webserver.New(
+		webserver.WithAddr(cfg.Server.Host+":"+cfg.Server.Port),
+		webserver.WithHandler(webhandler.AddRequestID(webhandler.AddRequestLogger(webhandler.LogRequest(mux)))),
+		webserver.WithTLS(cfg.Server.CertFile, cfg.Server.KeyFile),
+	)
 	if err != nil {
-		slog.Error("server shutdown error", "err", err)
+		fmt.Fprintln(os.Stderr, "Error creating server:", err)
+		os.Exit(ExitServer)
 	}
 
-	slog.Info("server closed")
+	// Create a new context.
+	ctx := context.Background()
+
+	// Start the web server.
+	err = srv.Start(ctx)
+	if err != nil {
+		slog.Error("error running server", "err", err)
+		fmt.Fprintln(os.Stderr, "Error running server:", err)
+		os.Exit(ExitServer)
+	}
 }

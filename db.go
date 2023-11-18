@@ -1,3 +1,6 @@
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 package main
 
 import (
@@ -5,10 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/bnixon67/webapp/weblogin"
 )
 
 type BidDB struct {
-	sqlDB *sql.DB
+	sqlDB *weblogin.LoginDB
 }
 
 type BidResult struct {

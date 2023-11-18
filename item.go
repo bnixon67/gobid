@@ -1,15 +1,6 @@
-/*
-Copyright 2022 Bill Nixon
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License.  You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations under the License.
-*/
 package main
 
 import (
@@ -19,7 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	weblogin "github.com/bnixon67/go-weblogin"
+	"github.com/bnixon67/webapp/weblogin"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 // ItemPageData contains data passed to the HTML template.
@@ -35,12 +27,12 @@ type ItemPageData struct {
 // ItemHandler display an item.
 func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 	validMethods := []string{http.MethodGet, http.MethodPost}
-	if !weblogin.ValidMethod(w, r, validMethods) {
+	if !webutil.ValidMethod(w, r, validMethods...) {
 		slog.Error("invalid HTTP method", "method", r.Method)
 		return
 	}
 
-	currentUser, err := weblogin.GetUserFromRequest(w, r, app.DB)
+	currentUser, err := app.DB.GetUserFromRequest(w, r)
 	if err != nil {
 		slog.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -91,9 +83,9 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 	}
 
 	// display page
-	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
+	err = webutil.RenderTemplate(app.Tmpl, w, "item.html",
 		ItemPageData{
-			Title:         app.Cfg.Title,
+			Title:         app.Cfg.Name,
 			Message:       "",
 			User:          user,
 			Item:          item,
@@ -140,7 +132,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 			)
 
 			if bidResult.BidPlaced && bidResult.PriorBidder != "" && bidResult.PriorBidder != user.UserName {
-				user, err := weblogin.GetUserForName(app.DB, bidResult.PriorBidder)
+				user, err := app.DB.GetUserForName(bidResult.PriorBidder)
 				if err != nil {
 					slog.Error("unable to GetUserForName",
 						"PriorBidder", bidResult.PriorBidder, "err", err)
@@ -159,7 +151,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 					"You have been outbid on %q. Visit %s/item/%d to rebid.",
 					item.Title, app.Cfg.BaseURL, id)
 
-				err = weblogin.SendEmail(app.Cfg.SMTP.User, app.Cfg.SMTP.Password, app.Cfg.SMTP.Host, app.Cfg.SMTP.Port, user.Email, app.Cfg.Title, emailText)
+				err = weblogin.SendEmail(app.Cfg.SMTP.User, app.Cfg.SMTP.Password, app.Cfg.SMTP.Host, app.Cfg.SMTP.Port, user.Email, app.Cfg.Name, emailText)
 				if err != nil {
 					slog.Error("unable to SendEmail", "err", err)
 				}
@@ -185,9 +177,9 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	}
 
 	// display page
-	err = weblogin.RenderTemplate(app.Tmpls, w, "item.html",
+	err = webutil.RenderTemplate(app.Tmpl, w, "item.html",
 		ItemPageData{
-			Title:         app.Cfg.Title,
+			Title:         app.Cfg.Name,
 			Message:       msg,
 			User:          user,
 			Item:          item,

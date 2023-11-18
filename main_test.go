@@ -1,3 +1,6 @@
+// Copyright 2023 Bill Nixon. All rights reserved.
+// Use of this source code is governed by the license found in the LICENSE file.
+
 package main
 
 import (
@@ -8,7 +11,7 @@ import (
 
 const (
 	driverName     = "mysql"
-	dataSourceName = "gobid_test:gobid_test_password@/gobid_test?parseTime=true&multiStatements=true"
+	dataSourceName = "gobid_test:password@/gobid_test?parseTime=true&multiStatements=true"
 	file           = "sql/test.sql"
 )
 
