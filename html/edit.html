@@ -18,6 +18,11 @@
       <div class="w3-bar-item w3-mobile">
         <a href="/edit/{{ .Item.ID }}">Refresh Item</a>
       </div>
+      {{ if .Item.ID }}
+      <div class="w3-bar-item w3-mobile">
+        <a href="/edit/0">New Item</a>
+      </div>
+      {{ end }}
       <div class="w3-bar-item w3-mobile">
         <a href="/gallery">Gallery</a>
       </div>
