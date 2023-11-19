@@ -8,23 +8,28 @@ import (
 	"time"
 )
 
-const timeLayout = "2006-01-02 15:04:05"
+const timeLayout = "2006-01-02 15:04:05 MST"
 
 func (app *BidApp) GetTimeConfig(name string) (time.Time, error) {
-	var auction_start time.Time
+	var t time.Time
 
 	ci, err := app.BidDB.GetConfigItem(name)
 	if err != nil {
-		return auction_start, err
+		return t, err
 	}
 
-	loc := time.Now().Location()
-	auction_start, err = time.ParseInLocation(timeLayout, ci.Value, loc)
+	// TODO: define config variable for timezone
+	loc, err := time.LoadLocation("America/Chicago")
 	if err != nil {
-		return auction_start, err
+		return t, err
 	}
 
-	return auction_start, err
+	t, err = time.ParseInLocation(timeLayout, ci.Value, loc)
+	if err != nil {
+		return t, err
+	}
+
+	return t, err
 }
 
 func (app *BidApp) ConfigAuction() error {

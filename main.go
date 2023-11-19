@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
@@ -36,6 +37,15 @@ const (
 	ExitServer              // ExitServer indicates a server error.
 )
 
+func toTimeZone(t time.Time, name string) time.Time {
+	loc, err := time.LoadLocation(name)
+	if err != nil {
+		slog.Error("cannot load location", "name", name, "err", err)
+		return t
+	}
+	return t.In(loc)
+}
+
 func main() {
 	// Check for command line argument with config file.
 	if len(os.Args) != 2 {
@@ -60,8 +70,13 @@ func main() {
 		os.Exit(ExitLog)
 	}
 
+	// Define the custom function
+	funcMap := template.FuncMap{
+		"toTimeZone": toTimeZone,
+	}
+
 	// Initialize templates
-	tmpl, err := webutil.InitTemplates(cfg.ParseGlobPattern)
+	tmpl, err := webutil.InitTemplatesWithFuncMap(cfg.ParseGlobPattern, funcMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 		os.Exit(ExitTemplate)

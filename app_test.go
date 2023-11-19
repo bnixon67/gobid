@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 	"testing"
 
@@ -40,8 +41,13 @@ func AppForTest(t *testing.T) *BidApp {
 			t.Fatalf("cannot init logging: %v", err)
 		}
 
+		// Define the custom function
+		funcMap := template.FuncMap{
+			"toTimeZone": toTimeZone,
+		}
+
 		// Initialize templates
-		tmpl, err := webutil.InitTemplates(cfg.ParseGlobPattern)
+		tmpl, err := webutil.InitTemplatesWithFuncMap(cfg.ParseGlobPattern, funcMap)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 			os.Exit(ExitTemplate)

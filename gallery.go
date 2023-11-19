@@ -5,9 +5,9 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 
+	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
@@ -22,41 +22,43 @@ type GalleryPageData struct {
 
 // GalleryHandler displays a gallery of items.
 func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
+	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
-		slog.Error("invalid HTTP method", "method", r.Method)
+		logger.Error("invalid method")
 		return
 	}
 
 	user, err := app.DB.GetUserFromRequest(w, r)
 	if err != nil {
-		slog.Error("failed to get user", "err", err)
+		logger.Error("failed to get user", "err", err)
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	if app.BidDB == nil {
-		slog.Error("database is nil")
+		logger.Error("database is nil")
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	items, err := app.BidDB.GetItems()
 	if err != nil {
-		slog.Error("failed to get items", "err", err)
+		logger.Error("failed to get items", "err", err)
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
-	layout := "Mon Jan 2, 2006 3:04 PM"
+	layout := "Mon Jan 2, 2006 3:04 PM MST"
 	message := fmt.Sprintf("Auction is open from %s through %s",
 		app.AuctionStart.Format(layout),
 		app.AuctionEnd.Format(layout),
 	)
 
-	slog.Info("GalleryHandler",
-		"message", message,
-		"user", user,
-		"len(items)", len(items),
+	logger.Info("GalleryHandler",
+		"username", user.UserName,
 	)
 
 	err = webutil.RenderTemplate(app.Tmpl, w, "gallery.html",
@@ -67,7 +69,7 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 			Items:   items,
 		})
 	if err != nil {
-		slog.Error("unable to render template", "err", err)
+		logger.Error("unable to render template", "err", err)
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
