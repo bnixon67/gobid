@@ -106,7 +106,7 @@ func main() {
 		slog.Error("failed to ConfigAuction", "err", err)
 		return
 	}
-	// layout := "Monday January _2, 2006 3:04 PM"
+
 	slog.Info("create app", "bidApp", bidApp)
 
 	// Create a new ServeMux to handle HTTP requests.

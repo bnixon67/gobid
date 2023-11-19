@@ -33,7 +33,7 @@
 	<td>{{ .FullName }}</td>
 	<td>{{ .Email }}</td>
 	<td class="w3-right-align w3-mobile">{{ printf "$%10.2f" .CurrentBid }}</td>
-	<td class="w3-right-align w3-mobile">{{ .Modified.Format "1/02/06 03:04 PM" }}</td>
+	<td class="w3-right-align w3-mobile">{{ (toTimeZone .Modified "America/Chicago").Format "1/02/06 03:04 PM MST" }}</td>
       </tr>
       {{ end }}
     </table>

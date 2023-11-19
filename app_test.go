@@ -16,8 +16,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const TestLogFile = "test.log"
-
 // global to provide a singleton app.
 var bidApp *BidApp //nolint
 
@@ -34,9 +32,10 @@ func AppForTest(t *testing.T) *BidApp {
 		}
 
 		// Initialize logging.
-		err = weblog.Init(weblog.WithFilename(TestLogFile),
-			weblog.WithLevel("debug"),
-			weblog.WithSource(true))
+		err = weblog.Init(weblog.WithFilename(cfg.Log.Filename),
+			weblog.WithLogType(cfg.Log.Type),
+			weblog.WithLevel(cfg.Log.Level),
+			weblog.WithSource(cfg.Log.WithSource))
 		if err != nil {
 			t.Fatalf("cannot init logging: %v", err)
 		}

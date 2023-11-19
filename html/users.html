@@ -36,7 +36,7 @@
         {{ if $.User.IsAdmin }}
 	<td>{{ .Email }}</td>
 	<td class="w3-center">{{ .IsAdmin }}</td>
-	<td>{{ .Created.Format "2006-01-02 03:04 PM" }}</td>
+	<td>{{ (toTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST" }}</td>
         {{ end }}
       </tr>
       {{ end }}

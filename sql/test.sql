@@ -26,4 +26,4 @@ VALUES
 TRUNCATE TABLE users;
 
 INSERT INTO users(userName, fullName, email, hashedPassword)
-VALUES ("test", "Test User", "test@user", "password");
+VALUES ("test", "Test User", "test@user", "$2a$10$2bLycFqUmc6m6iLkaeUgKOGwzekGd9IoAPMbXRNNuJ8Sv9ItgV29O");

@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -26,22 +25,25 @@ type ItemEditPageData struct {
 
 // ItemEditHandler display an item.
 func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
-	validMethods := []string{http.MethodGet, http.MethodPost}
-	if !webutil.ValidMethod(w, r, validMethods...) {
-		slog.Error("invalid HTTP method", "method", r.Method)
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
+	// Check if the HTTP method is valid.
+	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
+		logger.Error("invalid method")
 		return
 	}
 
 	user, err := app.DB.GetUserFromRequest(w, r)
 	if err != nil {
-		slog.Error("failed to get user", "err", err)
+		logger.Error("failed to get user", "err", err)
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	// only allowed by admin users
 	if !user.IsAdmin {
-		slog.Warn("non-admin user", "user", user)
+		logger.Warn("attempt by non-admin user", "user", user)
 		HttpError(w, http.StatusUnauthorized)
 		return
 	}
@@ -49,7 +51,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	// get idString from URL path
 	idString := strings.TrimPrefix(r.URL.Path, "/edit/")
 	if idString == "" {
-		slog.Error("id string is empty")
+		logger.Error("no id provided")
 		HttpError(w, http.StatusBadRequest)
 		return
 	}
@@ -57,8 +59,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	// convert idString to int
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		slog.Warn("unable to convert id string to int",
-			"idString", idString, "err", err)
+		logger.Warn("unable to convert id", "idString", idString, "err", err)
 		HttpError(w, http.StatusBadRequest)
 		return
 	}
@@ -72,13 +73,16 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user weblogin.User) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
 	var item Item
 	var err error
 
 	if id != 0 {
 		item, err = app.BidDB.GetItem(id)
 		if err != nil {
-			slog.Error("unable to get item", "id", id, "err", err)
+			logger.Error("unable to get item", "id", id, "err", err)
 			HttpError(w, http.StatusNotFound)
 			return
 		}
@@ -92,17 +96,17 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 			Item:    item,
 		})
 	if err != nil {
-		slog.Error("unable to render template", "err", err)
+		logger.Error("unable to render template", "err", err)
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
+
+	logger.Info("success", "user", user, "item", item)
 }
 
 func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user weblogin.User) {
 	// Get logger with request info and function name.
 	logger := webhandler.GetRequestLoggerWithFunc(r)
-
-	logger.Debug("entered")
 
 	var msg string
 	var err error
@@ -170,8 +174,6 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	logger.Debug("got image file", "file", imageFile, "fileHeader", fileHeader)
 
 	// new imageFile to upload
 	if err != http.ErrMissingFile {
@@ -259,4 +261,6 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 		logger.Error("unable to RenderTemplate", "err", err)
 		return
 	}
+
+	logger.Info("success", "user", user, "item", item)
 }

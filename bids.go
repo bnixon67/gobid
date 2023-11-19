@@ -51,11 +51,6 @@ func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	logger.Info("BidsHandler",
-		"username", user.UserName,
-		"len(itemsWithBids)", len(itemsWithBids),
-	)
-
 	err = webutil.RenderTemplate(app.Tmpl, w, "bids.html",
 		BidsPageData{
 			Title:   app.Cfg.Name,
@@ -68,4 +63,7 @@ func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
+
+	logger.Info("showed bids", "username", user.UserName,
+		"len(itemsWithBids)", len(itemsWithBids))
 }

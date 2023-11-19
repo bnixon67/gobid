@@ -57,9 +57,7 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 		app.AuctionEnd.Format(layout),
 	)
 
-	logger.Info("GalleryHandler",
-		"username", user.UserName,
-	)
+	logger.Info("GalleryHandler", "username", user.UserName)
 
 	err = webutil.RenderTemplate(app.Tmpl, w, "gallery.html",
 		GalleryPageData{
@@ -73,4 +71,6 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
+
+	logger.Info("success", "username", user.UserName, "items", len(items))
 }

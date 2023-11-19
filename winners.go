@@ -4,14 +4,15 @@
 package main
 
 import (
-	"log/slog"
 	"net/http"
 	"time"
 
+	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
 
+// Winner represents current winners.
 type Winner struct {
 	ID         int
 	Title      string
@@ -23,44 +24,55 @@ type Winner struct {
 	FullName   string
 }
 
-// WinnerPageData contains data passed to the HTML template.
+// WinnerPageData holds the data to be passed to the winners page template.
 type WinnerPageData struct {
 	Title   string
 	Winners []Winner
 }
 
-// WinnerHandler prints a simple hello message.
+// WinnerHandler handles requests for the winners page.
 func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
+	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
-		slog.Error("invalid HTTP method", "method", r.Method)
+		// Method not allowed. Response w updated appropriately.
+		logger.Error("invalid method")
 		return
 	}
 
-	currentUser, err := app.DB.GetUserFromRequest(w, r)
+	// Get the user from the request.
+	user, err := app.DB.GetUserFromRequest(w, r)
 	if err != nil {
-		slog.Error("failed to GetUser", "err", err)
+		logger.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	if currentUser == (weblogin.User{}) {
+	// Must be logged in to the see the winners.
+	if user == (weblogin.User{}) {
+		logger.Error("unauthorized", "user", user)
 		HttpError(w, http.StatusUnauthorized)
 		return
 	}
 
+	// Retrieve the list of winners from the database.
 	winners, err := app.BidDB.GetWinners()
 	if err != nil {
-		slog.Error("failed to GetWinners", "err", err)
+		logger.Error("failed to GetWinners", "err", err)
 	}
 
-	// display page
+	// Render page.
 	err = webutil.RenderTemplate(app.Tmpl, w, "winners.html",
 		WinnerPageData{
 			Title:   app.Cfg.Name,
 			Winners: winners,
 		})
 	if err != nil {
-		slog.Error("unable to RenderTemplate", "err", err)
+		logger.Error("unable to render page", "err", err)
 		return
 	}
+
+	logger.Info("displayed winners", "winners", len(winners))
 }
