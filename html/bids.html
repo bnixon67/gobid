@@ -58,7 +58,7 @@
             </tr> </thead>
             {{range .Bids}}
             <tr>
-              <td>{{.Created.Format "01/02/06 03:04 pm"}}</td>
+              <td>{{(toTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST"}}</td>
               <td class="w3-right-align">${{printf "%.2f" .Amount}}</td>
               <td>{{.Bidder}}</td>
               <td>{{.FullName}}</td>

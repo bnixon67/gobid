@@ -4,9 +4,9 @@
 package main
 
 import (
-	"log/slog"
 	"net/http"
 
+	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
@@ -21,34 +21,38 @@ type BidsPageData struct {
 
 // BidsHandler displays all of the bids.
 func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
+	// Check if the HTTP method is valid.
 	if !webutil.ValidMethod(w, r, http.MethodGet) {
-		slog.Error("invalid HTTP method", "method", r.Method)
+		logger.Error("invalid method")
 		return
 	}
 
 	user, err := app.DB.GetUserFromRequest(w, r)
 	if err != nil {
-		slog.Error("failed to get user", "err", err)
+		logger.Error("failed to get user", "err", err)
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	if app.BidDB == nil {
-		slog.Error("database is nil")
+		logger.Error("database is nil")
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	itemsWithBids, err := app.BidDB.GetItemsWithBids()
 	if err != nil {
-		slog.Error("failed to get items with bids", "err", err)
+		logger.Error("failed to get items with bids", "err", err)
 		HttpError(w, http.StatusInternalServerError)
 		return
 
 	}
 
-	slog.Info("BidsHandler",
-		"user", user,
+	logger.Info("BidsHandler",
+		"username", user.UserName,
 		"len(itemsWithBids)", len(itemsWithBids),
 	)
 
@@ -60,7 +64,7 @@ func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 			Items:   itemsWithBids,
 		})
 	if err != nil {
-		slog.Error("unable to RenderTemplate", "err", err)
+		logger.Error("unable to RenderTemplate", "err", err)
 		HttpError(w, http.StatusInternalServerError)
 		return
 	}
