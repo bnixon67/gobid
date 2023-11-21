@@ -27,6 +27,7 @@
       </div>
     </div>
 
+    {{ if .User.UserName }}
     <table class="w3-table w3-mobile w3-responsive">
       <thead> <tr>
         <th>ID</th>
@@ -53,16 +54,20 @@
               <th>Placed</th>
               <th>Amount</th>
               <th>Bidder</th>
+              {{if $.User.IsAdmin}}
               <th>Full Name</th>
               <th>Email</th>
+              {{end}}
             </tr> </thead>
             {{range .Bids}}
             <tr>
               <td>{{(toTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST"}}</td>
               <td class="w3-right-align">${{printf "%.2f" .Amount}}</td>
               <td>{{.Bidder}}</td>
+              {{if $.User.IsAdmin}}
               <td>{{.FullName}}</td>
               <td>{{.Email}}</td>
+              {{end}}
             </tr>
             {{end}}
           </table>
@@ -70,6 +75,12 @@
       </tr>
       {{ end }}
     </table>
+    {{ else }}
+    <div class="w3-panel w3-pale-red">
+      You must <a href="/login?r=/bids">Login</a>
+    </div>
+    {{ end }}
+
 
     <script>
       function ToggleBids(id) {

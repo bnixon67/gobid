@@ -27,6 +27,7 @@ type Winner struct {
 // WinnerPageData holds the data to be passed to the winners page template.
 type WinnerPageData struct {
 	Title   string
+	User    weblogin.User
 	Winners []Winner
 }
 
@@ -50,13 +51,6 @@ func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Must be logged in to the see the winners.
-	if user == (weblogin.User{}) {
-		logger.Error("unauthorized", "user", user)
-		HttpError(w, http.StatusUnauthorized)
-		return
-	}
-
 	// Retrieve the list of winners from the database.
 	winners, err := app.BidDB.GetWinners()
 	if err != nil {
@@ -67,6 +61,7 @@ func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 	err = webutil.RenderTemplate(app.Tmpl, w, "winners.html",
 		WinnerPageData{
 			Title:   app.Cfg.Name,
+			User:    user,
 			Winners: winners,
 		})
 	if err != nil {

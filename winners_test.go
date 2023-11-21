@@ -50,6 +50,11 @@ func TestWinnerHandler(t *testing.T) {
 		t.Errorf("could not login user to get session token")
 	}
 
+	user, err := app.DB.GetUserForSessionToken(token.Value)
+	if err != nil {
+		t.Errorf("could not get user: %v", err)
+	}
+
 	// Retrieve the list of winners from the database.
 	winners, err := app.BidDB.GetWinners()
 	if err != nil {
@@ -68,8 +73,9 @@ func TestWinnerHandler(t *testing.T) {
 			Name:          "No User",
 			Target:        "/winners",
 			RequestMethod: http.MethodGet,
-			WantStatus:    http.StatusUnauthorized,
-			WantBody:      "Error: Unauthorized\n",
+			WantStatus:    http.StatusOK,
+			WantBody: winnersBody(t, WinnerPageData{
+				Title: app.Cfg.Name}),
 		},
 		{
 			Name:          "Valid User",
@@ -81,7 +87,8 @@ func TestWinnerHandler(t *testing.T) {
 			WantStatus: http.StatusOK,
 			WantBody: winnersBody(t, WinnerPageData{
 				Title:   app.Cfg.Name,
-				Winners: winners}),
+				Winners: winners,
+				User:    user}),
 		},
 	}
 

@@ -13,15 +13,24 @@
       <div class="w3-bar-item w3-mobile">
 	<a href="/gallery">Gallery</a>
       </div>
+      <div class="w3-bar-item w3-mobile w3-right">
+        {{if .User.UserName}}
+        <a href="/logout">Logout {{.User.UserName}}</a>
+        {{end}}
+      </div>
     </div>
 
+    {{ if .User.UserName }}
     <table class="w3-container w3-mobile w3-table-all w3-responsive">
       <tr>
 	<th class="w3-right-align w3-mobile">ID</th>
 	<th>Title</th>
 	<th>Artist</th>
-	<th>Bidder</th>
-	<th>Email</th>
+	<th>User</th>
+        {{if .User.IsAdmin}}
+        <th>Name</th>
+        <th>Email</th>
+        {{end}}
 	<th>Amount</th>
 	<th>Placed</th>
       </tr>
@@ -30,13 +39,21 @@
 	<td>{{ .ID }}</td>
 	<td>{{ .Title }}</td>
 	<td>{{ .Artist }}</td>
-	<td>{{ .FullName }}</td>
-	<td>{{ .Email }}</td>
+	<td>{{ .ModifiedBy }}</td>
+        {{if $.User.IsAdmin}}
+        <td>{{ .FullName }}</td>
+        <td>{{ .Email }}</td>
+        {{end}}
 	<td class="w3-right-align w3-mobile">{{ printf "$%10.2f" .CurrentBid }}</td>
 	<td class="w3-right-align w3-mobile">{{ (toTimeZone .Modified "America/Chicago").Format "1/02/06 03:04 PM MST" }}</td>
       </tr>
       {{ end }}
     </table>
+    {{ else }}
+    <div class="w3-panel w3-pale-red">
+      You must <a href="/login?r=/winners">Login</a>
+    </div>
+    {{ end }}
 
   </body>
 </html>
