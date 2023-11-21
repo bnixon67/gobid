@@ -129,6 +129,7 @@ func main() {
 	mux.HandleFunc("/edit/", bidApp.ItemEditHandler)
 	mux.HandleFunc("/winners", bidApp.WinnerHandler)
 	mux.HandleFunc("/bids", bidApp.BidsHandler)
+	mux.HandleFunc("/build", app.WebApp.BuildHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
