@@ -198,6 +198,8 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 
 const PlaceBidError = "Unable to place bid. Try again."
 
+const EventBid weblogin.EventName = "bid"
+
 func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (BidResult, error) {
 	var bidResult BidResult
 
@@ -211,6 +213,8 @@ func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (BidResult,
 		bidResult.Message = PlaceBidError
 		return bidResult, err
 	}
+
+	db.sqlDB.WriteEvent(EventBid, true, userName, bidResult.Message)
 
 	return bidResult, err
 }
