@@ -10,6 +10,6 @@ require (
 
 require (
 	github.com/google/go-cmp v0.6.0 // indirect
-	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
+	golang.org/x/crypto v0.15.0 // indirect
+	golang.org/x/image v0.14.0 // indirect
 )
