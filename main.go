@@ -134,7 +134,7 @@ func main() {
 	// Create the web server.
 	srv, err := webserver.New(
 		webserver.WithAddr(cfg.Server.Host+":"+cfg.Server.Port),
-		webserver.WithHandler(webhandler.AddRequestID(webhandler.AddRequestLogger(webhandler.LogRequest(mux)))),
+		webserver.WithHandler(webhandler.AddRequestID(webhandler.AddLogger(webhandler.LogRequest(mux)))),
 		webserver.WithTLS(cfg.Server.CertFile, cfg.Server.KeyFile),
 	)
 	if err != nil {
