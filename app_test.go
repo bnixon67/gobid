@@ -42,7 +42,7 @@ func AppForTest(t *testing.T) *BidApp {
 
 		// Define the custom function
 		funcMap := template.FuncMap{
-			"toTimeZone": toTimeZone,
+			"ToTimeZone": webutil.ToTimeZone,
 		}
 
 		// Initialize templates

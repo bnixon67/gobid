@@ -107,7 +107,7 @@
           <tr>
             <td>{{ .Bidder }}</td>
             <td>${{ printf "%.2f" .Amount }}</td>
-            <td>{{ (toTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST" }}</td>
+            <td>{{ (ToTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST" }}</td>
           </tr>
           {{ end }}
         </table>

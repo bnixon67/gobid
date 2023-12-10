@@ -9,13 +9,14 @@ import (
 
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblogin"
+	"github.com/bnixon67/webapp/webutil"
 )
 
 func itemBody(t *testing.T, data ItemPageData) string {
 	tmplName := "item.html"
 
 	// Initialize FuncMap with the custom function.
-	funcMap := template.FuncMap{"toTimeZone": toTimeZone}
+	funcMap := template.FuncMap{"ToTimeZone": webutil.ToTimeZone}
 
 	// Directly include the name of the template in New for clarity.
 	tmpl := template.New(tmplName).Funcs(funcMap)

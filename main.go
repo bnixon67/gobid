@@ -37,15 +37,6 @@ const (
 	ExitServer              // ExitServer indicates a server error.
 )
 
-func toTimeZone(t time.Time, name string) time.Time {
-	loc, err := time.LoadLocation(name)
-	if err != nil {
-		slog.Error("cannot load location", "name", name, "err", err)
-		return t
-	}
-	return t.In(loc)
-}
-
 func main() {
 	// Check for command line argument with config file.
 	if len(os.Args) != 2 {
@@ -72,7 +63,7 @@ func main() {
 
 	// Define the custom function
 	funcMap := template.FuncMap{
-		"toTimeZone": toTimeZone,
+		"ToTimeZone": webutil.ToTimeZone,
 	}
 
 	// Initialize templates
@@ -123,6 +114,7 @@ func main() {
 	mux.HandleFunc("/forgot", app.ForgotHandler)
 	mux.HandleFunc("/reset", app.ResetHandler)
 	mux.HandleFunc("/users", app.UsersHandler)
+	mux.HandleFunc("/userscsv", app.UsersCSVHandler)
 	mux.HandleFunc("/gallery", bidApp.GalleryHandler)
 	mux.HandleFunc("/items", bidApp.ItemsHandler)
 	mux.HandleFunc("/item/", bidApp.ItemHandler)
@@ -130,6 +122,8 @@ func main() {
 	mux.HandleFunc("/winners", bidApp.WinnerHandler)
 	mux.HandleFunc("/bids", bidApp.BidsHandler)
 	mux.HandleFunc("/build", app.WebApp.BuildHandler)
+	mux.HandleFunc("/events", app.EventsHandler)
+	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(

@@ -61,7 +61,7 @@
             </tr> </thead>
             {{range .Bids}}
             <tr>
-              <td>{{(toTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST"}}</td>
+              <td>{{(ToTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST"}}</td>
               <td class="w3-right-align">${{printf "%.2f" .Amount}}</td>
               <td>{{.Bidder}}</td>
               {{if $.User.IsAdmin}}
