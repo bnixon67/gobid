@@ -96,3 +96,77 @@ func TestWinnerHandler(t *testing.T) {
 	// Test the handler using the utility function.
 	webhandler.HandlerTestWithCases(t, app.WinnerHandler, tests)
 }
+
+func TestWinnersCSVHandler(t *testing.T) {
+	app := AppForTest(t)
+
+	// TODO: better way to define a test user
+	userToken, err := app.LoginUser("test", "password")
+	if err != nil {
+		t.Fatalf("could not login user to get session token")
+	}
+	adminToken, err := app.LoginUser("admin", "password")
+	if err != nil {
+		t.Fatalf("could not login user to get session token")
+	}
+
+	winners, err := app.BidDB.GetWinners()
+	if err != nil {
+		t.Fatalf("failed to get winners: %v", err)
+	}
+	var body bytes.Buffer
+	err = webutil.SliceOfStructsToCSV(&body, winners)
+	if err != nil {
+		t.Fatalf("failed SliceOfStructsToCSV: %v", err)
+	}
+
+	tests := []webhandler.TestCase{
+		{
+			Name:          "Invalid Method",
+			Target:        "/events",
+			RequestMethod: http.MethodPost,
+			WantStatus:    http.StatusMethodNotAllowed,
+			WantBody:      "POST Method Not Allowed\n",
+		},
+		{
+			Name:          "Valid GET Request without Cookie",
+			Target:        "/events",
+			RequestMethod: http.MethodGet,
+			WantStatus:    http.StatusUnauthorized,
+			WantBody:      "Error: Unauthorized\n",
+		},
+		{
+			Name:          "Valid GET Request with Bad Session Token",
+			Target:        "/events",
+			RequestMethod: http.MethodGet,
+			RequestCookies: []http.Cookie{
+				{Name: weblogin.SessionTokenCookieName, Value: "foo"},
+			},
+			WantStatus: http.StatusUnauthorized,
+			WantBody:   "Error: Unauthorized\n",
+		},
+		{
+			Name:          "Valid GET Request with Good Session Token - Non Admin",
+			Target:        "/events",
+			RequestMethod: http.MethodGet,
+			RequestCookies: []http.Cookie{
+				{Name: weblogin.SessionTokenCookieName, Value: userToken.Value},
+			},
+			WantStatus: http.StatusUnauthorized,
+			WantBody:   "Error: Unauthorized\n",
+		},
+		{
+			Name:          "Valid GET Request with Good Session Token - Admin",
+			Target:        "/events",
+			RequestMethod: http.MethodGet,
+			RequestCookies: []http.Cookie{
+				{Name: weblogin.SessionTokenCookieName, Value: adminToken.Value},
+			},
+			WantStatus: http.StatusOK,
+			WantBody:   body.String(),
+		},
+	}
+
+	// Test the handler using the utility function.
+	webhandler.HandlerTestWithCases(t, app.WinnersCSVHandler, tests)
+}

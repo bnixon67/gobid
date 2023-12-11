@@ -120,6 +120,7 @@ func main() {
 	mux.HandleFunc("/item/", bidApp.ItemHandler)
 	mux.HandleFunc("/edit/", bidApp.ItemEditHandler)
 	mux.HandleFunc("/winners", bidApp.WinnerHandler)
+	mux.HandleFunc("/winnerscsv", bidApp.WinnersCSVHandler)
 	mux.HandleFunc("/bids", bidApp.BidsHandler)
 	mux.HandleFunc("/build", app.WebApp.BuildHandler)
 	mux.HandleFunc("/events", app.EventsHandler)

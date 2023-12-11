@@ -9,15 +9,21 @@
     <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
       <b>{{ .Title }} Winners</b>
     </div>
+
     <div class="w3-bar w3-mobile w3-light-grey">
       <div class="w3-bar-item w3-mobile">
 	<a href="/gallery">Gallery</a>
       </div>
-      <div class="w3-bar-item w3-mobile w3-right">
-        {{if .User.UserName}}
-        <a href="/logout">Logout {{.User.UserName}}</a>
-        {{end}}
+      {{ if .User.IsAdmin }}
+      <div class="w3-bar-item w3-mobile">
+	<a href="/winnerscsv">Download</a>
       </div>
+      {{ end }}
+      {{if .User.UserName}}
+      <div class="w3-bar-item w3-mobile w3-right">
+        <a href="/logout">Logout {{.User.UserName}}</a>
+      </div>
+        {{end}}
     </div>
 
     {{ if .User.UserName }}

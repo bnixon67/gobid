@@ -71,3 +71,46 @@ func (app *BidApp) WinnerHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("displayed winners", "winners", len(winners))
 }
+
+// WinnersCSVHandler provides list of the current users as a CSV file.
+func (app *BidApp) WinnersCSVHandler(w http.ResponseWriter, r *http.Request) {
+	// Get logger with request info and function name.
+	logger := webhandler.GetRequestLoggerWithFunc(r)
+
+	// Check if the HTTP method is valid.
+	if !webutil.ValidMethod(w, r, http.MethodGet) {
+		logger.Error("invalid method")
+		return
+	}
+
+	user, err := app.DB.GetUserFromRequest(w, r)
+	if err != nil {
+		logger.Error("failed to GetUser", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	if !user.IsAdmin {
+		logger.Error("user not authorized", "user", user)
+		webutil.HttpError(w, http.StatusUnauthorized)
+		return
+	}
+
+	winners, err := app.BidDB.GetWinners()
+	if err != nil {
+		logger.Error("failed to get winners", "err", err)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment;filename=winners.csv")
+
+	err = webutil.SliceOfStructsToCSV(w, winners)
+	if err != nil {
+		logger.Error("failed to convert struct to CSV",
+			"err", err, "winners", winners)
+		webutil.HttpError(w, http.StatusInternalServerError)
+		return
+	}
+}
