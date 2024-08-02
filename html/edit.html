@@ -27,8 +27,8 @@
         <a href="/gallery">Gallery</a>
       </div>
       <div class="w3-bar-item w3-right w3-mobile">
-      {{ if .User.UserName }}
-        <a href="/logout">Logout {{ .User.UserName }}</a>
+      {{ if .User.Username }}
+        <a href="/logout">Logout {{ .User.Username }}</a>
       {{ else }}
 	<a href="/login">Login</a>
       {{ end }}

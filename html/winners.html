@@ -19,14 +19,14 @@
 	<a href="/winnerscsv">Download</a>
       </div>
       {{ end }}
-      {{if .User.UserName}}
+      {{if .User.Username}}
       <div class="w3-bar-item w3-mobile w3-right">
-        <a href="/logout">Logout {{.User.UserName}}</a>
+        <a href="/logout">Logout {{.User.Username}}</a>
       </div>
         {{end}}
     </div>
 
-    {{ if .User.UserName }}
+    {{ if .User.Username }}
     <table class="w3-container w3-mobile w3-table-all w3-responsive">
       <tr>
 	<th class="w3-right-align w3-mobile">ID</th>

@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -19,22 +19,22 @@ import (
 type ItemEditPageData struct {
 	Title   string
 	Message string
-	User    weblogin.User
+	User    webauth.User
 	Item    Item
 }
 
 // ItemEditHandler display an item.
 func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
+	if !webutil.CheckAllowedMethods(w, r, http.MethodGet, http.MethodPost) {
 		logger.Error("invalid method")
 		return
 	}
 
-	user, err := app.DB.GetUserFromRequest(w, r)
+	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user", "err", err)
 		HttpError(w, http.StatusInternalServerError)
@@ -72,9 +72,9 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user weblogin.User) {
+func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	var item Item
 	var err error
@@ -88,9 +88,9 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 		}
 	}
 
-	err = webutil.RenderTemplate(app.Tmpl, w, "edit.html",
+	err = webutil.RenderTemplateOrError(app.Tmpl, w, "edit.html",
 		ItemEditPageData{
-			Title:   app.Cfg.Name,
+			Title:   app.Cfg.App.Name,
 			Message: "",
 			User:    user,
 			Item:    item,
@@ -104,9 +104,9 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 	logger.Info("success", "user", user, "item", item)
 }
 
-func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user weblogin.User) {
+func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	var msg string
 	var err error
@@ -250,9 +250,9 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	}
 
 	// display page
-	err = webutil.RenderTemplate(app.Tmpl, w, "edit.html",
+	err = webutil.RenderTemplateOrError(app.Tmpl, w, "edit.html",
 		ItemEditPageData{
-			Title:   app.Cfg.Name,
+			Title:   app.Cfg.App.Name,
 			Message: msg,
 			User:    user,
 			Item:    item,

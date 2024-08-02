@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -16,22 +16,22 @@ import (
 type GalleryPageData struct {
 	Title   string
 	Message string
-	User    weblogin.User
+	User    webauth.User
 	Items   []Item
 }
 
 // GalleryHandler displays a gallery of items.
 func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	user, err := app.DB.GetUserFromRequest(w, r)
+	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user", "err", err)
 		HttpError(w, http.StatusInternalServerError)
@@ -57,11 +57,11 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 		app.AuctionEnd.Format(layout),
 	)
 
-	logger.Info("GalleryHandler", "username", user.UserName)
+	logger.Info("GalleryHandler", "username", user.Username)
 
-	err = webutil.RenderTemplate(app.Tmpl, w, "gallery.html",
+	err = webutil.RenderTemplateOrError(app.Tmpl, w, "gallery.html",
 		GalleryPageData{
-			Title:   app.Cfg.Name,
+			Title:   app.Cfg.App.Name,
 			Message: message,
 			User:    user,
 			Items:   items,
@@ -72,5 +72,5 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info("success", "username", user.UserName, "items", len(items))
+	logger.Info("success", "username", user.Username, "items", len(items))
 }

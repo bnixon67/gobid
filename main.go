@@ -13,16 +13,16 @@ import (
 	"time"
 
 	"github.com/bnixon67/webapp/webapp"
+	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/weblog"
-	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webserver"
 	"github.com/bnixon67/webapp/webutil"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type BidApp struct {
-	*weblogin.LoginApp
+	*webauth.AuthApp
 	*BidDB
 	AuctionStart, AuctionEnd time.Time
 }
@@ -45,19 +45,27 @@ func main() {
 	}
 
 	// Read config.
-	cfg, err := weblogin.GetConfigFromFile(os.Args[1])
+	cfg, err := webauth.LoadConfigFromJSON(os.Args[1])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to get config:", err)
+		fmt.Fprintln(os.Stderr, "Failed to load config:", err)
+		os.Exit(ExitConfig)
+	}
+
+	// Validate config.
+	missingFields, err := cfg.MissingFields()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to validate config:", err)
+		os.Exit(ExitConfig)
+	}
+	if len(missingFields) != 0 {
+		fmt.Fprintln(os.Stderr, "Missing fields in config", missingFields)
 		os.Exit(ExitConfig)
 	}
 
 	// Initialize logging.
-	err = weblog.Init(weblog.WithFilename(cfg.Log.Filename),
-		weblog.WithLogType(cfg.Log.Type),
-		weblog.WithLevel(cfg.Log.Level),
-		weblog.WithSource(cfg.Log.WithSource))
+	err = weblog.Init(cfg.Log)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error initializing logger:", err)
+		fmt.Fprintln(os.Stderr, "Failed to init logging:", err)
 		os.Exit(ExitLog)
 	}
 
@@ -66,30 +74,29 @@ func main() {
 		"ToTimeZone": webutil.ToTimeZone,
 	}
 
-	// Initialize templates
-	tmpl, err := webutil.InitTemplatesWithFuncMap(cfg.ParseGlobPattern, funcMap)
+	// Initialize templates with custom functions.
+	tmpl, err := webutil.TemplatesWithFuncs(cfg.App.TmplPattern, funcMap)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
+		fmt.Fprintln(os.Stderr, "Failed to init templates:", err)
 		os.Exit(ExitTemplate)
 	}
 
 	// Initialize db
-	db, err := weblogin.InitDB(cfg.SQL.DriverName, cfg.SQL.DataSourceName)
+	db, err := webauth.InitDB(cfg.SQL.DriverName, cfg.SQL.DataSourceName)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to initialize database:", err)
+		fmt.Fprintln(os.Stderr, "Failed to init db:", err)
 		os.Exit(ExitDB)
 	}
 
 	// Create the web login app.
-	app, err := weblogin.New(webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl),
-		weblogin.WithConfig(cfg), weblogin.WithDB(db))
+	app, err := webauth.NewApp(webapp.WithName(cfg.App.Name), webapp.WithTemplate(tmpl), webauth.WithConfig(*cfg), webauth.WithDB(db))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to create new weblogin:", err)
+		fmt.Fprintln(os.Stderr, "Failed to create new webauth:", err)
 		os.Exit(ExitApp)
 	}
 
 	// Embed web login app into BidApp
-	bidApp := BidApp{LoginApp: app, BidDB: &BidDB{}}
+	bidApp := BidApp{AuthApp: app, BidDB: &BidDB{}}
 	bidApp.BidDB.sqlDB = app.DB
 
 	err = bidApp.ConfigAuction()
@@ -105,10 +112,15 @@ func main() {
 
 	// Register handlers
 	mux.Handle("/", http.RedirectHandler("/gallery", http.StatusMovedPermanently))
-	mux.HandleFunc("/w3.css", webutil.ServeFileHandler("html/w3.css"))
-	mux.HandleFunc("/favicon.ico", webutil.ServeFileHandler("html/favicon.ico"))
+	mux.HandleFunc("/w3.css", webhandler.FileHandler("html/w3.css"))
+	mux.HandleFunc("/favicon.ico", webhandler.FileHandler("html/favicon.ico"))
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
-	mux.HandleFunc("/login", app.LoginHandler)
+
+	mux.HandleFunc("GET /login", app.LoginGetHandler)
+	mux.HandleFunc("POST /login", app.LoginPostHandler)
+
+	mux.HandleFunc("GET /build", app.BuildHandlerGet)
+
 	mux.HandleFunc("/register", app.RegisterHandler)
 	mux.HandleFunc("/logout", app.LogoutHandler)
 	mux.HandleFunc("/forgot", app.ForgotHandler)
@@ -122,14 +134,13 @@ func main() {
 	mux.HandleFunc("/winners", bidApp.WinnerHandler)
 	mux.HandleFunc("/winnerscsv", bidApp.WinnersCSVHandler)
 	mux.HandleFunc("/bids", bidApp.BidsHandler)
-	mux.HandleFunc("/build", app.WebApp.BuildHandler)
 	mux.HandleFunc("/events", app.EventsHandler)
 	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)
 
 	// Create the web server.
 	srv, err := webserver.New(
 		webserver.WithAddr(cfg.Server.Host+":"+cfg.Server.Port),
-		webserver.WithHandler(webhandler.AddRequestID(webhandler.AddLogger(webhandler.LogRequest(mux)))),
+		webserver.WithHandler(webhandler.NewRequestIDMiddleware(webhandler.MiddlewareLogger(webhandler.LogRequest(mux)))),
 		webserver.WithTLS(cfg.Server.CertFile, cfg.Server.KeyFile),
 	)
 	if err != nil {
@@ -140,8 +151,8 @@ func main() {
 	// Create a new context.
 	ctx := context.Background()
 
-	// Start the web server.
-	err = srv.Start(ctx)
+	// Run the web server.
+	err = srv.Run(ctx)
 	if err != nil {
 		slog.Error("error running server", "err", err)
 		fmt.Fprintln(os.Stderr, "Error running server:", err)

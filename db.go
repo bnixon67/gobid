@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bnixon67/webapp/weblogin"
+	"github.com/bnixon67/webapp/webauth"
 )
 
 type BidDB struct {
-	sqlDB *weblogin.LoginDB
+	sqlDB *webauth.AuthDB
 }
 
 type BidResult struct {
@@ -198,7 +198,7 @@ func (db BidDB) GetWinners() ([]Winner, error) {
 
 const PlaceBidError = "Unable to place bid. Try again."
 
-const EventBid weblogin.EventName = "bid"
+const EventBid webauth.EventName = "bid"
 
 func (db BidDB) PlaceBid(id int, bidAmount float64, userName string) (BidResult, error) {
 	var bidResult BidResult

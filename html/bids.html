@@ -19,15 +19,15 @@
       <div class="w3-bar-item w3-mobile"><a href="/edit/0">New Item</a></div>
       {{ end }}
       <div class="w3-bar-item w3-mobile w3-right">
-        {{if .User.UserName}}
-        <a href="/logout">Logout {{.User.UserName}}</a>
+        {{if .User.Username}}
+        <a href="/logout">Logout {{.User.Username}}</a>
         {{else}}
         <a href="/login?r=/items">Login</a>
         {{end}}
       </div>
     </div>
 
-    {{ if .User.UserName }}
+    {{ if .User.Username }}
     <table class="w3-table w3-mobile w3-responsive">
       <thead> <tr>
         <th>ID</th>

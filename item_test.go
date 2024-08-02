@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -111,7 +110,7 @@ func TestItemHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: itemBody(t, ItemPageData{
-				Title: app.Cfg.Name,
+				Title: app.Cfg.App.Name,
 				Item:  item,
 				Bids:  bids,
 			}),
@@ -121,11 +120,11 @@ func TestItemHandler(t *testing.T) {
 			Target:        "/item/1",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: token.Value},
+				{Name: webauth.SessionTokenCookieName, Value: token.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: itemBody(t, ItemPageData{
-				Title: app.Cfg.Name,
+				Title: app.Cfg.App.Name,
 				User:  user,
 				Item:  item,
 				Bids:  bids,

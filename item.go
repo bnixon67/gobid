@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -18,7 +18,7 @@ import (
 type ItemPageData struct {
 	Title         string
 	Message       string
-	User          weblogin.User
+	User          webauth.User
 	Item          Item
 	IsAuctionOpen bool
 	Bids          []Bid
@@ -27,10 +27,10 @@ type ItemPageData struct {
 // ItemHandler display an item.
 func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet, http.MethodPost) {
+	if !webutil.CheckAllowedMethods(w, r, http.MethodGet, http.MethodPost) {
 		logger.Error("invalid method")
 		return
 	}
@@ -57,7 +57,7 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentUser, err := app.DB.GetUserFromRequest(w, r)
+	currentUser, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to GetUser", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -72,9 +72,9 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int, user weblogin.User) {
+func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	// get item from database
 	item, err := app.BidDB.GetItem(id)
@@ -92,9 +92,9 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 	}
 
 	// display page
-	err = webutil.RenderTemplate(app.Tmpl, w, "item.html",
+	err = webutil.RenderTemplateOrError(app.Tmpl, w, "item.html",
 		ItemPageData{
-			Title:         app.Cfg.Name,
+			Title:         app.Cfg.App.Name,
 			Message:       "",
 			User:          user,
 			Item:          item,
@@ -106,13 +106,13 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 		return
 	}
 
-	logger.Info("displayed item", "username", user.UserName, "item", item,
+	logger.Info("displayed item", "username", user.Username, "item", item,
 		"auction open", app.IsAuctionOpen(), "bids", len(bids))
 }
 
-func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id int, user weblogin.User) {
+func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	var msg string
 	var err error
@@ -132,8 +132,8 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	}
 
 	// submit bid if we have a valid user and bidAmount and open Auction
-	if user != (weblogin.User{}) && bidAmount > 0 && app.IsAuctionOpen() {
-		bidResult, err := app.BidDB.PlaceBid(id, bidAmount, user.UserName)
+	if user != (webauth.User{}) && bidAmount > 0 && app.IsAuctionOpen() {
+		bidResult, err := app.BidDB.PlaceBid(id, bidAmount, user.Username)
 		if err != nil {
 			logger.Error("unable to PlaceBid",
 				"id", id, "bidAmount", bidAmount, "user", user,
@@ -147,8 +147,8 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 				"bidResult", bidResult,
 			)
 
-			if bidResult.BidPlaced && bidResult.PriorBidder != "" && bidResult.PriorBidder != user.UserName {
-				user, err := app.DB.GetUserForName(bidResult.PriorBidder)
+			if bidResult.BidPlaced && bidResult.PriorBidder != "" && bidResult.PriorBidder != user.Username {
+				user, err := app.DB.UserForName(bidResult.PriorBidder)
 				if err != nil {
 					logger.Error("unable to GetUserForName",
 						"PriorBidder", bidResult.PriorBidder,
@@ -164,9 +164,9 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 
 				emailText := fmt.Sprintf(
 					"You have been outbid on %q. Visit %s/item/%d to rebid.",
-					item.Title, app.Cfg.BaseURL, id)
+					item.Title, app.Cfg.Auth.BaseURL, id)
 
-				err = weblogin.SendEmail(app.Cfg.SMTP.User, app.Cfg.SMTP.Password, app.Cfg.SMTP.Host, app.Cfg.SMTP.Port, user.Email, app.Cfg.Name, emailText)
+				err = app.Cfg.SMTP.SendMessage(app.Cfg.SMTP.Username, []string{user.Email}, app.Cfg.App.Name, emailText)
 				if err != nil {
 					logger.Error("unable to send email",
 						"to", user.Email,
@@ -194,9 +194,9 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	}
 
 	// display page
-	err = webutil.RenderTemplate(app.Tmpl, w, "item.html",
+	err = webutil.RenderTemplateOrError(app.Tmpl, w, "item.html",
 		ItemPageData{
-			Title:         app.Cfg.Name,
+			Title:         app.Cfg.App.Name,
 			Message:       msg,
 			User:          user,
 			Item:          item,
@@ -210,7 +210,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 
 	logger.Info("post bid",
 		"message", msg,
-		"username", user.UserName,
+		"username", user.Username,
 		"item", item,
 		"auction open", app.IsAuctionOpen(),
 		"bids", len(bids),

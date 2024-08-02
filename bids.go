@@ -6,8 +6,8 @@ package main
 import (
 	"net/http"
 
+	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -15,22 +15,22 @@ import (
 type BidsPageData struct {
 	Title   string
 	Message string
-	User    weblogin.User
+	User    webauth.User
 	Items   []ItemWithBids
 }
 
 // BidsHandler displays all of the bids.
 func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 	// Get logger with request info and function name.
-	logger := webhandler.GetRequestLoggerWithFunc(r)
+	logger := webhandler.RequestLoggerWithFuncName(r)
 
 	// Check if the HTTP method is valid.
-	if !webutil.ValidMethod(w, r, http.MethodGet) {
+	if !webutil.IsMethodOrError(w, r, http.MethodGet) {
 		logger.Error("invalid method")
 		return
 	}
 
-	user, err := app.DB.GetUserFromRequest(w, r)
+	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user", "err", err)
 		HttpError(w, http.StatusInternalServerError)
@@ -51,9 +51,9 @@ func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	err = webutil.RenderTemplate(app.Tmpl, w, "bids.html",
+	err = webutil.RenderTemplateOrError(app.Tmpl, w, "bids.html",
 		BidsPageData{
-			Title:   app.Cfg.Name,
+			Title:   app.Cfg.App.Name,
 			Message: "",
 			User:    user,
 			Items:   itemsWithBids,
@@ -64,6 +64,6 @@ func (app *BidApp) BidsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Info("showed bids", "username", user.UserName,
+	logger.Info("showed bids", "username", user.Username,
 		"len(itemsWithBids)", len(itemsWithBids))
 }

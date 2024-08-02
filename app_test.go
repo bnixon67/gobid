@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/bnixon67/webapp/webapp"
+	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/weblog"
-	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -25,7 +25,7 @@ func AppForTest(t *testing.T) *BidApp {
 		var err error
 
 		// Read config.
-		cfg, err := weblogin.GetConfigFromFile("testdata/config.json")
+		cfg, err := webauth.LoadConfigFromJSON("testdata/config.json")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Failed to get config:", err)
 			os.Exit(ExitConfig)
@@ -53,13 +53,13 @@ func AppForTest(t *testing.T) *BidApp {
 		}
 
 		// Initialize db
-		db, err := weblogin.InitDB(cfg.SQL.DriverName, cfg.SQL.DataSourceName)
+		db, err := webauth.InitDB(cfg.SQL.DriverName, cfg.SQL.DataSourceName)
 		if err != nil {
 			t.Fatalf("cannot init db: %v", err)
 		}
 
 		// Create the web login app.
-		app, err := weblogin.New(webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl), weblogin.WithConfig(cfg), weblogin.WithDB(db))
+		app, err := webauth.NewApp(webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl), webauth.WithConfig(cfg), webauth.WithDB(db))
 		if err != nil {
 			t.Fatalf("cannot create app: %v", err)
 		}

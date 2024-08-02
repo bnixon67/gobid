@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/bnixon67/webapp/webhandler"
-	"github.com/bnixon67/webapp/weblogin"
 	"github.com/bnixon67/webapp/webutil"
 )
 
@@ -76,18 +75,18 @@ func TestWinnerHandler(t *testing.T) {
 			RequestMethod: http.MethodGet,
 			WantStatus:    http.StatusOK,
 			WantBody: winnersBody(t, WinnerPageData{
-				Title: app.Cfg.Name}),
+				Title: app.Cfg.App.Name}),
 		},
 		{
 			Name:          "Valid User",
 			Target:        "/winners",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: token.Value},
+				{Name: webauth.SessionTokenCookieName, Value: token.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: winnersBody(t, WinnerPageData{
-				Title:   app.Cfg.Name,
+				Title:   app.Cfg.App.Name,
 				Winners: winners,
 				User:    user}),
 		},
@@ -140,7 +139,7 @@ func TestWinnersCSVHandler(t *testing.T) {
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: "foo"},
+				{Name: webauth.SessionTokenCookieName, Value: "foo"},
 			},
 			WantStatus: http.StatusUnauthorized,
 			WantBody:   "Error: Unauthorized\n",
@@ -150,7 +149,7 @@ func TestWinnersCSVHandler(t *testing.T) {
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: userToken.Value},
+				{Name: webauth.SessionTokenCookieName, Value: userToken.Value},
 			},
 			WantStatus: http.StatusUnauthorized,
 			WantBody:   "Error: Unauthorized\n",
@@ -160,7 +159,7 @@ func TestWinnersCSVHandler(t *testing.T) {
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: weblogin.SessionTokenCookieName, Value: adminToken.Value},
+				{Name: webauth.SessionTokenCookieName, Value: adminToken.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody:   body.String(),
