@@ -13,5 +13,5 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/bnixon67/required v0.0.0-20240430043854-ee7655c6b15f // indirect
 	golang.org/x/crypto v0.22.0 // indirect
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
+	golang.org/x/image v0.18.0 // indirect
 )
