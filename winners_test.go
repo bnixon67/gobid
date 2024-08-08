@@ -7,8 +7,12 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/bnixon67/webapp/csv"
+	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func winnersBody(t *testing.T, data WinnerPageData) string {
@@ -50,7 +54,7 @@ func TestWinnerHandler(t *testing.T) {
 		t.Errorf("could not login user to get session token")
 	}
 
-	user, err := app.DB.GetUserForSessionToken(token.Value)
+	user, err := app.DB.UserForLoginToken(token.Value)
 	if err != nil {
 		t.Errorf("could not get user: %v", err)
 	}
@@ -67,7 +71,7 @@ func TestWinnerHandler(t *testing.T) {
 			Target:        "/winners",
 			RequestMethod: http.MethodPatch,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "PATCH Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 		{
 			Name:          "No User",
@@ -82,7 +86,7 @@ func TestWinnerHandler(t *testing.T) {
 			Target:        "/winners",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: webauth.SessionTokenCookieName, Value: token.Value},
+				{Name: webauth.LoginTokenCookieName, Value: token.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: winnersBody(t, WinnerPageData{
@@ -93,7 +97,7 @@ func TestWinnerHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.WinnerHandler, tests)
+	webhandler.TestHandler(t, app.WinnerHandler, tests)
 }
 
 func TestWinnersCSVHandler(t *testing.T) {
@@ -114,7 +118,7 @@ func TestWinnersCSVHandler(t *testing.T) {
 		t.Fatalf("failed to get winners: %v", err)
 	}
 	var body bytes.Buffer
-	err = webutil.SliceOfStructsToCSV(&body, winners)
+	err = csv.SliceOfStructsToCSV(&body, winners)
 	if err != nil {
 		t.Fatalf("failed SliceOfStructsToCSV: %v", err)
 	}
@@ -125,7 +129,7 @@ func TestWinnersCSVHandler(t *testing.T) {
 			Target:        "/events",
 			RequestMethod: http.MethodPost,
 			WantStatus:    http.StatusMethodNotAllowed,
-			WantBody:      "POST Method Not Allowed\n",
+			WantBody:      "Error: Method Not Allowed\n",
 		},
 		{
 			Name:          "Valid GET Request without Cookie",
@@ -139,17 +143,23 @@ func TestWinnersCSVHandler(t *testing.T) {
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: webauth.SessionTokenCookieName, Value: "foo"},
+				{Name: webauth.LoginTokenCookieName, Value: "foo"},
 			},
 			WantStatus: http.StatusUnauthorized,
 			WantBody:   "Error: Unauthorized\n",
+			WantCookies: []http.Cookie{
+				{Name: webauth.LoginTokenCookieName, Value: "", MaxAge: -1},
+			},
+			WantCookiesCmpOpts: []cmp.Option{
+				cmpopts.IgnoreFields(http.Cookie{}, "Raw"),
+			},
 		},
 		{
 			Name:          "Valid GET Request with Good Session Token - Non Admin",
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: webauth.SessionTokenCookieName, Value: userToken.Value},
+				{Name: webauth.LoginTokenCookieName, Value: userToken.Value},
 			},
 			WantStatus: http.StatusUnauthorized,
 			WantBody:   "Error: Unauthorized\n",
@@ -159,7 +169,7 @@ func TestWinnersCSVHandler(t *testing.T) {
 			Target:        "/events",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: webauth.SessionTokenCookieName, Value: adminToken.Value},
+				{Name: webauth.LoginTokenCookieName, Value: adminToken.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody:   body.String(),
@@ -167,5 +177,5 @@ func TestWinnersCSVHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.WinnersCSVHandler, tests)
+	webhandler.TestHandler(t, app.WinnersCSVHandler, tests)
 }

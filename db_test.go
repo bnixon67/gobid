@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 var (
@@ -68,9 +70,8 @@ func TestGetItem(t *testing.T) {
 			t.Errorf("GetItem(%d)\ngot err '%v' want '%v'",
 				tc.id, err, tc.err)
 		}
-		if !reflect.DeepEqual(got, tc.want) {
-			t.Errorf("GetItem(%d)\n got %s\nwant %s",
-				tc.id, AsJson(got), AsJson(tc.want))
+		if diff := cmp.Diff(got, tc.want); diff != "" {
+			t.Errorf("GetItem(%d) (-got +want):\n%s", tc.id, diff)
 		}
 	}
 

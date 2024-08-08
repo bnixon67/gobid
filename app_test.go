@@ -32,10 +32,7 @@ func AppForTest(t *testing.T) *BidApp {
 		}
 
 		// Initialize logging.
-		err = weblog.Init(weblog.WithFilename(cfg.Log.Filename),
-			weblog.WithLogType(cfg.Log.Type),
-			weblog.WithLevel(cfg.Log.Level),
-			weblog.WithSource(cfg.Log.WithSource))
+		err = weblog.Init(cfg.Log)
 		if err != nil {
 			t.Fatalf("cannot init logging: %v", err)
 		}
@@ -46,7 +43,7 @@ func AppForTest(t *testing.T) *BidApp {
 		}
 
 		// Initialize templates
-		tmpl, err := webutil.InitTemplatesWithFuncMap(cfg.ParseGlobPattern, funcMap)
+		tmpl, err := webutil.TemplatesWithFuncs(cfg.App.TmplPattern, funcMap)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
 			os.Exit(ExitTemplate)
@@ -59,13 +56,13 @@ func AppForTest(t *testing.T) *BidApp {
 		}
 
 		// Create the web login app.
-		app, err := webauth.NewApp(webapp.WithAppName(cfg.Name), webapp.WithTemplate(tmpl), webauth.WithConfig(cfg), webauth.WithDB(db))
+		app, err := webauth.NewApp(webapp.WithName(cfg.App.Name), webapp.WithTemplate(tmpl), webauth.WithConfig(*cfg), webauth.WithDB(db))
 		if err != nil {
 			t.Fatalf("cannot create app: %v", err)
 		}
 
 		// Embed web login app into BidApp
-		bidApp = &BidApp{LoginApp: app, BidDB: &BidDB{}}
+		bidApp = &BidApp{AuthApp: app, BidDB: &BidDB{}}
 		bidApp.BidDB.sqlDB = app.DB
 	}
 

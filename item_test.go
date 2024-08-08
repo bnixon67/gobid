@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
 	"github.com/bnixon67/webapp/webutil"
 )
@@ -49,7 +50,7 @@ func TestItemHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not login user to get session token: %v", err)
 	}
-	user, err := app.DB.GetUserForSessionToken(token.Value)
+	user, err := app.DB.UserForLoginToken(token.Value)
 	if err != nil {
 		t.Errorf("could not get user: %v", err)
 	}
@@ -120,7 +121,7 @@ func TestItemHandler(t *testing.T) {
 			Target:        "/item/1",
 			RequestMethod: http.MethodGet,
 			RequestCookies: []http.Cookie{
-				{Name: webauth.SessionTokenCookieName, Value: token.Value},
+				{Name: webauth.LoginTokenCookieName, Value: token.Value},
 			},
 			WantStatus: http.StatusOK,
 			WantBody: itemBody(t, ItemPageData{
@@ -133,5 +134,5 @@ func TestItemHandler(t *testing.T) {
 	}
 
 	// Test the handler using the utility function.
-	webhandler.HandlerTestWithCases(t, app.ItemHandler, tests)
+	webhandler.TestHandler(t, app.ItemHandler, tests)
 }
