@@ -4,9 +4,7 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
-	"os"
 	"testing"
 
 	"github.com/bnixon67/webapp/webapp"
@@ -27,8 +25,7 @@ func AppForTest(t *testing.T) *BidApp {
 		// Read config.
 		cfg, err := webauth.LoadConfigFromJSON("testdata/config.json")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Failed to get config:", err)
-			os.Exit(ExitConfig)
+			t.Fatalf("Failed to get config: %v", err)
 		}
 
 		// Initialize logging.
@@ -45,8 +42,7 @@ func AppForTest(t *testing.T) *BidApp {
 		// Initialize templates
 		tmpl, err := webutil.TemplatesWithFuncs(cfg.App.TmplPattern, funcMap)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error initializing templates:", err)
-			os.Exit(ExitTemplate)
+			t.Fatalf("Error initializing templates: %v", err)
 		}
 
 		// Initialize db

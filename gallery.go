@@ -34,20 +34,20 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user", "err", err)
-		HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
 	if app.BidDB == nil {
 		logger.Error("database is nil")
-		HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
 	items, err := app.BidDB.GetItems()
 	if err != nil {
 		logger.Error("failed to get items", "err", err)
-		HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -68,7 +68,7 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	if err != nil {
 		logger.Error("unable to render template", "err", err)
-		HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 

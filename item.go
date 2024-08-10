@@ -37,7 +37,7 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path == "/item" {
 		logger.Warn("bad request")
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -45,7 +45,7 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 	idString := strings.TrimPrefix(r.URL.Path, "/item/")
 	if idString == "" {
 		logger.Warn("missing id")
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		logger.Error("unable to convert id", "idString", idString, "err", err)
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 	item, err := app.BidDB.GetItem(id)
 	if err != nil {
 		logger.Error("unable to GetItem", "id", id, "err", err)
-		HttpError(w, http.StatusNotFound)
+		webutil.RespondWithError(w, http.StatusNotFound)
 		return
 	}
 

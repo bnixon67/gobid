@@ -37,14 +37,14 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.DB.UserFromRequest(w, r)
 	if err != nil {
 		logger.Error("failed to get user", "err", err)
-		HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
 	// only allowed by admin users
 	if !user.IsAdmin {
 		logger.Warn("attempt by non-admin user", "user", user)
-		HttpError(w, http.StatusUnauthorized)
+		webutil.RespondWithError(w, http.StatusUnauthorized)
 		return
 	}
 
@@ -52,7 +52,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	idString := strings.TrimPrefix(r.URL.Path, "/edit/")
 	if idString == "" {
 		logger.Error("no id provided")
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -60,7 +60,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idString)
 	if err != nil {
 		logger.Warn("unable to convert id", "idString", idString, "err", err)
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 		item, err = app.BidDB.GetItem(id)
 		if err != nil {
 			logger.Error("unable to get item", "id", id, "err", err)
-			HttpError(w, http.StatusNotFound)
+			webutil.RespondWithError(w, http.StatusNotFound)
 			return
 		}
 	}
@@ -97,7 +97,7 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 		})
 	if err != nil {
 		logger.Error("unable to render template", "err", err)
-		HttpError(w, http.StatusInternalServerError)
+		webutil.RespondWithError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -115,7 +115,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	title := r.PostFormValue("title")
 	if title == "" {
 		logger.Error("no title")
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -123,7 +123,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	description := r.PostFormValue("description")
 	if description == "" {
 		logger.Warn("no description")
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -131,7 +131,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	openingBidStr := r.PostFormValue("openingBid")
 	if openingBidStr == "" {
 		logger.Warn("no openingBid")
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 	openingBid, err := strconv.ParseFloat(openingBidStr, 64)
@@ -140,7 +140,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 			"openingBidStr", openingBidStr,
 			"err", err,
 		)
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
@@ -148,7 +148,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 	minBidIncrStr := r.PostFormValue("minBidIncr")
 	if minBidIncrStr == "" {
 		logger.Warn("no minBidIncr")
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 	minBidIncr, err := strconv.ParseFloat(minBidIncrStr, 64)
@@ -157,7 +157,7 @@ func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, i
 			"minBidIncrStr", minBidIncrStr,
 			"err", err,
 		)
-		HttpError(w, http.StatusBadRequest)
+		webutil.RespondWithError(w, http.StatusBadRequest)
 		return
 	}
 
