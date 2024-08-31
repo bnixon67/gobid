@@ -25,6 +25,7 @@ type BidApp struct {
 	*webauth.AuthApp
 	*BidDB
 	AuctionStart, AuctionEnd time.Time
+	MailFrom                 string
 }
 
 const (
@@ -45,7 +46,8 @@ func main() {
 	}
 
 	// Read config.
-	cfg, err := webauth.LoadConfigFromJSON(os.Args[1])
+	//cfg, err := webauth.LoadConfigFromJSON(os.Args[1])
+	cfg, err := LoadConfigFromJSON(os.Args[1])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to load config:", err)
 		os.Exit(ExitConfig)
@@ -89,14 +91,14 @@ func main() {
 	}
 
 	// Create the web login app.
-	app, err := webauth.NewApp(webapp.WithName(cfg.App.Name), webapp.WithTemplate(tmpl), webauth.WithConfig(*cfg), webauth.WithDB(db))
+	app, err := webauth.NewApp(webapp.WithName(cfg.App.Name), webapp.WithTemplate(tmpl), webauth.WithConfig(cfg.Config), webauth.WithDB(db))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to create new webauth:", err)
 		os.Exit(ExitApp)
 	}
 
 	// Embed web login app into BidApp
-	bidApp := BidApp{AuthApp: app, BidDB: &BidDB{}}
+	bidApp := BidApp{AuthApp: app, BidDB: &BidDB{}, MailFrom: cfg.MailFrom}
 	bidApp.BidDB.sqlDB = app.DB
 
 	err = bidApp.ConfigAuction()

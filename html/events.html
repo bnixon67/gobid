@@ -27,16 +27,16 @@
     <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
       <tr>
 	<th>Event Name</th>
-	<th class="w3-center">Success</th>
-	<th>UserName</th>
+	<th class="w3-center">Succeeded</th>
+	<th>Username</th>
 	<th>Message</th>
 	<th>Created</th>
       </tr>
       {{ range .Events }}
       <tr>
 	<td>{{ .Name }}</td>
-	<td class="w3-center">{{ .Success }}</td>
-	<td>{{ .UserName }}</td>
+	<td class="w3-center">{{ .Succeeded }}</td>
+	<td>{{ .Username }}</td>
 	<td>{{ .Message }}</td>
 	<td>{{ (ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST" }}</td>
       </tr>
