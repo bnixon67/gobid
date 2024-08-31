@@ -166,7 +166,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 					"You have been outbid on %q. Visit %s/item/%d to rebid.",
 					item.Title, app.Cfg.Auth.BaseURL, id)
 
-				err = app.Cfg.SMTP.SendMessage(app.MailFrom, []string{user.Email}, app.Cfg.App.Name, emailText)
+				err = app.Cfg.SMTP.SendMessage(app.Cfg.EmailFrom, []string{user.Email}, app.Cfg.App.Name, emailText)
 				if err != nil {
 					logger.Error("unable to send email",
 						"to", user.Email,

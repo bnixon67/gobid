@@ -25,7 +25,6 @@ type BidApp struct {
 	*webauth.AuthApp
 	*BidDB
 	AuctionStart, AuctionEnd time.Time
-	MailFrom                 string
 }
 
 const (
