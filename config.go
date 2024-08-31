@@ -4,10 +4,7 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/bnixon67/webapp/webauth"
@@ -16,27 +13,6 @@ import (
 // Config represents the overall application configuration.
 type Config struct {
 	webauth.Config // Inherit webapp.Config
-	MailFrom       string
-}
-
-var (
-	ErrConfigRead  = errors.New("failed to read config file")
-	ErrConfigParse = errors.New("failed to parse config file")
-)
-
-// LoadConfigFromJSON loads configuration settings from a JSON file.
-func LoadConfigFromJSON(filepath string) (*Config, error) {
-	data, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
-	}
-
-	var config Config
-	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrConfigParse, err)
-	}
-
-	return &config, nil
 }
 
 const timeLayout = "2006-01-02 15:04:05 MST"
