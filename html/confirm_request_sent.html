@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/w3.css">
+</head>
+<body>
+  <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
+    <b>{{.Title}}</b>
+  </div>
+
+  <div class="w3-bar w3-mobile w3-light-grey">
+    <div class="w3-bar-item w3-mobile"> <a href="/gallery">Gallery</a> </div>
+    <div class="w3-bar-item w3-mobile"> <a href="/login">Login</a> </div>
+    <div class="w3-bar-item w3-mobile"> <a href="/register">Register</a> </div>
+  </div>
+
+  <div class="w3-container">
+    <h1>Confirm Email</h1>
+    <p>Please check your email for a message from {{ .EmailFrom }} for further information.</p>
+    <p>It could take a few minutes to receive the email. Please check your spam, junk, promotional, or similar folders.</p>
+  </div>
+</body>
+</html>

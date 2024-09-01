@@ -136,6 +136,12 @@ func main() {
 	mux.HandleFunc("/bids", bidApp.BidsHandler)
 	mux.HandleFunc("/events", app.EventsHandler)
 	mux.HandleFunc("/eventscsv", app.EventsCSVHandler)
+	mux.HandleFunc("GET /confirm", app.ConfirmHandlerGet)
+	mux.HandleFunc("GET /confirmed", app.ConfirmedHandlerGet)
+	mux.HandleFunc("GET /confirm_request", app.ConfirmRequestHandlerGet)
+	mux.HandleFunc("GET /confirm_request_sent", app.ConfirmRequestSentHandlerGet)
+	mux.HandleFunc("POST /confirm", app.ConfirmHandlerPost)
+	mux.HandleFunc("POST /confirm_request", app.ConfirmRequestHandlerPost)
 
 	// Create the web server.
 	srv, err := webserver.New(

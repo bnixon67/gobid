@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/w3.css">
+</head>
+<body>
+  <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
+    <b>{{.Title}}</b>
+  </div>
+
+  <div class="w3-bar w3-mobile w3-light-grey">
+    <div class="w3-bar-item w3-mobile">
+      <a href="/gallery">Gallery</a>
+    </div>
+
+    <div class="w3-bar-item w3-mobile">
+      <a href="/confirm_request">Request</a>
+    </div>
+  </div>
+
+  <div>
+    <div class="w3-container w3-mobile w3-padding">
+      Enter the token sent to your email to confirm your account
+    </div>
+
+    <form method="post" class="w3-container w3-mobile">
+      <p>
+        <label for="ctoken"><b>Confirm Token (required):</b></label>
+	<input class="w3-input w3-mobile" type="text" placeholder="Enter the Confirm Token" id="ctoken" name="ctoken" maxlength="44" required="" autofocus="" value="{{.ConfirmToken}}">
+      </p>
+
+      {{ if .Message }}
+      <div class="w3-panel w3-mobile w3-pale-red">{{ .Message }}</div>
+      {{ end }}
+
+      <button type="submit" class="w3-button w3-mobile w3-indigo">Confirm</button>
+    </form>
+  </div>
+</body>
+</html>
