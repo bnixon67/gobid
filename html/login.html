@@ -6,26 +6,38 @@
     <link rel="stylesheet" href="/w3.css">
   </head>
   <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding"><b>Login</b></div>
+    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
+            <b>{{.Title}} Login</b>
+    </div>
+
     <div class="w3-bar w3-mobile w3-light-grey">
+      <a class="w3-bar-item w3-mobile" href="/gallery">
+        Gallery
+      </a>
       <a class="w3-bar-item w3-mobile" href="/forgot">
-	Forgot User Name or Password
+        Forgot User Name or Password
       </a>
       <a class="w3-bar-item w3-mobile" href="/register">
-	Register
+        Register
       </a>
     </div>
+
     <div class="w3-container w3-mobile w3-padding">
       Please provide the following to login.
     </div>
+
     <form method="post" class="w3-container w3-mobile">
       <p>
-      <label for="username"><b>User Name (required):</b></label>
-      <input class="w3-input w3-mobile" type="text" placeholder="Enter your User Name" id="username" name="username" maxlength="30" required="" autofocus>
+        <label for="username"><b>User Name (required):</b></label>
+        <input class="w3-input w3-mobile" type="text" placeholder="Enter your User Name" id="username" name="username" maxlength="30" required="" autofocus>
       </p>
       <p>
-      <label for="password"><b>Password (required):</b></label>
-      <input class="w3-input w3-mobile" type="password" placeholder="Enter your Password" id="password" name="password" required="">
+        <label for="password"><b>Password (required):</b></label>
+        <input class="w3-input w3-mobile" type="password" placeholder="Enter your Password" id="password" name="password" required="">
+      </p>
+      <p>
+        <input type="checkbox" checked value="on" id="remember" name="remember">
+        <label for="remember">Remember Me</label>
       </p>
       <button type="submit" class="w3-button w3-mobile w3-indigo">Login</button>
     </form>
