@@ -146,6 +146,7 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 				"user", user,
 				"bidResult", bidResult,
 			)
+			msg = bidResult.Message
 
 			if bidResult.BidPlaced && bidResult.PriorBidder != "" && bidResult.PriorBidder != user.Username {
 				user, err := app.DB.UserForName(bidResult.PriorBidder)
