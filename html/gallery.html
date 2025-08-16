@@ -3,64 +3,62 @@
   <head>
     <title>{{ .Title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
+    <link rel="stylesheet" href="pico.min.css">
   </head>
   <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>{{ .Title }} Gallery</b>
-    </div>
+    <header class="container" style="background-color: darkblue; color: white; padding: 0.5rem;">
+      <strong>{{ .Title }} Gallery</strong>
+    </header>
 
-    {{ if .User.Username }}
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile">
-	Hello {{ .User.FullName }}
-      </div>
-      <div class="w3-bar-item w3-mobile">
-	<a href="/items">List of Items</a>
-      </div>
-      <div class="w3-bar-item w3-mobile w3-right">
-	<a href="/logout">Logout {{.User.Username}}</a>
-      </div>
-    </div>
-    {{ else }}
-    <div class="w3-bar w3-mobile w3-pale-red">
-      <div class="w3-bar-item w3-mobile">
-        <a href="/login">Login</a> or <a href="/register">Register</a> to bid.
-      </div>
-      <div class="w3-bar-item w3-mobile">
-	<a href="/items">List of Items</a>
-      </div>
-    </div>
-    {{ end }}
-
-    <div class="w3-container w3-mobile w3-padding w3-center">
-      {{.Message}}
-    </div>
-
-    <div class="w3-row-padding w3-mobile w3-margin-top w3-center">
-      {{ range .Items }}
-      <a href="/item/{{ .ID }}">
-	<div class="w3-quarter w3-mobile w3-margin-top" style="width:25%;height:300px;">
-	  <div class="w3-container w3-mobile">
-	    <img class="w3-image w3-mobile" src="images/thumbnails/{{ .ImageFileName }}" alt="{{ .Title }}" style="max-height:200px;width:100%;object-fit:contain">
-	  </div>
-	  <div class="w3-container w3-mobile">
-	    {{if .Artist}}{{ .Artist }}<br>{{end}}
-	    {{ .Title }}<br>
-	    {{ if eq .OpeningBid 0.0 -}}
-	    Display Only
-	    {{- else -}}
-	    {{- if .CurrentBid -}}
-	    {{ printf "$%9.2f" .CurrentBid }}
-	    {{- else -}}
-	    {{ printf "$%9.2f" .OpeningBid }}
-	    {{- end -}}
-	    {{ end }}
-	  </div>
-	</div>
-      </a>
+    <nav class="container">
+      {{ if .User.Username }}
+      <ul>
+        <li>Hello {{ .User.FullName }}</li>
+        <li><a href="/items">List of Items</a></li>
+        <li><a href="/logout">Logout {{.User.Username}}</a></li>
+      </ul>
+      {{ else }}
+      <ul>
+        <li><a href="/login">Login</a> or <a href="/register">Register</a> to bid.</li>
+        <li><a href="/items">List of Items</a></li>
+      </ul>
       {{ end }}
-    </div>
+    </nav>
 
+    <main class="container">
+      <section style="text-align: center; margin-top: 1rem;">
+        {{.Message}}
+      </section>
+
+      <section
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 1.5rem;
+          margin-top: 2rem;
+        "
+      >
+        {{ range .Items }}
+        <a href="/item/{{ .ID }}" style="text-decoration: none;">
+          <article style="height: 300px; display: flex; flex-direction: column; justify-content: space-between;">
+            <img src="images/thumbnails/{{ .ImageFileName }}" alt="{{ .Title }}" style="max-height: 200px; width: 100%; object-fit: contain;">
+            <footer style="text-align: center;">
+              {{if .Artist}}{{ .Artist }}<br>{{end}}
+              {{ .Title }}<br>
+              {{ if eq .OpeningBid 0.0 -}}
+              Display Only
+              {{- else -}}
+                {{- if .CurrentBid -}}
+                {{ printf "$%9.2f" .CurrentBid }}
+                {{- else -}}
+                {{ printf "$%9.2f" .OpeningBid }}
+                {{- end -}}
+              {{ end }}
+            </footer>
+          </article>
+        </a>
+        {{ end }}
+      </section>
+    </main>
   </body>
 </html>

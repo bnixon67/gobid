@@ -3,54 +3,83 @@
   <head>
     <title>{{.Title}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/w3.css" />
+    <link rel="stylesheet" href="pico.min.css" />
+    <style>
+      header.banner {
+        background-color: darkblue;
+        color: white;
+        padding: 0.5rem;
+      }
+      .table-container {
+        overflow-x: auto;
+      }
+      td, th {
+        white-space: nowrap;
+      }
+      td.numeric {
+        text-align: right;
+      }
+    </style>
   </head>
   <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>{{.Title}} Items</b>
-    </div>
 
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile"><a href="/gallery">Gallery</a></div>
-      {{ if .User.IsAdmin }}
-      <div class="w3-bar-item w3-mobile"><a href="/edit/0">New Item</a></div>
-      {{ end }}
-      <div class="w3-bar-item w3-mobile w3-right">
-      {{if .User.Username}}
-        <a href="/logout">Logout {{.User.Username}}</a>
-      {{else}}
-        <a href="/login?r=/items">Login</a>
-      {{end}}
-      </div>
-    </div>
+    <header class="container banner">
+      <strong>{{.Title}} Items</strong>
+    </header>
 
-    <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
-      <tr>
-        {{if .User.IsAdmin}}<th></th>{{end}}
-        <th class="w3-right-align w3-mobile">ID</th>
-        <th>Artist/Donor</th>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Opening</th>
-        <th>Increment</th>
-        <th>Current</th>
-        <th>Bidder</th>
-	{{if .User.IsAdmin}}<th>Image File</th>{{end}}
-      </tr>
-      {{range .Items}}
-      <tr>
-        {{if $.User.IsAdmin}}<td><a href="edit/{{.ID}}">Edit</a></td>{{end}}
-        <td class="w3-right-align w3-mobile">{{.ID}}</td>
-        <td>{{.Artist}}</td>
-        <td>{{.Title}}</td>
-        <td>{{.Description}}</td>
-        <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .OpeningBid}}</td>
-        <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .MinBidIncr}}</td>
-        <td class="w3-right-align w3-mobile" style="white-space:nowrap">{{printf "$%10.2f" .CurrentBid}}</td>
-        <td>{{.Bidder}}</td>
-	{{if $.User.IsAdmin}}<td>{{.ImageFileName}}</td>{{end}}
-      </tr>
-      {{end}}
-    </table>
+    <nav class="container">
+      <ul>
+        <li><a href="/gallery">Gallery</a></li>
+        {{ if .User.IsAdmin }}
+        <li><a href="/edit/0">New Item</a></li>
+        {{ end }}
+      </ul>
+      <ul>
+        <li>
+          {{ if .User.Username }}
+            <a href="/logout">Logout {{.User.Username}}</a>
+          {{ else }}
+            <a href="/login?r=/items">Login</a>
+          {{ end }}
+        </li>
+      </ul>
+    </nav>
+
+    <main class="container table-container">
+      <table role="grid">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Artist/Donor</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Opening</th>
+            <th>Increment</th>
+            <th>Current</th>
+            <th>Bidder</th>
+            {{if .User.IsAdmin}}<th>Image File</th>{{end}}
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Items}}
+          <tr>
+            <td class="numeric">
+            {{- if $.User.IsAdmin}}<a href="/edit/{{.ID}}">{{.ID}}</a>
+            {{- else}}{{.ID}}{{end -}}
+            </td>
+            <td>{{.Artist}}</td>
+            <td>{{.Title}}</td>
+            <td>{{.Description}}</td>
+            <td class="numeric">{{printf "$%10.2f" .OpeningBid}}</td>
+            <td class="numeric">{{printf "$%10.2f" .MinBidIncr}}</td>
+            <td class="numeric">{{printf "$%10.2f" .CurrentBid}}</td>
+            <td>{{.Bidder}}</td>
+            {{if $.User.IsAdmin}}<td>{{.ImageFileName}}</td>{{end}}
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </main>
+
   </body>
 </html>
