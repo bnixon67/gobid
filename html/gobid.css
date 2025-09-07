@@ -3,20 +3,25 @@ header.with-line {
   padding-bottom: 0rem;
 }
 
+/* Text alignment */
+.text-left   { text-align: left; }
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+
 th[data-align="right"], td[data-align="right"] { text-align: right; }
 th[data-align="center"], td[data-align="center"] { text-align: center; }
 
 /* Highlight invalid inputs when user has interacted */
-input:invalid {
+input:invalid, textarea:invalid {
   border-color: var(--pico-del-color);
   background: color-mix(in srgb, var(--pico-del-color) 10%, transparent);
 }
 
-input:invalid:focus {
+input:invalid:focus, textarea:invalid {
   outline-color: var(--pico-del-color);
 }
 
 /* Optional: style valid inputs */
-input:valid {
+input:valid, textarea:invalid {
   border-color: var(--pico-secondary);
 }

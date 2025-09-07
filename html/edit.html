@@ -5,23 +5,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{{.Title}} - Edit {{.Item.ID}}</title>
+  <meta name="description" content="Add or edit an item for bidding or display.">
+  <title>
+  {{if eq .Item.ID 0}}
+    {{.Title}} - New Item
+  {{else}}
+    {{.Title}} - Edit Item {{.Item.ID}}
+  {{end}}
+  </title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
+  <header class="container-fluid with-line">
     <nav aria-label="Primary Navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
+        <li><a href="/items">Items</a></li>
       </ul>
       <ul>
-        <li><a href="/items">Items</a></li>
         {{if ne .Item.ID 0}}
-        <li><a href="/edit/0">New</a></li>
+        <li><a href="/edit/0">New Item</a></li>
         {{end}}
-        <li><a href="/edit/{{.Item.ID}}">Refresh</a></li>
       </ul>
       <ul>
         {{if .User.Username}}
@@ -35,65 +41,94 @@
 
   <main class="container">
     <h1>
-    {{if ne .Item.ID 0}}
-      Item {{.Item.ID}}
-    {{else}}
+    {{if eq .Item.ID 0}}
       New Item
+    {{else}}
+      Edit Item {{.Item.ID}}
     {{end}}
     </h1>
 
-    <form method="post" enctype="multipart/form-data" novalidate>
+    <form method="post" enctype="multipart/form-data">
       {{if .Message}}<p role="alert"> <mark>{{.Message}}</mark> </p>{{ end }}
   
       {{ with .Item }}
-      <!--
-      <label>
-        <strong>ID</strong>
-        <input type="number" id="id" name="id" value="{{.ID}}" disabled>
+      <label for="artist">
+        Artist or Donor <span aria-hidden="true">(Required)</span>
       </label>
-      -->
+      <input
+        id="artist" name="artist"
+        type="text"
+        value="{{.Artist}}"
+        maxlength="30"
+        required
+      >
   
-      <label>
-        <strong>Artist or Donor</strong>
-        <input type="text" id="artist" name="artist" value="{{.Artist}}" maxlength="30">
+      <label for="title">
+        Title <span aria-hidden="true">(Required)</span>
       </label>
+      <input
+        id="title" name="title"
+        type="text"
+        value="{{.Title}}"
+        maxlength="40"
+        required
+      >
   
-      <label>
-        <strong>Title</strong>
-        <input type="text" id="title" name="title" value="{{.Title}}" maxlength="40" required>
+      <label for="description">
+        Description <span aria-hidden="true">(Required)</span>
       </label>
+      <textarea
+        id="description" name="description"
+        maxlength="255"
+        rows="1"
+        required
+      >{{.Description}}</textarea>
   
-      <label>
-        <strong>Description</strong>
-        <input type="text" id="description" name="description" value="{{.Description}}" maxlength="255" required>
+      <label for="openingBid">
+        Opening Bid <span aria-hidden="true">(Required)</span>
       </label>
+      <input
+        id="openingBid" name="openingBid"
+        type="number"
+        value="{{.OpeningBid}}"
+        min="0"
+        required
+        aria-describedby="openingBidHelp"
+      >
+      <small id="openingBidHelp">Enter 0 for display only items</small>
   
-      <label>
-        <strong>Opening Bid</strong>
-        <input type="number" id="openingBid" name="openingBid" value="{{.OpeningBid}}" required min="0">
-        <small>(Enter 0 for display only items)</small>
+      <label for="minBidIncr">
+        Minimum Bid Increment <span aria-hidden="true">(Required)</span>
       </label>
+      <input
+        id="minBidIncr" name="minBidIncr"
+        type="number"
+        value="{{.MinBidIncr}}"
+        min="1"
+        required
+      >
   
-      <label>
-        <strong>Minimum Bid Increment</strong>
-        <input type="number" id="minBidIncr" name="minBidIncr" value="{{.MinBidIncr}}" required min="1">
+      <label for="imageFile">
+        Image File <span aria-hidden="true">(Required)</span>
       </label>
-  
-      <label>
-        <strong>Image File</strong>
-          {{if ne .ID 0}}
-          <input type="text" id="imageFileName" name="imageFileName" value="{{.ImageFileName}}" maxlength="255" required>
-          {{end}}
-      </label>
-      <input type="file" name="imageFile">
-      {{ end }}
+      <div class="grid">
+      {{if ne .ID 0}}
+      <input
+        id="imageFileName" name="imageFileName"
+        type="text"
+        value="{{.ImageFileName}}"
+        maxlength="255"
+        required
+      >
+      {{end}}
+      <input id="imageFile" name="imageFile" type="file">
+      </div>
+      {{end}} {{/* with .Item */}}
   
       {{if .User.IsAdmin}}
-        {{if eq .Item.ID 0}}
-        <button type="submit">Create</button>
-        {{else}}
-        <button type="submit">Update</button>
-        {{end}}
+      <button type="submit">
+        {{if eq .Item.ID 0}}Create{{else}}Update{{end}}
+      </button>
       {{end}}
       </form>
     </main>

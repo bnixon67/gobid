@@ -5,31 +5,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Browse the items available for bidding or display.">
   <title>{{.Title}} Items</title>
   <link rel="stylesheet" href="/pico.min.css">
-  <style>
-    header.with-line {
-      border-bottom: 1px solid var(--pico-primary-border);
-      padding-bottom: 0rem;
-    }             
-    .text-center { text-align: center; }
-    .text-right { text-align: right; }
-  </style>
+  <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav>
+  <header class="container-fluid with-line">
+    <nav aria-label="Primary navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
-        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
+      </ul>
+      <ul>
         {{if .User.IsAdmin}}
         <li><a href="/edit/0">New Item</a></li>
         {{end}}
-      </ul>
-      <ul>
         {{if .User.Username}}
-        <li><a href="/logout">Logout {{.User.Username}}</a></li>
+        <li><a href="/logout">Logout</a></li>
         {{else}}
         <li><a href="/login?r=/items">Login</a></li>
         {{ end }}
@@ -37,39 +30,45 @@
     </nav>
   </header>
 
-  <main class="container">
+  <main class="container-fluid">
+    <h1 class="text-center">{{.Title}} Items</h1>
+
+    {{if .Items}}
     <table class="striped">
+      <caption>Items Available</caption>
+
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Artist/Donor</th>
-          <th>Title</th>
-          <th>Description</th>
-          <th class="text-right">Opening</th>
-          <th class="text-right">Increment</th>
-          <th class="text-right">Current</th>
-          <th>Bidder</th>
+          <th scope="col" data-align="right">ID</th>
+          <th scope="col">Artist/Donor</th>
+          <th scope="col">Title</th>
+          <th scope="col">Description</th>
+          <th scope="col" data-align="right">Opening</th>
+          <th scope="col" data-align="right">Increment</th>
+          <th scope="col" data-align="right">Current</th>
+          <th scope="col">Bidder</th>
           {{if .User.IsAdmin}}
-          <th>Image File</th>
+          <th scope="col">Image File</th>
           {{end}}
         </tr>
       </thead>
+
       <tbody>
       {{range .Items}}
         <tr>
-          <td class="text-right">
-            {{if $.User.IsAdmin}}
+          <td data-align="right">
+          {{if $.User.IsAdmin}}
             <a href="/edit/{{.ID}}">{{.ID}}</a>
-            {{else}}
+          {{else}}
             {{.ID}}
-            {{end}}
+          {{end}}
           </td>
           <td>{{.Artist}}</td>
           <td>{{.Title}}</td>
           <td>{{.Description}}</td>
-          <td class="text-right">{{printf "$%10.2f" .OpeningBid}}</td>
-          <td class="text-right">{{printf "$%10.2f" .MinBidIncr}}</td>
-          <td class="text-right">{{printf "$%10.2f" .CurrentBid}}</td>
+          <td data-align="right">{{printf "$%.2f" .OpeningBid}}</td>
+          <td data-align="right">{{printf "$%.2f" .MinBidIncr}}</td>
+          <td data-align="right">{{printf "$%.2f" .CurrentBid}}</td>
           <td>{{.Bidder}}</td>
           {{if $.User.IsAdmin}}
           <td>{{.ImageFileName}}</td>
@@ -78,6 +77,10 @@
       {{end}}
       </tbody>
     </table>
+    {{else}}
+    <p>No items are currently available.</p>
+    {{end}}
   </main>
 </body>
+
 </html>

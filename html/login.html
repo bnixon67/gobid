@@ -25,6 +25,8 @@
   </header>
 
   <main class="container">
+    <h1>Login</h1>
+    <p>Please provide the following to login.</p>
     <form method="post" autocomplete="off">
       <fieldset>
 	      {{ if .Message }}
@@ -33,7 +35,7 @@
 
         <label for="username">
           Username <span aria-hidden="true">(required)</span>
-	</label>
+        </label>
         <input
           type="text"
           id="username"

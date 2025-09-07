@@ -21,7 +21,7 @@ func TestItemsHandler(t *testing.T) {
 			name:           "ValidGET",
 			method:         http.MethodGet,
 			expectedStatus: http.StatusOK,
-			expectedInBody: "Gallery",
+			expectedInBody: "ID",
 		},
 		{
 			name:           "InvalidMethod",
