@@ -66,13 +66,13 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		app.getItemEditHandler(w, r, id, user)
+		app.itemEditGetHandler(w, r, id, user)
 	case http.MethodPost:
-		app.postItemEditHandler(w, r, id, user)
+		app.itemEditPostHandler(w, r, id, user)
 	}
 }
 
-func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
+func (app *BidApp) itemEditGetHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
@@ -104,7 +104,7 @@ func (app *BidApp) getItemEditHandler(w http.ResponseWriter, r *http.Request, id
 	logger.Info("success", "user", user, "item", item)
 }
 
-func (app *BidApp) postItemEditHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
+func (app *BidApp) itemEditPostHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFuncName(r)
 

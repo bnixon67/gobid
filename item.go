@@ -66,13 +66,13 @@ func (app *BidApp) ItemHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		app.getItemHandler(w, r, id, currentUser)
+		app.itemGetHandler(w, r, id, currentUser)
 	case http.MethodPost:
-		app.postItemHandler(w, r, id, currentUser)
+		app.itemPostHandler(w, r, id, currentUser)
 	}
 }
 
-func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
+func (app *BidApp) itemGetHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
@@ -110,7 +110,7 @@ func (app *BidApp) getItemHandler(w http.ResponseWriter, r *http.Request, id int
 		"auction open", app.IsAuctionOpen(), "bids", len(bids))
 }
 
-func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
+func (app *BidApp) itemPostHandler(w http.ResponseWriter, r *http.Request, id int, user webauth.User) {
 	// Get logger with request info and function name.
 	logger := webhandler.RequestLoggerWithFuncName(r)
 
