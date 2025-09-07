@@ -1,91 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/w3.css" />
-  </head>
-  <body>
 
-    <div class="w3-container w3-indigo w3-large w3-padding w3-mobile">
-      <b>{{ .Title }} Item</b>
-    </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}} - Edit {{.Item.ID}}</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+</head>
 
-    <div class="w3-bar w3-light-grey w3-mobile">
-      <div class="w3-bar-item w3-mobile">
-        <a href="/items">Return to Items</a>
-      </div>
-      <div class="w3-bar-item w3-mobile">
-        <a href="/edit/{{ .Item.ID }}">Refresh Item</a>
-      </div>
-      {{ if .Item.ID }}
-      <div class="w3-bar-item w3-mobile">
-        <a href="/edit/0">New Item</a>
-      </div>
-      {{ end }}
-      <div class="w3-bar-item w3-mobile">
-        <a href="/gallery">Gallery</a>
-      </div>
-      <div class="w3-bar-item w3-right w3-mobile">
-      {{ if .User.Username }}
-        <a href="/logout">Logout {{ .User.Username }}</a>
-      {{ else }}
-	<a href="/login">Login</a>
-      {{ end }}
-      </div>
-    </div>
-
-    <form method="post" enctype="multipart/form-data" class="w3-container w3-mobile">
-      {{ with .Item }}
-      <p>
-        <label class="w3-text-grey w3-mobile"><b>ID</b></label>
-        <input class="w3-input w3-mobile" type="number" id="id" name="id" value="{{ .ID }}" disabled />
-      </p>
-
-      <p>
-        <label><b>Artist or Donor</b></label>
-        <input class="w3-input w3-mobile" type="text" id="artist" name="artist" value="{{ .Artist }}" maxlength="30" />
-      </p>
-
-      <p>
-        <label><b>Title</b></label>
-        <input class="w3-input w3-mobile" type="text" id="title" name="title" value="{{ .Title }}" maxlength="40" required />
-      </p>
-
-      <p>
-        <label><b>Description</b></label>
-        <input class="w3-input w3-mobile" type="text" id="description" name="description" value="{{ .Description }}" maxlength="255" required />
-      </p>
-
-      <p>
-        <label><b>Opening Bid (enter zero for display only item)</b></label>
-        <input class="w3-input w3-mobile" type="number" id="openingBid" name="openingBid" value="{{ .OpeningBid }}" required min="0" />
-      </p>
-
-      <p>
-        <label><b>Minimum Bid Increment</b></label>
-        <input class="w3-input w3-mobile" type="number" id="minBidIncr" name="minBidIncr" value="{{ .MinBidIncr }}" required min="1" />
-      </p>
-
-      <p>
-        <label><b>Image File</b></label>
-        {{if ne .ID 0}}
-          <input class="w3-input w3-mobile" type="text" id="imageFileName" name="imageFileName" value="{{ .ImageFileName }}" maxlength="255" required />
+<body>
+  <header class="container with-line">
+    <nav aria-label="Primary Navigation">
+      <ul>
+        <li><strong>{{.Title}}</strong></li>
+      </ul>
+      <ul>
+        <li><a href="/items">Items</a></li>
+        {{if ne .Item.ID 0}}
+        <li><a href="/edit/0">New</a></li>
         {{end}}
-        <input class="w3-input w3-mobile" type="file" name="imageFile">
-      </p>
+        <li><a href="/edit/{{.Item.ID}}">Refresh</a></li>
+      </ul>
+      <ul>
+        {{if .User.Username}}
+        <li><a href="/logout">Logout</a></li>
+        {{else}}
+        <li><a href="/login">Login</a></li>
+        {{end}}
+      </ul>
+    </nav>
+  </header>
 
+  <main class="container">
+    <h1>
+    {{if ne .Item.ID 0}}
+      Item {{.Item.ID}}
+    {{else}}
+      New Item
+    {{end}}
+    </h1>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {{if .Message}}<p role="alert"> <mark>{{.Message}}</mark> </p>{{ end }}
+  
+      {{ with .Item }}
+      <!--
+      <label>
+        <strong>ID</strong>
+        <input type="number" id="id" name="id" value="{{.ID}}" disabled>
+      </label>
+      -->
+  
+      <label>
+        <strong>Artist or Donor</strong>
+        <input type="text" id="artist" name="artist" value="{{.Artist}}" maxlength="30">
+      </label>
+  
+      <label>
+        <strong>Title</strong>
+        <input type="text" id="title" name="title" value="{{.Title}}" maxlength="40" required>
+      </label>
+  
+      <label>
+        <strong>Description</strong>
+        <input type="text" id="description" name="description" value="{{.Description}}" maxlength="255" required>
+      </label>
+  
+      <label>
+        <strong>Opening Bid</strong>
+        <input type="number" id="openingBid" name="openingBid" value="{{.OpeningBid}}" required min="0">
+        <small>(Enter 0 for display only items)</small>
+      </label>
+  
+      <label>
+        <strong>Minimum Bid Increment</strong>
+        <input type="number" id="minBidIncr" name="minBidIncr" value="{{.MinBidIncr}}" required min="1">
+      </label>
+  
+      <label>
+        <strong>Image File</strong>
+          {{if ne .ID 0}}
+          <input type="text" id="imageFileName" name="imageFileName" value="{{.ImageFileName}}" maxlength="255" required>
+          {{end}}
+      </label>
+      <input type="file" name="imageFile">
       {{ end }}
+  
       {{if .User.IsAdmin}}
         {{if eq .Item.ID 0}}
-          <button type="submit" class="w3-button w3-indigo w3-mobile">Create</button>
+        <button type="submit">Create</button>
         {{else}}
-          <button type="submit" class="w3-button w3-indigo w3-mobile">Update</button>
+        <button type="submit">Update</button>
         {{end}}
       {{end}}
-    </form>
-    {{if .Message}}
-      <div class="w3-panel w3-text-red w3-mobile"><b>{{.Message}}</b></div>
-    {{end}}
+      </form>
+    </main>
   </body>
 </html>

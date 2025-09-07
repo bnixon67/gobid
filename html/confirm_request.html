@@ -1,40 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{.Title}}</title>
-  <link rel="stylesheet" href="/w3.css">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}} - Request Token</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
 </head>
+
 <body>
-  <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-    <b>{{.Title}}</b>
-  </div>
+  <header class="container with-line">
+    <nav aria-label="Primary Navigation">
+      <ul>
+        <li><strong>{{.Title}}</strong></li>
+        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
+      </ul>
+    </nav>
+  </header>
 
-  <div class="w3-bar w3-mobile w3-light-grey">
-    <div class="w3-bar-item w3-mobile"><a href="/gallery">Gallery</a></div>
-    <div class="w3-bar-item w3-mobile"><a href="/login">Login</a></div>
-    <div class="w3-bar-item w3-mobile"><a href="/register">Register</a></div>
-  </div>
+  <main class="container">
+    <h1>Request Confirmation Token</h1>
+    <p>Enter your email to receive a link to confirm your account.</p>
 
+    {{if .Message}}
+    <p class="error" role="alert">
+      <span aria-hidden="true">⚠️  </span>{{.Message}}
+    </p>
+    {{ end }}
 
-    <div>
-      <div class="w3-container w3-mobile w3-padding">
-        Enter your email to receive a link to confirm your account.
-      </div>
+    <form method="post" novalidate>
+      <label>
+        <strong>Email <span aria-hidden="true">(required):</span></strong>
+        <input
+          type="email"
+          placeholder="Enter your Email"
+          id="email"
+          name="email"
+          maxlength="256"
+          required
+          autofocus
+       >
+      </label>
 
-    <form method="post" class="w3-container w3-mobile">
-      <p>
-        <label for="email"><b>Email (required):</b></label>
-        <input class="w3-input w3-mobile" type="email" placeholder="Enter your Email" id="email" name="email" maxlength="256" required autofocus>
-      </p>
-
-            {{ if .Message }}
-      <div class="w3-panel w3-mobile w3-pale-red">{{ .Message }}</div>
-      {{ end }}
-
-      <button type="submit" class="w3-button w3-mobile w3-indigo">Request</button>
+      <button type="submit">Request</button>
     </form>
-    </div>
+  </main>
 </body>
 </html>

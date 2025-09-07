@@ -1,49 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-            <b>{{.Title}} Login</b>
-    </div>
 
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <a class="w3-bar-item w3-mobile" href="/gallery">
-        Gallery
-      </a>
-      <a class="w3-bar-item w3-mobile" href="/forgot">
-        Forgot User Name or Password
-      </a>
-      <a class="w3-bar-item w3-mobile" href="/register">
-        Register
-      </a>
-    </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{ .Title }} Login</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+</head>
 
-    <div class="w3-container w3-mobile w3-padding">
-      Please provide the following to login.
-    </div>
+<body>
+  <header class="container with-line">
+    <nav>
+      <ul>
+        <li><strong>{{.Title}}</strong></li>
+      </ul>
+      <ul>
+        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/forgot">Forgot</a></li>
+        <li><a href="/register">Register</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <form method="post" class="w3-container w3-mobile">
-      <p>
-        <label for="username"><b>User Name (required):</b></label>
-        <input class="w3-input w3-mobile" type="text" placeholder="Enter your User Name" id="username" name="username" maxlength="30" required="" autofocus>
-      </p>
-      <p>
-        <label for="password"><b>Password (required):</b></label>
-        <input class="w3-input w3-mobile" type="password" placeholder="Enter your Password" id="password" name="password" required="">
-      </p>
-      <p>
-        <input type="checkbox" checked value="on" id="remember" name="remember">
-        <label for="remember">Remember Me</label>
-      </p>
-      <button type="submit" class="w3-button w3-mobile w3-indigo">Login</button>
+  <main class="container">
+    <form method="post" autocomplete="off">
+      <fieldset>
+	      {{ if .Message }}
+	      <p role="alert"><span aria-hidden="true">⚠️ </span>{{.Message}}</p>
+        {{ end }}
+
+        <label for="username">
+          Username <span aria-hidden="true">(required)</span>
+	</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Enter your username"
+          maxlength="30"
+          required
+          autofocus
+          autocomplete="username">
+
+        <label for="password">
+          Password <span aria-hidden="true">(required)</span>
+	</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          required
+          autocomplete="current-password">
+
+	<label for="remember">
+          <input
+	    type="checkbox"
+	    id="remember"
+	    name="remember"
+	    value="on"
+	    checked>
+          Remember Me
+	</label>
+
+        <button type="submit">Login</button>
+      </fieldset>
     </form>
-    {{ if .Message }}
-    <div class="w3-panel w3-mobile w3-pale-red">{{ .Message }}</div>
-    {{ end }}
-    <br>
-  </body>
+  </main>
+</body>
 </html>

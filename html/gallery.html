@@ -1,64 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>{{ .Title }}</title>
+    <title>{{ .Title }} Gallery</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="pico.min.css">
+    <style>
+      :root{
+        --card-radius:.75rem;
+        --media-h:200px;
+        --media-bg:var(--pico-muted-border-color);
+      }
+
+      header.with-line {
+        border-bottom: 1px solid var(--pico-primary-border);
+	padding-bottom: 0rem;
+      }
+
+      nav ul{
+        display:flex;
+        gap:1rem;
+        align-items:center;
+      }
+
+      .gallery{
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+        gap:1rem;
+        margin-top:1.25rem;
+      }
+
+      .card-link{
+        display:block;
+        text-decoration:none;
+        color:inherit;
+      }
+
+      article.card{
+        display:flex;
+        flex-direction:column;
+        height:100%;
+        border:1px solid var(--pico-muted-border-color);
+        border-radius:var(--card-radius);
+        overflow:hidden; /* keeps rounded corners for image */
+        background:var(--pico-card-background-color,#fff);
+      }
+
+      .media{height:var(--media-h);background:var(--media-bg);}
+      .media img{width:100%;height:100%;object-fit:contain;}
+
+      /* text block: 1 line (name) + 2 lines (title) + price */
+      .info{
+        display:grid;
+        line-height:1.3;
+        grid-template-rows:3.9em 2.6em auto;
+        gap:.4rem;
+        padding:.6rem .75rem .8rem;
+        text-align:center;
+      }
+
+      .info > *{margin:0;font-size:1rem;}
+
+      .title{
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+        overflow:hidden;
+      }
+      .name{
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+        overflow:hidden;
+	font-weight: normal;
+      }
+      .price{
+        font-variant-numeric:tabular-nums;
+        color:var(--pico-muted-color);
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      }
+      .price:empty::before{content:"\00a0";}
+
+      .center-text { text-align: center; }
+    </style>
   </head>
   <body>
-    <header class="container" style="background-color: darkblue; color: white; padding: 0.5rem;">
-      <strong>{{ .Title }} Gallery</strong>
+    <header class="container with-line">
+      <nav>
+        <ul>
+          <li><strong>{{ .Title }}</strong></li>
+          <li><a href="/items">Items</a></li>
+        </ul>
+        <ul>
+          {{ if .User.Username }}
+          <li><a href="/logout">Logout {{ .User.Username }}</a></li>
+          {{ else }}
+          <li>
+            <a href="/login">Login</a> or <a href="/register">Register</a>
+          </li>
+	        {{ end }}
+       	</ul>
+      </nav>
     </header>
 
-    <nav class="container">
-      {{ if .User.Username }}
-      <ul>
-        <li>Hello {{ .User.FullName }}</li>
-        <li><a href="/items">List of Items</a></li>
-        <li><a href="/logout">Logout {{.User.Username}}</a></li>
-      </ul>
-      {{ else }}
-      <ul>
-        <li><a href="/login">Login</a> or <a href="/register">Register</a> to bid.</li>
-        <li><a href="/items">List of Items</a></li>
-      </ul>
-      {{ end }}
-    </nav>
-
     <main class="container">
-      <section style="text-align: center; margin-top: 1rem;">
-        {{.Message}}
-      </section>
+      <div class="center-text">{{ .Message }}</div>
 
-      <section
-        style="
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 1.5rem;
-          margin-top: 2rem;
-        "
-      >
+      <div class="gallery">
         {{ range .Items }}
-        <a href="/item/{{ .ID }}" style="text-decoration: none;">
-          <article style="height: 300px; display: flex; flex-direction: column; justify-content: space-between;">
-            <img src="images/thumbnails/{{ .ImageFileName }}" alt="{{ .Title }}" style="max-height: 200px; width: 100%; object-fit: contain;">
-            <footer style="text-align: center;">
-              {{if .Artist}}{{ .Artist }}<br>{{end}}
-              {{ .Title }}<br>
-              {{ if eq .OpeningBid 0.0 -}}
-              Display Only
-              {{- else -}}
-                {{- if .CurrentBid -}}
-                {{ printf "$%9.2f" .CurrentBid }}
+        <a class="card-link" href="/item/{{ .ID }}">
+          <article class="card">
+            <div class="media">
+              <img src="images/thumbnails/{{ .ImageFileName }}" alt="{{ .Title }}">
+            </div>
+            <div class="info">
+              <h2 class="title" title="{{ .Title }}">{{ .Title }}</h2>
+              {{ if .Artist }}<h3 class="name" title="{{ .Artist }}">{{ .Artist }}</h3>{{ end }}
+              <div class="price">
+                {{- if eq .OpeningBid 0.0 -}}
+                  Display Only
                 {{- else -}}
-                {{ printf "$%9.2f" .OpeningBid }}
+                  {{- if .CurrentBid -}}
+                    {{ printf "$%.2f" .CurrentBid }}
+                  {{- else -}}
+                    {{ printf "$%.2f" .OpeningBid }}
+                  {{- end -}}
                 {{- end -}}
-              {{ end }}
-            </footer>
+              </div>
+            </div>
           </article>
         </a>
         {{ end }}
-      </section>
+      </div>
     </main>
   </body>
 </html>
+
+

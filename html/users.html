@@ -1,56 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>{{ .Title }} Users</b>
-    </div>
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile"> <a href="/">Home</a> </div>
-      {{ if .User.IsAdmin }}
-      <div class="w3-bar-item w3-mobile">
-        <a href="/userscsv">Download</a>
-      </div>
-      {{ end }}
-      {{ if .User.Username }}
-      <div class="w3-bar-item w3-mobile w3-right">
-        <a href="/logout">Logout {{.User.Username}}</a>
-      </div>
-      {{ end}}
-    </div>
 
-    {{ if .User.Username }}
-    <table class="w3-container w3-mobile w3-table w3-striped w3-responsive">
-      <tr>
-	<th>User Name</th>
-	<th>Full Name</th>
-        {{ if $.User.IsAdmin }}
-	<th>Email</th>
-	<th class="w3-center">IsAdmin</th>
-	<th>Created</th>
-        {{ end }}
-      </tr>
-      {{ range .Users }}
-      <tr>
-	<td>{{ .Username }}</td>
-	<td>{{ .FullName }}</td>
-        {{ if $.User.IsAdmin }}
-	<td>{{ .Email }}</td>
-	<td class="w3-center">{{ .IsAdmin }}</td>
-        <td>{{ (ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST" }}</td>
-        {{ end }}
-      </tr>
-      {{ end }}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}} - Users</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+</head>
+
+<body>
+  <header class="container with-line">
+      <nav aria-label="Primary navigation">
+        <ul>
+          <li><a href="/"><strong>{{.Title}}</strong></a></li>
+        </ul>
+        <ul>
+          {{if .User.IsAdmin}}
+          <li><a href="/userscsv">Download</a></li>
+          {{end}}
+          {{if .User.Username}}
+          <li><a href="/logout">Logout</a></li>
+          {{else}}
+          <li><a href="/login?r=/users">Login</a></li>
+          {{end}}
+        </ul>
+      </nav>
+  </header>
+
+  <main class="container">
+    <h1>Registered Users</h1>
+
+    {{if .User.Username}}
+    <table class="striped">
+      <caption>Registered users</caption>
+      <thead>
+        <tr>
+          <th scope="col">Username</th>
+	        <th scope="col">Full name</th>
+          {{if $.User.IsAdmin}}
+	        <th scope="col">Email</th>
+	        <th scope="col" data-align="center">Admin</th>
+	        <th scope="col">Created</th>
+          {{end}}
+        </tr>
+      </thead>
+
+      <tbody>
+      {{range .Users}}
+        <tr>
+        	<td>{{.Username}}</td>
+        	<td>{{.FullName}}</td>
+          {{if $.User.IsAdmin}}
+        	<td>{{.Email}}</td>
+        	<td data-align="center">{{if .IsAdmin}}Yes{{else}}No{{end}}</td>
+          <td>{{(ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST"}}</td>
+          {{end}}
+        </tr>
+      {{end}}
+      </tbody>
     </table>
-    {{ else }}
-    <div class="w3-panel w3-pale-red">
-      You must <a href="/login?r=/users">Login</a>
-    </div>
-    {{ end }}
+    {{else}}
+    <p>You must <a href="/login?r=/users">Login</a> to see users.</p>
+    {{end}}
+  </main>
+</body>
 
-  </body>
 </html>

@@ -1,38 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>Reset Password</b>
-    </div>
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <a class="w3-bar-item w3-mobile" href="/login">Login</a>
-      <a class="w3-bar-item w3-mobile" href="/register">Register for an account</a>
-    </div>
-    <div class="w3-container w3-mobile w3-padding">
-      Please provide the following to reset your password.
-    </div>
-    <form method="post" class="w3-container w3-mobile">
-      <p>
-      <label for="rtoken"><b>Reset Token from Email (required):</b></label>
-      <input class="w3-input w3-mobile" type="text" placeholder="Enter your Reset Token" id="rtoken" name="rtoken" maxlength="44" required="" value="{{.ResetToken}}">
-      </p>
-      <p>
-      <label for="password1"><b>New Password (required):</b></label> <input class="w3-input w3-mobile" type="password" placeholder="Enter your desired password" id="password1" name="password1" required="" autofocus>
-      </p>
-      <p>
-      <label for="password2"><b>Repeat New Password (required):</b></label>
-      <input class="w3-input w3-mobile" type="password" placeholder="Repeat your desired password" id="password2" name="password2" required="">
-      </p>
-      <button type="submit" class="w3-button w3-mobile w3-indigo">Reset Password</button>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{ .Title }} - Reset Password</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+</head>
+
+<body>
+  <header class="container with-line">
+    <nav aria-label="Primary navigation">
+      <ul>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
+      </ul>
+      <ul>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Reset Password</h1>
+    <p>Please provide the following information to reset your password.</p>
+
+    <form method="post">
+      {{ if .Message }}<p role="alert"><mark>{{ .Message }}</mark></p>{{ end }}
+
+      <label for="rtoken">
+        Reset token <span aria-hidden="true">(required)</span>
+      </label>
+      <input
+        id="rtoken" name="rtoken"
+        type="text"
+        placeholder="ABCdFgHIJklMnOpQ"
+        maxlength="44"
+        value="{{.ResetToken}}"
+        required
+        aria-describedby="rtokenHelp"
+      >
+      <small id="rtokenHelp">
+        You should have received an email with the reset token.
+      </small>
+
+      <label for="password1">
+        New password <span aria-hidden="true">(required)</span>
+      </label>
+      <input
+        id="password1" name="password1"
+        type="password"
+        placeholder="sixth-embark5-deferred"
+        minlength="8"
+        required
+        aria-describedby="passwordHelp"
+      >
+      <small id="passwordHelp">
+        Use a memorable passphrase (3–5 random words, symbols, or spaces).
+      </small>
+
+      <label for="password2">
+        Repeat Password
+      </label>
+      <input
+        id="password2" name="password2"
+        type="password"
+        placeholder="sixth-embark5-deferred"
+        minlength="8"
+        required
+        aria-describedby="password2Help"
+      >
+      <small id="password2Help">
+        Re-enter the same password to confirm.
+      </small>
+
+      <button type="submit">Reset Password</button>
     </form>
-    {{ if .Message }}
-    <div class="w3-panel w3-mobile w3-pale-red">{{ .Message }}</div>
-    {{ end }}
-    <br>
-  </body>
+  </main>
+</body>
+
 </html>

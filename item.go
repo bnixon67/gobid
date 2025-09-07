@@ -127,8 +127,22 @@ func (app *BidApp) postItemHandler(w http.ResponseWriter, r *http.Request, id in
 	bidAmount, err := strconv.ParseFloat(bidAmountStr, 64)
 	if err != nil {
 		msg = "Invalid bid amount."
-		logger.Error("unable to parse", "bidAmountStr", bidAmountStr,
+		logger.Error("unable to parse",
+			"bidAmountStr", bidAmountStr,
 			"err", err)
+	}
+
+	// negative bid
+	if bidAmount <= 0 {
+		msg = "Invalid bid amount."
+		logger.Error("zero or negative bid",
+			"bidAmount", bidAmount)
+	}
+
+	// invalid user
+	if user == (webauth.User{}) {
+		msg = "Invalid user."
+		logger.Error("invalid user")
 	}
 
 	// submit bid if we have a valid user and bidAmount and open Auction

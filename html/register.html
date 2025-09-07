@@ -1,48 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding"><b>Register</b></div>
 
-    <div class="w3-bar w3-light-grey w3-mobile">
-      <div class="w3-bar-item w3-mobile">
-        <a href="/login">Login</a>
-      </div>
-    </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{ .Title }} - Register</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+</head>
 
-    <div class="w3-container w3-mobile w3-padding">
-      Please provide the following information to register.
-    </div>
+<body>
+  <header class="container with-line">
+    <nav aria-label="Primary navigation">
+      <ul>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
+      </ul>
+      <ul>
+        <li><a href="/login">Login</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <form method="post" class="w3-container w3-mobile">
-      <p>
-        <label for="username"><b>Username (required):</b></label>
-        <input class="w3-input w3-mobile" type="text" placeholder="Enter your desired User Name" id="username" name="username" maxlength="30" required="" autofocus>
-      </p>
-      <p>
-        <label for="fullName"><b>Full Name (required):</b></label>
-        <input class="w3-input w3-mobile" type="text" placeholder="Enter your Full Name" id="fullName" name="fullName" maxlength="50" required="">
-      </p>
-      <p>
-        <label for="email"><b>Email Address (required):</b></label>
-        <input class="w3-input w3-mobile" type="email" placeholder="Enter your Email Address" id="email" name="email" maxlength="256" required="">
-      </p>
-      <p>
-        <label for="password1"><b>Password (required):</b></label>
-        <input class="w3-input w3-mobile" type="password" placeholder="Enter your desired password" id="password1" name="password1" required="">
-      </p>
-      <p>
-        <label for="password2"><b>Repeat Password</b></label>
-        <input class="w3-input w3-mobile" type="password" placeholder="Repeat your desired password" id="password2" name="password2">
-      </p>
-      <button type="submit" class="w3-button w3-mobile w3-indigo">Register</button>
+  <main class="container">
+    <h1>Register</h1>
+    <p>Please provide the following information to create your account.</p>
+
+    <form method="post">
+      {{ if .Message }}<p role="alert"><mark>{{ .Message }}</mark></p>{{ end }}
+
+      <label for="username">
+        Username <span aria-hidden="true">(required)</span>
+      </label>
+      <input
+        id="username" name="username"
+        type="text"
+        placeholder="pdoe"
+        maxlength="30"
+        required
+        autofocus
+      >
+
+      <label for="fullName">
+        Full Name <span aria-hidden="true">(required)</span>
+      </label>
+      <input
+        id="fullName" name="fullName"
+        type="text"
+        placeholder="Pat Doe"
+        maxlength="50"
+        required
+      >
+
+      <label for="email">
+        Email Address <span aria-hidden="true">(required)</span>
+      </label>
+      <input
+        id="email" name="email"
+        type="email"
+        placeholder="pdoe@example.com"
+        maxlength="256"
+        required
+      >
+
+      <label for="password1">
+        Password <span aria-hidden="true">(required)</span>
+      </label>
+      <input
+        id="password1" name="password1"
+        type="password"
+        placeholder="sixth-embark5-deferred"
+        minlength="8"
+        required
+        aria-describedby="passwordHelp"
+      >
+      <small id="passwordHelp">
+        Use a memorable passphrase (3–5 random words, symbols, or spaces).
+      </small>
+
+      <label for="password2">
+        Repeat Password
+      </label>
+      <input
+        id="password2" name="password2"
+        type="password"
+        placeholder="sixth-embark5-deferred"
+        minlength="8"
+        required
+        aria-describedby="password2Help"
+      >
+      <small id="password2Help">
+        Re-enter the same password to confirm.
+      </small>
+
+      <button type="submit">Register</button>
     </form>
-    {{ if .Message }}
-    <div class="w3-panel w3-mobile w3-pale-red">{{ .Message }}</div>
-    {{ end }}
-  </body>
+  </main>
+</body>
+
 </html>

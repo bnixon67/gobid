@@ -1,25 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{.Title}}</title>
-  <link rel="stylesheet" href="/w3.css">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}} - Email Confirmed</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <style>
+    header.with-line {
+      border-bottom: 1px solid var(--pico-primary-border);
+      padding-bottom: 0rem;
+    }
+  </style>
 </head>
 <body>
-  <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-    <b>{{.Title}}</b>
-  </div>
+  <header class="container with-line">
+    <nav aria-label="Primary navigation">
+      <ul>
+        <li><strong>{{.Title}}</strong></li>
+        <li><a href="/gallery">Gallery</a></li>
+      </ul>
+      <ul>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
+      </ul>
+    </nav>
+  </header>
 
-  <div class="w3-bar w3-mobile w3-light-grey">
-    <div class="w3-bar-item w3-mobile"> <a href="/gallery">Gallery</a> </div>
-    <div class="w3-bar-item w3-mobile"> <a href="/login">Login</a> </div>
-    <div class="w3-bar-item w3-mobile"> <a href="/register">Register</a> </div>
-  </div>
-
-  <div class="w3-container">
+  <main id="main" class="container">
     <h1>Email confirmed</h1>
-    <p>Your email addess has been confirmed.</p>
-  </div>
+    <!-- Live region for screen readers -->
+    <div role="status" aria-live="polite">
+      <p>Your email address has been confirmed.</p>
+    </div>
+    <p>
+      You can <a href="/login">log in</a>
+      or view the <a href="/gallery">gallery</a>.
+    </p>
+  </main>
 </body>
 </html>

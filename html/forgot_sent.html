@@ -1,23 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>Forgot User or Password</b>
-    </div>
 
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <a class="w3-bar-item w3-mobile" href="/login">Login</a>
-      <a class="w3-bar-item w3-mobile" href="/register">Register</a>
-    </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}} - Message Sent</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+</head>
 
-    <div class="w3-container w3-mobile">
-      <p>Please check your email for a message from {{ .EmailFrom }} for further information.</p>
-      <p>It could take a few minutes to receive the email. Please check your spam, junk, promotional, or similar folders.</p>
-    </div>
-  </body>
+<body>
+  <header class="container with-line">
+    <nav>
+      <ul>
+        <li><strong>{{.Title}}</strong></li>
+      </ul>
+      <ul>
+        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>Message Sent</h1>
+    <p>
+      Please check your email for a message from {{ .EmailFrom }}
+      for further information.  It could take a few minutes to receive
+      the email. Please check your spam, junk, promotional, or similar
+      folders.
+    </p>
+  </main>
+</body>
 </html>

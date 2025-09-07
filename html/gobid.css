@@ -1,0 +1,22 @@
+header.with-line {
+  border-bottom: 1px solid var(--pico-primary-border);
+  padding-bottom: 0rem;
+}
+
+th[data-align="right"], td[data-align="right"] { text-align: right; }
+th[data-align="center"], td[data-align="center"] { text-align: center; }
+
+/* Highlight invalid inputs when user has interacted */
+input:invalid {
+  border-color: var(--pico-del-color);
+  background: color-mix(in srgb, var(--pico-del-color) 10%, transparent);
+}
+
+input:invalid:focus {
+  outline-color: var(--pico-del-color);
+}
+
+/* Optional: style valid inputs */
+input:valid {
+  border-color: var(--pico-secondary);
+}

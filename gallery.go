@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bnixon67/webapp/webauth"
 	"github.com/bnixon67/webapp/webhandler"
@@ -52,10 +53,20 @@ func (app *BidApp) GalleryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	layout := "Mon Jan 2, 2006 3:04 PM MST"
-	message := fmt.Sprintf("Auction is open from %s through %s",
-		app.AuctionStart.Format(layout),
-		app.AuctionEnd.Format(layout),
-	)
+	now := time.Now()
+
+	var message string
+	switch {
+	case now.Before(app.AuctionStart):
+		message = fmt.Sprintf("Auction opens %s",
+			app.AuctionStart.Format(layout))
+	case now.Before(app.AuctionEnd):
+		message = fmt.Sprintf("Auction closes %s",
+			app.AuctionEnd.Format(layout))
+	default:
+		message = fmt.Sprintf("Auction closed %s",
+			app.AuctionEnd.Format(layout))
+	}
 
 	logger.Info("GalleryHandler", "username", user.Username)
 

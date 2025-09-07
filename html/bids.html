@@ -1,96 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 
-  <head>
-    <title>{{.Title}}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}} - Bids</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+  <style>
+    /* collapse logic */
+    tbody.item > tr.bids { display: none; }
+    tbody.item:has(details[open]) > tr.bids { display: table-row; }
+  </style>
+</head>
 
-  <body>
-
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>{{.Title}} Bids</b>
-    </div>
-
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile"><a href="/gallery">Gallery</a></div>
-      {{ if .User.IsAdmin }}
-      <div class="w3-bar-item w3-mobile"><a href="/edit/0">New Item</a></div>
-      {{ end }}
-      <div class="w3-bar-item w3-mobile w3-right">
+<body>
+  <header class="container with-line">
+    <nav>
+      <ul>
+        <li><strong>{{.Title}}</strong></li>
+      </ul>
+      <ul>
+        <li><a href="/gallery">Gallery</a></li>
+      </ul>
+      <ul>
         {{if .User.Username}}
-        <a href="/logout">Logout {{.User.Username}}</a>
+        <li><a href="/logout">Logout {{.User.Username}}</a></li>
         {{else}}
-        <a href="/login?r=/items">Login</a>
+        <li><a href="/login?r=/bids">Login</a></li>
         {{end}}
-      </div>
-    </div>
+      </ul>
+    </nav>
+  </header>
 
-    {{ if .User.Username }}
-    <table class="w3-table w3-mobile w3-responsive">
-      <thead> <tr>
-        <th>ID</th>
-        <th>Item</th>
-        <th class="w3-right-align">Opening</th>
-        <th class="w3-right-align">Increment</th>
-        <th class="w3-center">Bids</th>
-      </tr> </thead>
-      {{ range .Items }}
-      <tr>
-        <td>{{ .ID }}</td>
-        <td>{{ .Artist }} {{ .Title }}</td>
-        <td class="w3-right-align">{{ printf "$%.2f" .OpeningBid }}</td>
-        <td class="w3-right-align">{{ printf "$%.2f" .MinBidIncr }}</td>
-        <td class="w3-center">
-          <u onclick="ToggleBids('{{.ID}}')">{{ len .Bids }}</u>
-        </td>
-      </tr>
+  <main class="container">
+    {{if .User.Username}}
+    <table class="striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Item</th>
+          <th data-align="right">Opening</th>
+          <th data-align="right">Increment</th>
+          <th data-align="center">Bids</th>
+        </tr>
+      </thead>
 
-      <tr>
-        <td colspan="5">
-          <table id="{{ .ID }}" class="w3-table w3-striped w3-mobile w3-hide">
-            <thead> <tr>
-              <th>Placed</th>
-              <th>Amount</th>
-              <th>Bidder</th>
-              {{if $.User.IsAdmin}}
-              <th>Full Name</th>
-              <th>Email</th>
+      {{range .Items}}
+      <tbody class="item">
+        <tr>
+          <td>{{.ID}}</td>
+          <td>{{.Title}}<br>{{.Artist}}</td>
+          <td data-align="right">{{printf "$%.2f" .OpeningBid}}</td>
+          <td data-align="right">{{printf "$%.2f" .MinBidIncr}}</td>
+          <td data-align="center">
+            <details>
+              <summary>{{len .Bids}}</summary>
+            </details>
+          </td>
+        </tr>
+
+        <tr class="bids">
+          <td colspan="5">
+            <table>
+              <thead>
+                <tr>
+                  <th>Placed</th>
+                  <th data-align="right">Amount</th>
+                  <th>Bidder</th>
+                  {{if $.User.IsAdmin}}
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  {{end}}
+                </tr>
+              </thead>
+              <tbody>
+              {{range .Bids}}
+                <tr>
+                  <td>{{(ToTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST"}}</td>
+                  <td  data-align="right">${{printf "%.2f" .Amount}}</td>
+                  <td>{{.Bidder}}</td>
+                  {{if $.User.IsAdmin}}
+                  <td>{{.FullName}}</td>
+                  <td>{{.Email}}</td>
+                  {{end}}
+                </tr>
               {{end}}
-            </tr> </thead>
-            {{range .Bids}}
-            <tr>
-              <td>{{(ToTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST"}}</td>
-              <td class="w3-right-align">${{printf "%.2f" .Amount}}</td>
-              <td>{{.Bidder}}</td>
-              {{if $.User.IsAdmin}}
-              <td>{{.FullName}}</td>
-              <td>{{.Email}}</td>
-              {{end}}
-            </tr>
-            {{end}}
+              </tbody>
           </table>
         </td>
       </tr>
-      {{ end }}
+      </tbody>
+      {{end}}
     </table>
-    {{ else }}
-    <div class="w3-panel w3-pale-red">
-      You must <a href="/login?r=/bids">Login</a>
-    </div>
-    {{ end }}
-
-
-    <script>
-      function ToggleBids(id) {
-        var x = document.getElementById(id);
-        if (x.className.indexOf("w3-show") == -1) {
-          x.className += " w3-show";
-        } else {
-          x.className = x.className.replace(" w3-show", "");
-        }
-      }
-    </script>
-  </body>
+    {{else}}
+    <p>You must <a href="/login?r=/bids">Login</a> to view bids.</p>
+    {{end}}
+  </main>
+</body>
 </html>

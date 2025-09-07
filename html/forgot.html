@@ -1,39 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
 
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>Forgot User Name or Password</b>
-    </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}} - Forgot Username or Password</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+</head>
 
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <a class="w3-bar-item w3-mobile" href="/login">Login</a>
-      <a class="w3-bar-item w3-mobile" href="/register">Register</a>
-    </div>
+<body>
+  <header class="container with-line">
+    <nav>
+      <ul>
+        <li><strong>{{.Title}}</strong></li>
+      </ul>
+      <ul>
+        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <div class="w3-container w3-mobile w3-padding">
-      Please provide your email address that will receive a message with further information.
-    </div>
+  <main class="container">
+    <h1>Forgot Username or Password</h1>
+    <p>Please provide your email address to receive further information.</p>
 
-    <form method="post" class="w3-container w3-mobile">
-      <p>
-      <label for="email"><b>Email (required):</b></label>
-      <input class="w3-input w3-mobile" type="email" placeholder="Enter your Email" id="email" name="email" maxlength="256" required="" autofocus>
-      </p>
+    <form method="post" novalidate>
+    {{if .Message}}<p role="alert"> <mark>{{.Message}}</mark> </p>{{ end }}
 
-      <div class="w3-bar w3-mobile">
-	<button type="submit" class="w3-button w3-mobile w3-indigo" name="action" value="user">Forgot User Name</button>
-	<button type="submit" class="w3-button w3-mobile w3-indigo" name="action" value="password">Forgot Password</button>
+      <label>
+        <strong>Email (required):</strong>
+        <input type="email" placeholder="Enter your Email" id="email" name="email" maxlength="256" required autofocus>
+      </label>
+
+      <div class="grid">
+	    <button type="submit" name="action" value="user">Forgot Username</button>
+	    <button type="submit" name="action" value="password">Forgot Password</button>
       </div>
     </form>
+  </main>
+</body>
 
-    {{ if .Message }}
-    <div class="w3-panel w3-mobile w3-padding w3-pale-red">{{ .Message }}</div>
-    {{ end }}
-  </body>
 </html>

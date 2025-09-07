@@ -1,120 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>{{ .Title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/w3.css">
-  </head>
-  <body>
-    <div class="w3-container w3-mobile w3-indigo w3-large w3-padding">
-      <b>{{ .Title }} Item</b>
-    </div>
 
-    <div class="w3-bar w3-mobile w3-light-grey">
-      <div class="w3-bar-item w3-mobile">
-        <a href="/gallery">Return to Gallery</a>
-      </div>
-      <div class="w3-bar-item w3-mobile">
-        <a href="/item/{{ .Item.ID }}">Refresh Item</a>
-      </div>
-      {{- if .User.IsAdmin}}
-      <div class="w3-bar-item w3-mobile">
-        <a href="/edit/{{ .Item.ID }}">Edit Item</a>
-      </div>
-      {{- end }}
-      <div class="w3-bar-item w3-right w3-mobile">
-      {{- if .User.Username }}
-        <a href="/logout">Logout {{ .User.Username }}</a>
-      {{ else }}
-      <a href="/login?r=/item/{{.Item.ID}}">Login</a> or <a href="/register">Register</a> to bid.
-      {{ end -}}
-      </div>
-    </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{.Title}} - Item {{.Item.ID}}</title>
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/gobid.css">
+</head>
 
-    <div class="w3-row w3-mobile w3-padding">
-      <div class="w3-container w3-half w3-mobile w3-center">
-        <img src="/images/{{.Item.ImageFileName}}" alt="{{.Title}}" class="w3-image w3-mobile" style="max-height: 85vh;">
+<body>
+  <header class="container with-line">
+    <nav aria-label="Primary Navigation">
+      <ul>
+        <li><strong>{{.Title}}</strong></li>
+      </ul>
+      <ul>
+        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/item/{{.Item.ID}}" aria-current="page">Refresh</a></li>
+        {{if .User.IsAdmin}}
+        <li><a href="/edit/{{.Item.ID}}">Edit</a></li>
+        {{end}}
+        {{if .User.Username}}
+        <li><a href="/logout">Logout</a></li>
+        {{else}}
+        <li><a href="/login">Login</a></li>
+        {{end}}
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <div class="grid">
+
+      <div>
+        <img
+          src="/images/{{.Item.ImageFileName}}"
+          alt="{{.Item.Title}} by {{.Item.Artist}}"
+          style="max-height: 60vh;"
+        >
       </div>
 
-      <div class="w3-container w3-half w3-mobile w3-center">
-        <div class="w3-container w3-mobile w3-center w3-section">
-          <div class="w3-container w3-mobile w3-xlarge">
-            <b>{{.Item.Artist}}<br>{{.Item.Title}}</b>
+      <div>
+        <h1>{{.Item.Title}}</h1>
+        <h2>{{.Item.Artist}}</h2>
+        <p>{{.Item.Description}}</p>
+
+        <div>
+        {{ if eq .Item.OpeningBid 0.0 }}
+          <div>This item is display only.</div>
+        {{ else }}
+          <div>
+            Current Price:
+            ${{ printf "%.2f" (or .Item.CurrentBid .Item.OpeningBid)}}
           </div>
-          <div class="w3-container w3-mobile">
-            {{ .Item.Description }}
-          </div>
-        </div>
-
-        <div class="w3-container w3-mobile w3-center w3-section">
-          {{ if eq .Item.OpeningBid 0.0 }}
-          This item is display only.
-          {{ else }}
-          <p>
-            <b>Current&nbsp;Price:</b>
-            {{if .Item.CurrentBid}}
-            ${{ printf "%.2f" .Item.CurrentBid }}
-            {{else}}
-            ${{ printf "%.2f" .Item.OpeningBid }}
-            {{end}}
-          </p>
-          <p>
-            <b>Minimum&nbsp;Bid:</b>
-            ${{ printf "%.2f" .Item.MinBid }}
-          </p>
-          {{ end }}
-        </div>
-
-        <div class="w3-container w3-mobile w3-center w3-section">
-          {{ if and (.User.Username) (ne .Item.OpeningBid 0.0) }}
-          <div class="w3-container w3-mobile">
-            <form method="post" class="w3-container w3-mobile">
-              <div class="w3-row w3-mobile">
-                <div class="w3-third w3-container w3-mobile">
-                  <label for="bidAmount"><b>Your Bid:</b></label>
-                </div>
-                <div class="w3-third w3-container w3-mobile">
-                  <input class="w3-input w3-mobile w3-right-align" type="text" placeholder="Enter your Bid Amount" id="bidAmount" name="bidAmount" maxlength="30" autofocus required value="{{ .Item.MinBid }}">
-                </div>
-                <div class="w3-third w3-container w3-mobile">
-                  {{if .IsAuctionOpen}}
-                  <button type="submit" class="w3-button w3-mobile w3-indigo">Place Bid</button>
-                  {{else}}
-                  Auction Closed
-                  {{end}}
-                </div>
-              </div>
-            </form>
-
-            <div class="w3-container w3-mobile">
-              {{ if .Message }} {{ .Message }} {{ else }} You must bid at least {{ printf "$%10.2f" .Item.MinBid }}. {{ end }}
-            </div>
-          </div>
-          {{ end }}
-          {{ if not .User.Username }}
-          <div class="w3-container w3-padding w3-mobile">Please <a href="/login">Login</a> or <a href="/register">Register</a> to bid.</div>
-          {{ end }}
-        </div>
-
-        {{ if and .User.Username .Bids }}
-        <table class="w3-mobile w3-table w3-striped w3-center">
-          <tr>
-            <th>Bidder</th>
-            <th>Amount</th>
-            <th>Placed</th>
-          </tr>
-          {{ range .Bids }}
-          <tr>
-            <td>{{ .Bidder }}</td>
-            <td>${{ printf "%.2f" .Amount }}</td>
-            <td>{{ (ToTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST" }}</td>
-          </tr>
-          {{ end }}
-        </table>
         {{ end }}
+        </div>
+
+        <br>
+
+        <div>
+        {{ if eq .Item.OpeningBid 0.0 }}
+          {{/* display only */}}
+        {{else if not .IsAuctionOpen}}
+          <div>Auction Closed</div>
+        {{else if not .User.Username}}
+          <div>
+            Please <a href="/login?r=/item/{{.Item.ID}}">Login</a>
+            or <a href="/register">Register</a> to bid.
+          </div>
+        {{else}}
+          <form method="post">
+            {{if .Message}}
+            <p> <mark>{{ .Message }}</mark> </p>
+            {{else}}
+            <p>&nbsp;</p>
+            {{end}}
+
+            <label for="bidAmount"><strong>Your Bid:</strong></label>
+            <input
+              placeholder="Enter your Bid Amount"
+              id="bidAmount" name="bidAmount"
+              value="{{ .Item.MinBid }}"
+              type="number" inputmode="numeric"
+              min="{{.Item.MinBid}}"
+              step="any"
+              autofocus
+              required
+              aria-describedby="bidHelp"
+            >
+            <small id="bidHelp">Minimum bid: ${{.Item.MinBid}}</small>
+
+            <button type="submit">Place Bid</button>
+          </form>
+        {{end}}
+        </div>
+
       </div>
     </div>
 
+        {{if and .User.Username .Bids}}
+        <br>
+        <table class="striped">
+          <caption>Bid History</caption>
+          <thead>
+            <tr>
+              <th scope="col">Bidder</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Placed</th>
+            </tr>
+          </thead>
+          <tbody>
+          {{range .Bids}}
+            <tr>
+              <td>{{.Bidder}}</td>
+              <td>${{printf "%.2f" .Amount}}</td>
+              <td>{{(ToTimeZone .Created "America/Chicago").Format "01/02/06 03:04 pm MST"}}</td>
+            </tr>
+          {{end}}
+          </tbody>
+        </table>
+        {{end}}
 
-  </body>
+  </main>
+</body>
 </html>
