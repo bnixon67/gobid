@@ -5,19 +5,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{{ .Title }} Login</title>
+  <meta name="description" content="Login to access your account.">
+  <title>{{ .Title }} - Login</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav>
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
       <ul>
-        <li><a href="/gallery">Gallery</a></li>
         <li><a href="/forgot">Forgot</a></li>
         <li><a href="/register">Register</a></li>
       </ul>
@@ -26,50 +26,49 @@
 
   <main class="container">
     <h1>Login</h1>
-    <p>Please provide the following to login.</p>
+    <p>Please enter your account details to sign in.</p>
+
     <form method="post" autocomplete="off">
-      <fieldset>
-	      {{ if .Message }}
-	      <p role="alert"><span aria-hidden="true">⚠️ </span>{{.Message}}</p>
-        {{ end }}
+      {{if .Message}}
+      <p class="message" role="status">
+      {{.Message}}</p>{{end}}
 
-        <label for="username">
-          Username <span aria-hidden="true">(required)</span>
-        </label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          placeholder="Enter your username"
-          maxlength="30"
-          required
-          autofocus
-          autocomplete="username">
+      <label for="username">
+        Username <span aria-hidden="true">(required)</span>
+      </label>
+      <input
+        type="text"
+        id="username" name="username"
+        placeholder="pdoe"
+        maxlength="30"
+        required
+        autofocus
+        autocomplete="username"
+      >
 
-        <label for="password">
-          Password <span aria-hidden="true">(required)</span>
-	</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Enter your password"
-          required
-          autocomplete="current-password">
+      <label for="password">
+        Password <span aria-hidden="true">(required)</span>
+	    </label>
+      <input
+        type="password"
+        id="password" name="password"
+        placeholder="********"
+        required
+        autocomplete="current-password"
+      >
 
-	<label for="remember">
-          <input
-	    type="checkbox"
-	    id="remember"
-	    name="remember"
-	    value="on"
-	    checked>
-          Remember Me
-	</label>
+      <input
+	      type="checkbox"
+	      id="remember" name="remember"
+        checked
+      >
+      <label for="remember">
+        Remember Me
+      </label>
 
-        <button type="submit">Login</button>
-      </fieldset>
+      <button type="submit">Login</button>
     </form>
   </main>
 </body>
+
 </html>

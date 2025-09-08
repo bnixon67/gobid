@@ -5,14 +5,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Reset your account password.">
   <title>{{ .Title }} - Reset Password</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav aria-label="Primary navigation">
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
         <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
@@ -25,10 +26,13 @@
 
   <main class="container">
     <h1>Reset Password</h1>
-    <p>Please provide the following information to reset your password.</p>
+    <p>
+      Enter your reset token and choose a new password to regain access
+      to your account.
+    </p>
 
     <form method="post">
-      {{ if .Message }}<p role="alert"><mark>{{ .Message }}</mark></p>{{ end }}
+      {{if .Message}}<p class="message" role="status">{{.Message}}</p>{{end}}
 
       <label for="rtoken">
         Reset token <span aria-hidden="true">(required)</span>
@@ -43,7 +47,7 @@
         aria-describedby="rtokenHelp"
       >
       <small id="rtokenHelp">
-        You should have received an email with the reset token.
+        This code was sent to your email. Paste it here to continue.
       </small>
 
       <label for="password1">
@@ -55,10 +59,11 @@
         placeholder="sixth-embark5-deferred"
         minlength="8"
         required
-        aria-describedby="passwordHelp"
+        aria-describedby="password1-help"
+        autocomplete="new-password"
       >
-      <small id="passwordHelp">
-        Use a memorable passphrase (3–5 random words, symbols, or spaces).
+      <small id="password1-help">
+        Use a passphrase (3–5 random words).
       </small>
 
       <label for="password2">
@@ -70,10 +75,11 @@
         placeholder="sixth-embark5-deferred"
         minlength="8"
         required
-        aria-describedby="password2Help"
+        aria-describedby="password2-help"
+        autocomplete="new-password"
       >
-      <small id="password2Help">
-        Re-enter the same password to confirm.
+      <small id="password2-help">
+        Enter the same password again to confirm.
       </small>
 
       <button type="submit">Reset Password</button>

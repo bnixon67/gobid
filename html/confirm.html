@@ -5,53 +5,54 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Enter your confirmation token to verify your email address.">
   <title>{{.Title}} - Confirm Email</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-   <header class="container with-line">
-    <nav aria-label="Primary Navigation">
+   <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
-        <li><a href="/gallery">Gallery</a></li>
-        <li><a href="/confirm_request">Request Token</a></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
     </nav>
   </header>
 
   <main class="container">
     <h1>Confirm your email</h1>
-    <p>Enter the confirmation token to confirm your account.</p>
+    <p>Enter your confirmation token to verify your account.</p>
 
     {{if .Message}}
-    <p class="error" role="alert">
-      <span aria-hidden="true">⚠️  </span>{{.Message}}
-    </p>
+    <p role="alert"> <mark>{{.Message}}</mark> </p>
     {{ end }}
 
     <form method="post">
-      <label>
+      <label for="ctoken">
         Confirmation token <span aria-hidden="true">(required)</span>
-        <input
-          type="text"
-          id="ctoken"
-          name="ctoken"
-          placeholder="Enter the confirmation token"
-          maxlength="44"
-          required
-          autofocus
-          value="{{.ConfirmToken}}"
-          aria-label="Confirmation Token"
-          aria-describedby="ctoken-help"
-        >
-        <small id="ctoken-help">
-          This token was included in the confirmation email we sent you.
-        </small>
       </label>
+      <input
+        type="text"
+        id="ctoken" name="ctoken"
+        placeholder="ABCdFgHIJklMnOpQ"
+        maxlength="44"
+        required
+        autofocus
+        value="{{.ConfirmToken}}"
+        aria-describedby="ctoken-help"
+      >
+      <small id="ctoken-help">
+        This token was included in the confirmation email we sent you.
+      </small>
+
       <button type="submit">Confirm</button>
     </form>
+
+    <p>
+      Didn’t get a token? <a href="/confirm_request">Request a new one</a>.
+    </p>
   </main>
 </body>
+
 </html>

@@ -1,27 +1,173 @@
-header.with-line {
-  border-bottom: 1px solid var(--pico-primary-border);
-  padding-bottom: 0rem;
+/* THEME COLORS (light + dark) */
+:root {
+  /* Light theme */
+  --color-success: #198754;
+  --color-success-bg: #e6f9ee;
+
+  --color-failure: #dc3545;
+  --color-failure-bg: #fdecea;
+
+  --card-radius: .75rem;
+  --media-h: clamp(140px, 25vh, 200px);
+  --media-bg: var(--pico-muted-border-color);
 }
 
-/* Text alignment */
+:root[color-scheme="dark"] {
+  /* Dark theme overrides */
+  --color-success: #75d99c;
+  --color-success-bg: #123524;
+
+  --color-failure: #ff6b81;
+  --color-failure-bg: #3b0f12;
+}
+
+/* TABLE STATUS CELLS */
+td[data-status="success"] td[data-status="true"],
+td[data-status="failure"] td[data-status="false"] {
+  font-weight: 600;
+  text-align: center;
+}
+td[data-status="success"], td[data-status="true"] {
+  color: var(--color-success);
+}
+td[data-status="failure"], td[data-status="false"] {
+  color: var(--color-failure);
+}
+
+/* HEADER */
+.app-header {
+  background: var(--pico-background-color);
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  padding-block: 0;           /* no extra vertical padding */
+  position: sticky;           /* stays pinned at top */
+  top: 0;
+  z-index: 1000;
+}
+
+/* MESSAGES (general alert style) */
+/* TODO: extend with .message--success, .message--error, etc. */
+.message {
+  display: block;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.25rem;
+  margin-block: 1rem;
+  font-size: 0.95em;
+  background: var(--pico-warning-background, #fff8e1);
+  color: var(--pico-warning, #664d03);
+}
+
+/* TEXT ALIGNMENT UTILITIES */
 .text-left   { text-align: left; }
 .text-center { text-align: center; }
 .text-right  { text-align: right; }
 
-th[data-align="right"], td[data-align="right"] { text-align: right; }
+th[data-align="right"], td[data-align="right"]   { text-align: right; }
 th[data-align="center"], td[data-align="center"] { text-align: center; }
 
-/* Highlight invalid inputs when user has interacted */
-input:invalid, textarea:invalid {
+/* FORM INPUT STATES */
+input:invalid,
+textarea:invalid {
   border-color: var(--pico-del-color);
   background: color-mix(in srgb, var(--pico-del-color) 10%, transparent);
 }
-
-input:invalid:focus, textarea:invalid {
+input:invalid:focus,
+textarea:invalid:focus {
   outline-color: var(--pico-del-color);
 }
 
-/* Optional: style valid inputs */
-input:valid, textarea:invalid {
+/* Optional: highlight valid inputs */
+input:valid,
+textarea:valid {
   border-color: var(--pico-secondary);
+}
+
+/* BIDS TABLE ROW TOGGLING */
+tbody.item > tr.bids { display: none; }
+tbody.item > tr.bids.open { display: table-row; }
+
+/* FIELDSET + LEGEND */
+fieldset {
+  border: var(--pico-border-width) solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: 0 1rem;
+}
+legend {
+  font-weight: 600 !important;    /* semibold */
+  font-size: 1.1rem;              /* slightly larger than body */
+  color: var(--pico-secondary) !important;
+  padding: 0 1rem;
+}
+
+/* ACCESSIBILITY HELPERS */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  border: 0;
+  white-space: nowrap;
+}
+
+/* GALLERY (cards layout) */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+article.card {
+  display: flex;
+  flex-direction: column;
+}
+.media {
+  height: var(--media-h);
+  flex-shrink: 0; /* keep fixed image area */
+  background: var(--media-bg);
+}
+.media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.info {
+  flex: 1; /* fill remaining space */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* push content down */
+  gap: .4rem;
+  line-height: 1.3;
+  padding: .6rem .75rem .8rem;
+  text-align: center;
+}
+.info > * {
+  margin: 0;
+  font-size: 1rem;
+}
+.title,
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.name {
+  font-weight: normal;
+}
+.price {
+  font-variant-numeric: tabular-nums;
+  color: var(--pico-muted-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* GRID HELPERS */
+.grid .span-2 {
+  grid-column: span 2; /* let input stretch across 2 columns */
 }

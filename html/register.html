@@ -5,14 +5,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Create a new account.">
   <title>{{ .Title }} - Register</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav aria-label="Primary navigation">
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
         <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
@@ -23,11 +24,11 @@
   </header>
 
   <main class="container">
-    <h1>Register</h1>
-    <p>Please provide the following information to create your account.</p>
+    <h1>Create Account</h1>
+    <p>Please complete the form below to register.</p>
 
     <form method="post">
-      {{ if .Message }}<p role="alert"><mark>{{ .Message }}</mark></p>{{ end }}
+      {{if .Message}}<p class="message" role="status">{{.Message}}</p>{{end}}
 
       <label for="username">
         Username <span aria-hidden="true">(required)</span>
@@ -39,6 +40,7 @@
         maxlength="30"
         required
         autofocus
+        autocomplete="username"
       >
 
       <label for="fullName">
@@ -50,6 +52,7 @@
         placeholder="Pat Doe"
         maxlength="50"
         required
+        autocomplete="name"
       >
 
       <label for="email">
@@ -61,6 +64,7 @@
         placeholder="pdoe@example.com"
         maxlength="256"
         required
+        autocomplete="email"
       >
 
       <label for="password1">
@@ -72,10 +76,11 @@
         placeholder="sixth-embark5-deferred"
         minlength="8"
         required
-        aria-describedby="passwordHelp"
+        aria-describedby="password1-help"
+        autocomplete="new-password"
       >
-      <small id="passwordHelp">
-        Use a memorable passphrase (3–5 random words, symbols, or spaces).
+      <small id="password1-help">
+        Use a passphrase (3–5 random words).
       </small>
 
       <label for="password2">
@@ -87,10 +92,11 @@
         placeholder="sixth-embark5-deferred"
         minlength="8"
         required
-        aria-describedby="password2Help"
+        aria-describedby="password2-help"
+        autocomplete="new-password"
       >
-      <small id="password2Help">
-        Re-enter the same password to confirm.
+      <small id="password2-help">
+        Enter the same password again to confirm.
       </small>
 
       <button type="submit">Register</button>

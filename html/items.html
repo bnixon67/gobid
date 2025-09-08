@@ -6,26 +6,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta name="description" content="Browse the items available for bidding or display.">
-  <title>{{.Title}} Items</title>
+  <title>{{.Title}} - Items</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container-fluid with-line">
-    <nav aria-label="Primary navigation">
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
         <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
       <ul>
-        {{if .User.IsAdmin}}
+      {{if .User.IsAdmin}}
         <li><a href="/edit/0">New Item</a></li>
-        {{end}}
-        {{if .User.Username}}
-        <li><a href="/logout">Logout</a></li>
-        {{else}}
+      {{end}}
+      </ul>
+      <ul>
+      {{if .User.Username}}
+        <li><a href="/logout">Logout {{.User.Username}}</a></li>
+      {{else}}
         <li><a href="/login?r=/items">Login</a></li>
-        {{ end }}
+      {{ end }}
       </ul>
     </nav>
   </header>
@@ -35,12 +37,14 @@
 
     {{if .Items}}
     <table class="striped">
-      <caption>Items Available</caption>
+      <caption class="visually-hidden">
+        {{.Title}} items available for bidding or display
+      </caption>
 
       <thead>
         <tr>
           <th scope="col" data-align="right">ID</th>
-          <th scope="col">Artist/Donor</th>
+          <th scope="col">Artist / Donor</th>
           <th scope="col">Title</th>
           <th scope="col">Description</th>
           <th scope="col" data-align="right">Opening</th>
@@ -68,7 +72,11 @@
           <td>{{.Description}}</td>
           <td data-align="right">{{printf "$%.2f" .OpeningBid}}</td>
           <td data-align="right">{{printf "$%.2f" .MinBidIncr}}</td>
-          <td data-align="right">{{printf "$%.2f" .CurrentBid}}</td>
+          <td data-align="right">
+          {{if gt .CurrentBid 0.0}}
+            {{printf "$%.2f" .CurrentBid}}
+          {{end}}
+          </td>
           <td>{{.Bidder}}</td>
           {{if $.User.IsAdmin}}
           <td>{{.ImageFileName}}</td>

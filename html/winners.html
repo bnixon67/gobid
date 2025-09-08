@@ -5,23 +5,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="List of current auction winners.">
   <title>{{.Title}} - Winners</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container-fluid with-line">
-    <nav aria-label="Primary navigation">
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
         <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
+      {{if .User.IsAdmin}}
       <ul>
-        {{if .User.IsAdmin}}
-        <li><a href="/winnerscsv">Download</a></li>
-        {{end}}
+        <li><a href="/winnerscsv">Download CSV</a></li>
+      </ul>
+      {{end}}
+      <ul>
         {{if .User.Username}}
-        <li><a href="/logout">Logout</a></li>
+        <li><a href="/logout">Logout {{.User.Username}}</a></li>
         {{else}}
         <li><a href="/login?r=/winners">Login</a></li>
         {{end}}
@@ -30,31 +33,32 @@
   </header>
 
   <main class="container-fluid">
-    <h1>Current Winners</h1>
+    <h1 class="text-center">Current Winners</h1>
 
     {{ if .User.Username }}
     <table class="striped">
-      <caption>Current Winners</caption>
+      <caption class="visually-hidden">List of current winning bids</caption>
 
       <thead>
         <tr>
           <th scope="col" data-align="right">ID</th>
           <th scope="col">Title</th>
-          <th scope="col">Artist</th>
-          <th scope="col">User</th>
+          <th scope="col">Artist/Donor</th>
+          <th scope="col">Username</th>
           {{if .User.IsAdmin}}
-          <th scope="col">Name</th>
+          <th scope="col">Full Name</th>
           <th scope="col">Email</th>
           {{end}}
-          <th scope="col" data-align="right">Amount</th>
-          <th scope="col">Placed</th>
+          <th scope="col" data-align="right">Winning Amount</th>
+          <th scope="col">Placed At</th>
         </tr>
       </thead>
 
       <tbody>
+      {{/* TODO: highlight the current user’s winning rows */}}
       {{ range .Winners }}
         <tr>
-        	<td>{{ .ID }}</td>
+        	<td data-align="right">{{ .ID }}</td>
         	<td>{{ .Title }}</td>
         	<td>{{ .Artist }}</td>
         	<td>{{ .ModifiedBy }}</td>

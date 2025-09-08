@@ -18,8 +18,8 @@
 </head>
 
 <body>
-  <header class="container-fluid with-line">
-    <nav aria-label="Primary Navigation">
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
         <li><a href="/"><strong>{{.Title}}</strong></a></li>
         <li><a href="/items">Items</a></li>
@@ -31,7 +31,7 @@
       </ul>
       <ul>
         {{if .User.Username}}
-        <li><a href="/logout">Logout</a></li>
+        <li><a href="/logout">Logout {{.User.Username}}</a></li>
         {{else}}
         <li><a href="/login">Login</a></li>
         {{end}}
@@ -49,80 +49,94 @@
     </h1>
 
     <form method="post" enctype="multipart/form-data">
+      {{if .Message}}
+      <p class="message" role="status">{{.Message}}</p>
+      {{ end }}
+
       {{if .Message}}<p role="alert"> <mark>{{.Message}}</mark> </p>{{ end }}
   
       {{ with .Item }}
-      <label for="artist">
-        Artist or Donor <span aria-hidden="true">(Required)</span>
-      </label>
-      <input
-        id="artist" name="artist"
-        type="text"
-        value="{{.Artist}}"
-        maxlength="30"
-        required
-      >
+      <fieldset>
+        <legend>Item Details</legend>
+
+        <label for="artist">
+          Artist or Donor <span aria-hidden="true">(Required)</span>
+        </label>
+        <input
+          id="artist" name="artist"
+          type="text"
+          value="{{.Artist}}"
+          maxlength="30"
+          required
+        >
+    
+        <label for="title">
+          Title <span aria-hidden="true">(Required)</span>
+        </label>
+        <input
+          id="title" name="title"
+          type="text"
+          value="{{.Title}}"
+          maxlength="40"
+          required
+        >
+    
+        <label for="description">
+          Description <span aria-hidden="true">(Required)</span>
+        </label>
+        <textarea
+          id="description" name="description"
+          maxlength="255"
+          rows="1"
+          required
+        >{{.Description}}</textarea>
+      </fieldset>
   
-      <label for="title">
-        Title <span aria-hidden="true">(Required)</span>
-      </label>
-      <input
-        id="title" name="title"
-        type="text"
-        value="{{.Title}}"
-        maxlength="40"
-        required
-      >
+      <fieldset>
+        <legend>Bid Details</legend>
+        <label for="openingBid">
+          Opening Bid <span aria-hidden="true">(Required)</span>
+        </label>
+        <input
+          id="openingBid" name="openingBid"
+          type="number"
+          value="{{.OpeningBid}}"
+          min="0"
+          required
+          aria-describedby="openingBidHelp"
+        >
+        <small id="openingBidHelp">Enter 0 for display only items</small>
   
-      <label for="description">
-        Description <span aria-hidden="true">(Required)</span>
-      </label>
-      <textarea
-        id="description" name="description"
-        maxlength="255"
-        rows="1"
-        required
-      >{{.Description}}</textarea>
+        <label for="minBidIncr">
+          Minimum Bid Increment <span aria-hidden="true">(Required)</span>
+        </label>
+        <input
+          id="minBidIncr" name="minBidIncr"
+          type="number"
+          value="{{.MinBidIncr}}"
+          min="1"
+          required
+        >
+      </fieldset>
   
-      <label for="openingBid">
-        Opening Bid <span aria-hidden="true">(Required)</span>
-      </label>
-      <input
-        id="openingBid" name="openingBid"
-        type="number"
-        value="{{.OpeningBid}}"
-        min="0"
-        required
-        aria-describedby="openingBidHelp"
-      >
-      <small id="openingBidHelp">Enter 0 for display only items</small>
-  
-      <label for="minBidIncr">
-        Minimum Bid Increment <span aria-hidden="true">(Required)</span>
-      </label>
-      <input
-        id="minBidIncr" name="minBidIncr"
-        type="number"
-        value="{{.MinBidIncr}}"
-        min="1"
-        required
-      >
-  
-      <label for="imageFile">
-        Image File <span aria-hidden="true">(Required)</span>
-      </label>
-      <div class="grid">
-      {{if ne .ID 0}}
-      <input
-        id="imageFileName" name="imageFileName"
-        type="text"
-        value="{{.ImageFileName}}"
-        maxlength="255"
-        required
-      >
-      {{end}}
-      <input id="imageFile" name="imageFile" type="file">
-      </div>
+      <fieldset>
+        <legend>Image Details</legend>
+        <label for="imageFile">
+          Image File <span aria-hidden="true">(Required)</span>
+        </label>
+        <div class="grid">
+        {{if ne .ID 0}}
+        <input
+          id="imageFileName" name="imageFileName"
+          type="text"
+          value="{{.ImageFileName}}"
+          maxlength="255"
+          required
+        >
+        {{end}}
+        <input id="imageFile" name="imageFile" type="file">
+        </div>
+      </fieldset>
       {{end}} {{/* with .Item */}}
   
       {{if .User.IsAdmin}}
@@ -132,5 +146,6 @@
       {{end}}
       </form>
     </main>
-  </body>
+</body>
+
 </html>

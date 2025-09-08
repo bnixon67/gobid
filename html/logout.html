@@ -5,30 +5,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="You have been logged out.">
   <title>{{ .Title }} - Logged Out</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav aria-label="Primary navigation">
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
         <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
       <ul>
         <li><a href="/login">Login</a></li>
-        <li><a href="/register">Register</a></li>
       </ul>
     </nav>
   </header>
 
   <main class="container">
     <h1>Logged out</h1>
-    <p>You have been successfully logged out.</p>
+    <p role="status">You have been successfully logged out.</p>
     <p>
-      <a href="/login" class="contrast">Log in again</a>
-      or return to the <a href="/gallery">gallery</a>.
+      <a href="/login">Log in again</a>
+      or view the <a href="/gallery">gallery</a>.
     </p>
   </main>
 </body>

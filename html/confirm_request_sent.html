@@ -4,27 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{{.Title}} - Request Sent</title>
+  <meta name="description" content="A confirmation request has been sent to your email address.">
+  <title>{{.Title}} - Confirm Request Sent</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav aria-label="Primary Navigation">
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
-        <li><a href="/gallery">Gallery</a></li>
-        <li><a href="/login">Login</a></li>
-        <li><a href="/register">Register</a></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
     </nav>
   </header>
 
   <main class="container">
-    <h1>Request Sent</h1>
-    <p>Please check your email for a message from {{ .EmailFrom }} for further information.</p>
-    <p>It could take a few minutes to receive the email. Please check your spam, junk, promotional, or similar folders.</p>
+    <h1>Confirmation request sent</h1>
+
+    <p role="status" aria-live="polite">
+      We’ve sent a confirmation email from <strong>{{.EmailFrom}}</strong>.
+      It may take a few minutes to arrive. If you don’t see it, please
+      check your spam, junk, promotions, or similar folders.
+    </p>
   </main>
 </body>
 </html>

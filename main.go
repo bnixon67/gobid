@@ -112,9 +112,10 @@ func main() {
 
 	// Register handlers
 	mux.Handle("/", http.RedirectHandler("/gallery", http.StatusMovedPermanently))
-	mux.HandleFunc("/w3.css", webhandler.FileHandler("html/w3.css"))
 	mux.HandleFunc("/pico.min.css", webhandler.FileHandler("html/pico.min.css"))
 	mux.HandleFunc("/gobid.css", webhandler.FileHandler("html/gobid.css"))
+	mux.HandleFunc("/bids.js", webhandler.FileHandler("html/bids.js"))
+	mux.HandleFunc("/gallery.js", webhandler.FileHandler("html/gallery.js"))
 	mux.HandleFunc("/favicon.ico", webhandler.FileHandler("html/favicon.ico"))
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
 

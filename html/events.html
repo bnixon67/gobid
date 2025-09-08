@@ -5,61 +5,77 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{{.Title}} Events</title>
+  <meta name="description" content="List of system events.">
+  <title>{{.Title}} - Events</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav>
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
-        <li><strong><a href="/">{{.Title}}</a></strong></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
+      {{if .User.IsAdmin}}
       <ul>
-      {{ if .User.IsAdmin }}
-        <li><a href="/eventscsv">Download</a></li>
-      {{ end }}
+        <li><a href="/eventscsv">Download CSV</a></li>
       </ul>
+      {{end}}
       <ul>
         {{if .User.Username}}
-        <li><a href="/logout">Logout</a></li>
+        <li><a href="/logout">Logout {{.User.Username}}</a></li>
         {{else}}
         <li><a href="/login?r=/events">Login</a></li>
         {{end}}
       </ul>
+    </nav>
   </header>
 
-  <main class="container">
-  {{ if .User.IsAdmin }}
+  <main class="container-fluid">
+    <h1 class="text-center">{{.Title}} System Events</h1>
+
+    {{if .User.IsAdmin}}
     <table class="striped">
+      <caption>System event log with status, user, message, and time</caption>
       <thead>
         <tr>
-          <th>Event</th>
-          <th data-align="center">Succeeded</th>
-          <th>Username</th>
-          <th>Message</th>
-          <th>When</th>
+          <th scope="col">Event</th>
+          <th scope="col" data-align="center">Succeeded</th>
+          <th scope="col">Username</th>
+          <th scope="col">Message</th>
+          <th scope="col">When</th>
         </tr>
       </thead>
 
       <tbody>
-      {{ range .Events }}
+      {{range .Events}}
         <tr>
           <td>{{.Name}}</td>
-          <td data-align="center">{{.Succeeded}}</td>
+          <td
+            data-align="center"
+            data-status="{{if .Succeeded}}success{{else}}failure{{end}}"
+          >
+          {{if .Succeeded}}
+            &check;<span class="visually-hidden">Succeeded</span>
+          {{else}}
+            &cross;<span class="visually-hidden">Failed</span>
+          {{end}}
+          </td>
           <td>{{.Username}}</td>
           <td>{{.Message}}</td>
-          <td>{{(ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST" }}</td>
+          <td>{{(ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST"}}</td>
         </tr>
-      {{ end }}
+      {{end}}
       </tbody>
     </table>
-    {{ else }}
+    {{else}}
     <p>
-      You must <a href="/login?r=/events">Login</a> as an administrator to see events.
+      You must <a href="/login?r=/events">Login</a> as an administrator
+      to see events.
     </p>
-    {{ end }}
+    {{end}}
   </main>
 </body>
+
 </html>

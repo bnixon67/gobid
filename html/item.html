@@ -5,25 +5,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Details and bidding for {{.Item.Title}} by {{.Item.Artist}}">
   <title>{{.Title}} - Item {{.Item.ID}}</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container-fluid with-line">
-    <nav aria-label="Primary Navigation">
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
       <ul>
-        <li><a href="/gallery">Gallery</a></li>
         <li><a href="/item/{{.Item.ID}}" aria-current="page">Refresh</a></li>
         {{if .User.IsAdmin}}
         <li><a href="/edit/{{.Item.ID}}">Edit</a></li>
         {{end}}
+      </ul>
+      <ul>
         {{if .User.Username}}
-        <li><a href="/logout">Logout</a></li>
+        <li><a href="/logout">Logout {{.User.Username}}</a></li>
         {{else}}
         <li><a href="/login">Login</a></li>
         {{end}}
@@ -32,63 +34,58 @@
   </header>
 
   <main class="container-fluid">
-
     <div class="grid">
-
-      <div>
+      <figure>
         <img
           src="/images/{{.Item.ImageFileName}}"
-          alt="{{.Item.Title}} by {{.Item.Artist}}"
+          alt="{{.Item.Title}}{{if .Item.Artist}} by {{.Item.Artist}}{{end}}"
           style="max-height: 60vh;"
         >
-      </div>
+        <figcaption class="visually-hidden">{{.Item.Title}} image</figcaption>
+      </figure>
 
-      <div>
+      <section>
         <h1>{{.Item.Title}}</h1>
-        <h2>{{.Item.Artist}}</h2>
+        {{if .Item.Artist}}<h2>{{.Item.Artist}}</h2>{{end}}
         <p>{{.Item.Description}}</p>
 
         <div>
         {{ if eq .Item.OpeningBid 0.0 }}
-          <div>This item is display only.</div>
+          <p><strong>This item is display only.</strong></p>
         {{ else }}
-          <div>
-            Current Price:
+          <p>
+            <strong>Current Price:</strong>
             ${{ printf "%.2f" (or .Item.CurrentBid .Item.OpeningBid)}}
-          </div>
+          </p>
         {{ end }}
         </div>
 
-        <br>
-
-        <div>
         {{ if eq .Item.OpeningBid 0.0 }}
-          {{/* display only */}}
+          {{/* Display only: no bidding */}}
         {{else if not .IsAuctionOpen}}
-          <div>Auction Closed</div>
+          <p><strong>Auction Closed</strong></p>
         {{else if not .User.Username}}
-          <div>
+          <p>
             Please <a href="/login?r=/item/{{.Item.ID}}">Login</a>
             or <a href="/register">Register</a> to bid.
-          </div>
+          </p>
         {{else}}
           <form method="post">
-            {{if .Message}}
-            <p> <mark>{{ .Message }}</mark> </p>
-            {{else}}
+          {{if .Message}}
+            <p class="message" role="status">{{.Message}}</p>
+          {{else}}
             <p>&nbsp;</p>
-            {{end}}
+          {{end}}
 
             <label for="bidAmount"><strong>Your Bid:</strong></label>
             <input
-              placeholder="Enter your Bid Amount"
               id="bidAmount" name="bidAmount"
               value="{{ .Item.MinBid }}"
               type="number" inputmode="numeric"
               min="{{.Item.MinBid}}"
               step="any"
-              autofocus
               required
+              autofocus
               aria-describedby="bidHelp"
             >
             <small id="bidHelp">Minimum bid: ${{.Item.MinBid}}</small>
@@ -96,15 +93,16 @@
             <button type="submit">Place Bid</button>
           </form>
         {{end}}
-        </div>
-
-      </div>
+      </section>
     </div>
 
-        {{if and .User.Username .Bids}}
-        <br>
+    {{if and .User.Username .Bids}}
+    <section>
+      <h2 class="text-center">Bid History</h2>
         <table class="striped">
-          <caption>Bid History</caption>
+          <caption class="visually-hidden">
+            Bid history for {{.Item.Title}}
+          </caption>
           <thead>
             <tr>
               <th scope="col">Bidder</th>
@@ -122,8 +120,9 @@
           {{end}}
           </tbody>
         </table>
-        {{end}}
-
+    </section>
+    {{end}}
   </main>
 </body>
+
 </html>

@@ -5,24 +5,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="List of items and bids.">
   <title>{{.Title}} - Bids</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
-  <style>
-    /* collapse logic */
-    tbody.item > tr.bids { display: none; }
-    tbody.item:has(details[open]) > tr.bids { display: table-row; }
-  </style>
+  <script src="/bids.js" defer></script>
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav>
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
-      </ul>
-      <ul>
-        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
       <ul>
         {{if .User.Username}}
@@ -34,16 +28,35 @@
     </nav>
   </header>
 
-  <main class="container">
+  <main class="container-fluid">
+    <h1 class="text-center">{{.Title}} Items and Bids</h1>
+
     {{if .User.Username}}
+    <nav aria-label="Bids controls" class="container-fluid">
+      <ul></ul>
+      <ul>
+        <li>
+          <button type="button" id="toggleAll"
+            class="secondary"
+            aria-expanded="false"
+            aria-controls="bidsTable"
+            title="Shortcut: Press E to expand all, C to collapse all"
+          >
+            Expand all bids
+          </button>
+        </li>
+      </ul>
+    </nav>
+
     <table class="striped">
+      <caption>List of all items with their bids</caption>
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Item</th>
-          <th data-align="right">Opening</th>
-          <th data-align="right">Increment</th>
-          <th data-align="center">Bids</th>
+          <th scope="col">ID</th>
+          <th scope="col">Item</th>
+          <th scope="col"data-align="right">Opening</th>
+          <th scope="col" data-align="right">Increment</th>
+          <th scope="col" data-align="center">Bids</th>
         </tr>
       </thead>
 
@@ -99,4 +112,5 @@
     {{end}}
   </main>
 </body>
+
 </html>

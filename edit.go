@@ -42,6 +42,7 @@ func (app *BidApp) ItemEditHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// only allowed by admin users
+	// TODO: handle non-admin access more gracefully
 	if !user.IsAdmin {
 		logger.Warn("attempt by non-admin user", "user", user)
 		webutil.RespondWithError(w, http.StatusUnauthorized)

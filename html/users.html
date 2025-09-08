@@ -5,23 +5,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="List of registered users.">
   <title>{{.Title}} - Users</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-      <nav aria-label="Primary navigation">
+  <header class="app-header">
+      <nav class="container" aria-label="Primary navigation">
         <ul>
           <li><a href="/"><strong>{{.Title}}</strong></a></li>
         </ul>
+        {{if .User.IsAdmin}}
         <ul>
-          {{if .User.IsAdmin}}
-          <li><a href="/userscsv">Download</a></li>
-          {{end}}
+          <li><a href="/userscsv">Download CSV</a></li>
+        </ul>
+        {{end}}
+        <ul>
           {{if .User.Username}}
-          <li><a href="/logout">Logout</a></li>
+          <li><a href="/logout">Logout {{.User.Username}}</a></li>
           {{else}}
           <li><a href="/login?r=/users">Login</a></li>
           {{end}}
@@ -29,12 +32,12 @@
       </nav>
   </header>
 
-  <main class="container">
-    <h1>Registered Users</h1>
+  <main class="container-fluid">
+    <h1 class="text-center">Registered Users</h1>
 
-    {{if .User.Username}}
+    {{if .User.IsAdmin}}
     <table class="striped">
-      <caption>Registered users</caption>
+      <caption class="visually-hidden">Registered users</caption>
       <thead>
         <tr>
           <th scope="col">Username</th>
@@ -52,17 +55,27 @@
         <tr>
         	<td>{{.Username}}</td>
         	<td>{{.FullName}}</td>
-          {{if $.User.IsAdmin}}
         	<td>{{.Email}}</td>
-        	<td data-align="center">{{if .IsAdmin}}Yes{{else}}No{{end}}</td>
-          <td>{{(ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST"}}</td>
+        	<td
+            data-align="center"
+            data-status="{{.IsAdmin}}"
+          >
+          {{if .IsAdmin}}
+            &check;<span class="visually-hidden">Yes</span>
+          {{else}}
+            &cross;<span class="visually-hidden">No</span>
           {{end}}
+          </td>
+          <td>{{(ToTimeZone .Created "America/Chicago").Format "2006-01-02 03:04 PM MST"}}</td>
         </tr>
       {{end}}
       </tbody>
     </table>
     {{else}}
-    <p>You must <a href="/login?r=/users">Login</a> to see users.</p>
+    <p class="container">
+      You must <a href="/login?r=/users">Login</a> as an administrator
+      to view registered users.
+    </p>
     {{end}}
   </main>
 </body>

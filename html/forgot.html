@@ -5,19 +5,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{{.Title}} - Forgot Username or Password</title>
+  <meta name="description" content="Recover your username or reset your password by email.">
+  <title>{{.Title}} - Recover Account</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav>
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
       <ul>
-        <li><a href="/gallery">Gallery</a></li>
         <li><a href="/login">Login</a></li>
         <li><a href="/register">Register</a></li>
       </ul>
@@ -25,21 +25,40 @@
   </header>
 
   <main class="container">
-    <h1>Forgot Username or Password</h1>
-    <p>Please provide your email address to receive further information.</p>
+    <h1>Recover Your Account</h1>
+    <p>
+      Enter the email address you registered with to recover your username
+      or reset your password.
+    </p>
 
-    <form method="post" novalidate>
-    {{if .Message}}<p role="alert"> <mark>{{.Message}}</mark> </p>{{ end }}
+    <form method="post">
+      {{if .Message}}
+      <p class="message" role="status">{{.Message}}</p>
+      {{ end }}
 
-      <label>
-        <strong>Email (required):</strong>
-        <input type="email" placeholder="Enter your Email" id="email" name="email" maxlength="256" required autofocus>
+      <label for="email">
+        Email <span aria-hidden="true">(required):</span>
       </label>
+      <input
+        type="email"
+        id="email" name="email"
+        placeholder="user@example.com"
+        maxlength="256"
+        required
+        autofocus
+        aria-describedby="email-help"
+      >
+      <small id="email-help">
+       Use the same email address you registered with.
+     </small>
 
-      <div class="grid">
-	    <button type="submit" name="action" value="user">Forgot Username</button>
-	    <button type="submit" name="action" value="password">Forgot Password</button>
-      </div>
+     <fieldset>
+       <legend>Select what you forgot</legend>
+         <div class="grid">
+	         <button type="submit" name="action" value="user">Username</button>
+	         <button type="submit" name="action" value="password">Password</button>
+         </div>
+     </fieldset>
     </form>
   </main>
 </body>

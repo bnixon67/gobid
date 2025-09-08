@@ -5,31 +5,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{{.Title}} - Message Sent</title>
+  <meta name="description" content="Account recovery email sent.">
+  <title>{{.Title}} - Account Recovery Email Sent</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
 </head>
 
 <body>
-  <header class="container with-line">
-    <nav>
+  <header class="app-header">
+    <nav class="container" aria-label="Primary navigation">
       <ul>
-        <li><strong>{{.Title}}</strong></li>
+        <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
       <ul>
-        <li><a href="/gallery">Gallery</a></li>
         <li><a href="/login">Login</a></li>
         <li><a href="/register">Register</a></li>
       </ul>
     </nav>
   </header>
+
   <main class="container">
-    <h1>Message Sent</h1>
+    <h1>Confirmation Sent</h1>
+    <p role="status">
+      We’ve sent an email from <strong>{{ .EmailFrom }}</strong>
+      with instructions to recover your account.
+    </p>
     <p>
-      Please check your email for a message from {{ .EmailFrom }}
-      for further information.  It could take a few minutes to receive
-      the email. Please check your spam, junk, promotional, or similar
-      folders.
+      It may take a few minutes to arrive. If you don’t see it soon,
+      please check your spam, junk, or promotional folders.
     </p>
   </main>
 </body>
