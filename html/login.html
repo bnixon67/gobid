@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="Login to access your account.">
+  <meta name="description" content="Sign in to access your account.">
   <title>{{ .Title }} - Login</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
@@ -19,14 +19,13 @@
         <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
       <ul>
-        <li><a href="/forgot">Forgot</a></li>
         <li><a href="/register">Register</a></li>
       </ul>
     </nav>
   </header>
 
   <main id="main" tabindex="-1" class="container">
-    <h1>Login</h1>
+    <h1>Sign in</h1>
     <p>Please enter your account details to sign in.</p>
 
     <form method="post" autocomplete="off">
@@ -58,16 +57,23 @@
         autocomplete="current-password"
       >
 
+      <div class="grid">
+        <div>
       <input
 	      type="checkbox"
 	      id="remember" name="remember"
         checked
       >
       <label for="remember">
-        Remember Me
+        Stay signed in
       </label>
+        </div>
+      <div>
+      <a href="/forgot">Forgot Username or Password</a>
+      </div>
+      </div>
 
-      <button type="submit">Login</button>
+      <button type="submit" style="margin-top: 1rem;">Sign in</button>
     </form>
   </main>
 </body>
