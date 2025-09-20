@@ -116,6 +116,7 @@ func main() {
 	mux.HandleFunc("/gobid.css", webhandler.FileHandler("html/gobid.css"))
 	mux.HandleFunc("/bids.js", webhandler.FileHandler("html/bids.js"))
 	mux.HandleFunc("/gallery.js", webhandler.FileHandler("html/gallery.js"))
+	mux.HandleFunc("/toggle.js", webhandler.FileHandler("html/toggle.js"))
 	mux.HandleFunc("/favicon.ico", webhandler.FileHandler("html/favicon.ico"))
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
 

@@ -202,6 +202,17 @@ article.card {
   }
 }
 
+/* Layout for password + toggle */
+.password-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+#togglePassword {
+  white-space: nowrap;
+}
+
 /* VISIBLE KEYBOARD FOCUS */
 :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible{
   outline: var(--pico-outline-width, 2px) solid var(--pico-primary, currentColor);

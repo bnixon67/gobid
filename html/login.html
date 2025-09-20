@@ -9,6 +9,7 @@
   <title>{{ .Title }} - Login</title>
   <link rel="stylesheet" href="/pico.min.css">
   <link rel="stylesheet" href="/gobid.css">
+  <script src="/toggle.js" defer></script>
 </head>
 
 <body>
@@ -18,63 +19,52 @@
       <ul>
         <li><a href="/"><strong>{{.Title}}</strong></a></li>
       </ul>
-      <ul>
-        <li><a href="/register">Register</a></li>
-      </ul>
     </nav>
   </header>
 
-  <main id="main" tabindex="-1" class="container">
-    <h1>Sign in</h1>
-    <p>Please enter your account details to sign in.</p>
+  <main class="container">
+    <h1 id="main" tabindex="-1">Sign in</h1>
 
-    <form method="post" autocomplete="off">
+    <form method="post" autocomplete="off" aria-describedby="form-message">
+      <p id="form-message" aria-live="polite">
+        Enter your credentials to sign in.
+      </p>
+
       {{if .Message}}
-      <p class="message" role="status">
-      {{.Message}}</p>{{end}}
+      <p class="message" role="alert">{{.Message}}</p>
+      {{end}}
 
-      <label for="username">
-        Username <span aria-hidden="true">(required)</span>
-      </label>
-      <input
-        type="text"
-        id="username" name="username"
-        placeholder="pdoe"
-        maxlength="30"
-        required
-        autofocus
-        autocomplete="username"
-      >
+      <!-- Username -->
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" maxlength="30"
+        required autofocus autocomplete="username"
+        placeholder="Enter your username">
 
-      <label for="password">
-        Password <span aria-hidden="true">(required)</span>
-	    </label>
-      <input
-        type="password"
-        id="password" name="password"
-        placeholder="********"
-        required
-        autocomplete="current-password"
-      >
+       <!-- Password with toggle -->
+      <label for="password">Password</label>
+      <div class="password-group">
+        <input type="password" id="password" name="password"
+          required autocomplete="current-password"
+          placeholder="Enter your password">
+        <button type="button" id="togglePassword"
+          aria-pressed="false" aria-label="Show password"
+          class="secondary">Show</button>
+      </div>
 
-      <div class="grid">
-        <div>
-      <input
-	      type="checkbox"
-	      id="remember" name="remember"
-        checked
-      >
+      <!-- Stay signed in -->
       <label for="remember">
+        <input type="checkbox" id="remember" name="remember" checked >
         Stay signed in
       </label>
-        </div>
-      <div>
-      <a href="/forgot">Forgot Username or Password</a>
-      </div>
-      </div>
 
-      <button type="submit" style="margin-top: 1rem;">Sign in</button>
+      <!-- Submit button -->
+      <button type="submit" style="margin-block-start: 1rem;">Sign in</button>
     </form>
+
+    <section aria-label="Account options">
+      <p><a href="/forgot">Forgot your username or password?</a></p>
+      <p><a href="/register">Create an account</a></p>
+    </section>
   </main>
 </body>
 
