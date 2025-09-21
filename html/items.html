@@ -65,7 +65,7 @@
           {{if $.User.IsAdmin}}
             <a href="/edit/{{.ID}}">{{.ID}}</a>
           {{else}}
-            {{.ID}}
+            <a href="/item/{{.ID}}">{{.ID}}</a>
           {{end}}
           </td>
           <td>{{.Artist}}</td>
