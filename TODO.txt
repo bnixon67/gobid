@@ -1,0 +1,3 @@
+- Allow multiple pictures per item
+- Allow upload of file with the same name
+- Allow user set a upper limit and increment for automatic bidding
