@@ -40,22 +40,24 @@
         required autofocus autocomplete="username"
         placeholder="Enter your username">
 
-       <!-- Password with toggle -->
+       <!-- Password -->
       <label for="password">Password</label>
-      <div class="password-group">
-        <input type="password" id="password" name="password"
-          required autocomplete="current-password"
-          placeholder="Enter your password">
-        <button type="button" id="togglePassword"
-          aria-pressed="false" aria-label="Show password"
-          class="secondary">Show</button>
-      </div>
+      <input type="password" id="password" name="password"
+        required autocomplete="current-password"
+        placeholder="Enter your password">
 
-      <!-- Stay signed in -->
-      <label for="remember">
-        <input type="checkbox" id="remember" name="remember" checked >
-        Stay signed in
-      </label>
+      <div>
+        <!-- Toggle Password -->
+        <label>
+          <input type="checkbox" id="showPassword">Show password
+        </label>
+  
+        <!-- Stay signed in -->
+        <label for="remember">
+          <input type="checkbox" id="remember" name="remember" checked>
+          Stay signed in
+        </label>
+      </div>
 
       <!-- Submit button -->
       <button type="submit" style="margin-block-start: 1rem;">Sign in</button>
