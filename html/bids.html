@@ -64,7 +64,7 @@
       {{range .Items}}
       <tbody class="item">
         <tr>
-          <td>{{.ID}}</td>
+          <td data-align="right"><a href="/item/{{.ID}}">{{.ID}}</a></td>
           <td>{{.Title}}<br>{{.Artist}}</td>
           <td data-align="right">{{printf "$%.2f" .OpeningBid}}</td>
           <td data-align="right">{{printf "$%.2f" .MinBidIncr}}</td>

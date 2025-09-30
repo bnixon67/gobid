@@ -36,7 +36,7 @@
   <main id="main" tabindex="-1" class="container-fluid">
     <h1 class="text-center">Current Winners</h1>
 
-    {{ if .User.Username }}
+    {{if .User.Username}}
     <table class="striped">
       <caption class="visually-hidden">List of current winning bids</caption>
 
@@ -57,25 +57,25 @@
 
       <tbody>
       {{/* TODO: highlight the current user’s winning rows */}}
-      {{ range .Winners }}
+      {{range .Winners}}
         <tr>
-        	<td data-align="right">{{ .ID }}</td>
-        	<td>{{ .Title }}</td>
-        	<td>{{ .Artist }}</td>
-        	<td>{{ .ModifiedBy }}</td>
+          <td data-align="right"><a href="/item/{{.ID}}">{{.ID}}</a></td>
+          <td>{{.Title}}</td>
+          <td>{{.Artist}}</td>
+          <td>{{.ModifiedBy}}</td>
           {{if $.User.IsAdmin}}
-          <td>{{ .FullName }}</td>
-          <td>{{ .Email }}</td>
+          <td>{{.FullName}}</td>
+          <td>{{.Email}}</td>
           {{end}}
-        	<td data-align="right">{{ printf "$%10.2f" .CurrentBid }}</td>
-        	<td>{{(ToTimeZone .Modified "America/Chicago").Format "01/02/06 03:04 PM MST" }}</td>
+          <td data-align="right">{{printf "$%10.2f" .CurrentBid}}</td>
+          <td>{{(ToTimeZone .Modified "America/Chicago").Format "01/02/06 03:04 PM MST" }}</td>
         </tr>
-      {{ end }}
+      {{end}}
       </tbody>
     </table>
-    {{ else }}
+    {{else}}
     <p>You must <a href="/login?r=/winners">Login</a> to see winners.</p>
-    {{ end }}
+    {{end}}
   </main>
 </body>
 
