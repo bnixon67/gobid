@@ -1,3 +1,6 @@
 - Allow multiple pictures per item
 - Allow upload of file with the same name
 - Allow user set a upper limit and increment for automatic bidding
+- Allow user to change password, update name, email, etc.
+- Show total row for winners
+- Return to item after login and all similar pages
